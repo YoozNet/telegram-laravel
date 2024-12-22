@@ -12,6 +12,6 @@ if($Updates->text == "/start") {
     // createUser('193191319313')
     Telegram::api('sendMessage',[
         'chat_id'=>$Updates->chat_id,
-        'text'=>'خوش آمدید'
+        'text'=>'خوش آمدید : ef: '.$Updates->referral
     ]);
 }
