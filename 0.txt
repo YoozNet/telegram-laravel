@@ -1,0 +1,7 @@
+[22-Dec-2024 15:48:18 Europe/Berlin] PHP Fatal error:  Uncaught Dotenv\Exception\InvalidPathException: Unable to read any of the environment file(s) at [./\.env]. in H:\www\Saeed\telegram-laravel\telegram\vendor\vlucas\phpdotenv\src\Store\FileStore.php:68
+Stack trace:
+#0 H:\www\Saeed\telegram-laravel\telegram\vendor\vlucas\phpdotenv\src\Dotenv.php(222): Dotenv\Store\FileStore->read()
+#1 H:\www\Saeed\telegram-laravel\telegram\boot.php(6): Dotenv\Dotenv->load()
+#2 H:\www\Saeed\telegram-laravel\telegram\index.php(7): include_once('H:\\www\\Saeed\\te...')
+#3 {main}
+  thrown in H:\www\Saeed\telegram-laravel\telegram\vendor\vlucas\phpdotenv\src\Store\FileStore.php on line 68
