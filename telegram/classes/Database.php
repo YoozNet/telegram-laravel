@@ -15,7 +15,10 @@ class Database
     }
     public static function create(string $table,array $columns,array $values): bool
     {
-        $sql = "INSERT INTO ".$table." (".implode(",",$columns).") VALUES (".implode("?",$columns).")";
+        $sql = "INSERT INTO ".$table." (".implode(",",$columns).") VALUES (".implode(",",array_fill(0,count($columns),"?")).")";
+        var_dump($sql);
+        var_dump($columns);
+        var_dump($values);
         $prepare = self::$db->prepare($sql);
         return $prepare->execute($values);
     }

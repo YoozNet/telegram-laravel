@@ -1,7 +1,17 @@
 <?php
 
-function readEnv($filename)
+function getUser($userId): array
 {
-    $content = file_get_contents($filename);
-    
+    return [];
+}
+function userExists($userId): bool
+{
+    return true;
+}
+function createUser($userId): bool
+{
+    return Database::create('users',
+    ['uuid','first_name','last_name','username'],
+        [$userId,'test 1','test 2','testusername']
+    );
 }
