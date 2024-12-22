@@ -16,6 +16,7 @@ class ComposerStaticInitac141c2992c8902f96516d7b54b1a577
         '7e2decaf8431befbe8512886945d774b' => __DIR__ . '/../..' . '/classes/API.php',
         '917bf7ec6a3e6646039a9b8c5b2ecc25' => __DIR__ . '/../..' . '/classes/Database.php',
         'c5b80ea92512c54e001dc711eb1072d3' => __DIR__ . '/../..' . '/classes/Telegram.php',
+        'fe0c544326d74b5040ede4f76cae1bba' => __DIR__ . '/../..' . '/helper.php',
     );
 
     public static $prefixLengthsPsr4 = array (

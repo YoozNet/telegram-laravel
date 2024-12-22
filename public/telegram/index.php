@@ -1,3 +1,2 @@
 <?php
-
-$updates = Telegram::Updates();
+include_once("vendor/autoload.php");

@@ -17,7 +17,8 @@
         "files": [
             "classes/API.php",
             "classes/Database.php",
-            "classes/Telegram.php"
+            "classes/Telegram.php",
+            "helper.php"
         ]
     },
     "version": "1.0.0"
