@@ -3,7 +3,6 @@
 if(!function_exists('systemLog')) {
     function systemLog($message,$code)
     {
-        var_dump("error ID: $code - error Message: $message");
         error_log("error ID: $code - error Message: $message");
     }
 }
@@ -18,7 +17,7 @@ if(!function_exists("generateUUID")) {
             bin2hex(random_bytes(2)),
             bin2hex(random_bytes(6))
         );
-        return $uuid;
+        return 'YN-'.$uuid;
     }
 }
 
@@ -45,18 +44,20 @@ if(!function_exists("userExists")) {
 if(!function_exists("createUser")) {
     function createUser($userId,$try=0): bool
     {
+        $unique_columns = ['yn_users_api_token_unique','yn_users_referral_id_unique'];
         if ($try >= 10) {
-            systemLog('could not generate unique uuid',-100);
+            systemLog('could not generate unique id for ('.implode("|",$unique_columns).')',-100);
             die();
         }
         try {
             return Database::create('YN_users',
             ['user_id','referral_id','api_token'],
-                [$userId,generateString(),generateUUID()]
+                [$userId,'121243421',generateUUID()]
             );
         } catch (\PDOException $error) {
             $message = $error->getMessage();
-            preg_match("#Duplicate entry '(.*)' for key 'api_token'#",$message,$data);
+            $regex = "Duplicate entry '(.*)' for key '(".implode("|",$unique_columns).")'";
+            preg_match("#".$regex."#",$message,$data);
             if(isset($data[1]))
             {
                 createUser($userId,$try+1);

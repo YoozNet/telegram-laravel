@@ -118,3 +118,19 @@ Stack trace:
 [22-Dec-2024 19:58:37 Europe/Berlin] PHP Warning:  Undefined array key 1 in H:\www\Saeed\telegram-laravel\telegram\helper.php on line 55
 [22-Dec-2024 20:02:36 Europe/Berlin] error ID: -100 - error Message: could not generate unique uuid
 [22-Dec-2024 20:02:56 Europe/Berlin] error ID: -100 - error Message: could not generate unique uuid
+[22-Dec-2024 20:16:33 Europe/Berlin] PHP Fatal error:  Uncaught Dotenv\Exception\InvalidPathException: Unable to read any of the environment file(s) at [../../\.env]. in H:\www\Saeed\telegram-laravel\telegram\vendor\vlucas\phpdotenv\src\Store\FileStore.php:68
+Stack trace:
+#0 H:\www\Saeed\telegram-laravel\telegram\vendor\vlucas\phpdotenv\src\Dotenv.php(222): Dotenv\Store\FileStore->read()
+#1 H:\www\Saeed\telegram-laravel\telegram\boot.php(6): Dotenv\Dotenv->load()
+#2 H:\www\Saeed\telegram-laravel\telegram\index.php(7): include_once('H:\\www\\Saeed\\te...')
+#3 {main}
+  thrown in H:\www\Saeed\telegram-laravel\telegram\vendor\vlucas\phpdotenv\src\Store\FileStore.php on line 68
+[22-Dec-2024 20:16:47 Europe/Berlin] PHP Warning:  Undefined array key "DB_HOST" in H:\www\Saeed\telegram-laravel\telegram\boot.php on line 13
+[22-Dec-2024 20:16:47 Europe/Berlin] PHP Warning:  Undefined array key "DB_USERNAME" in H:\www\Saeed\telegram-laravel\telegram\boot.php on line 13
+[22-Dec-2024 20:16:47 Europe/Berlin] PHP Warning:  Undefined array key "DB_PASSWORD" in H:\www\Saeed\telegram-laravel\telegram\boot.php on line 13
+[22-Dec-2024 20:16:47 Europe/Berlin] PHP Warning:  Undefined array key "DB_DATABASE" in H:\www\Saeed\telegram-laravel\telegram\boot.php on line 13
+[22-Dec-2024 20:17:05 Europe/Berlin] error ID: -400 - error Message: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '123456789' for key 'PRIMARY'
+[22-Dec-2024 20:17:59 Europe/Berlin] error ID: -100 - error Message: could not generate unique uuid
+[22-Dec-2024 20:20:08 Europe/Berlin] error ID: -100 - error Message: could not generate unique uuid
+[22-Dec-2024 20:20:27 Europe/Berlin] error ID: -100 - error Message: could not generate unique uuid
+[22-Dec-2024 20:21:25 Europe/Berlin] error ID: -100 - error Message: could not generate unique id for (api_token|referral_id)
