@@ -6,11 +6,11 @@ error_reporting(E_ALL);
 
 include_once("boot.php");
 
-$Updates = Telegram::updates();
-var_dump(createUser('193191319313'));
-/*
-Telegram::api('sendMessage',[
-    'chat_id'=>000000,
-    'text'=>'hello world'
-]);
-*/
+$Updates = new TelegramUpdates();
+if($Updates->text == "/start") {
+    // createUser('193191319313')
+    Telegram::api('sendMessage',[
+        'chat_id'=>$Updates->chat_id,
+        'text'=>'خوش آمدید'
+    ]);
+}

@@ -18,6 +18,7 @@
             "classes/API.php",
             "classes/Database.php",
             "classes/Telegram.php",
+            "classes/TelegramUpdates.php",
             "helper.php"
         ]
     },

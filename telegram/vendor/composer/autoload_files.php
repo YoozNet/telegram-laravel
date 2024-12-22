@@ -15,5 +15,6 @@ return array(
     '7e2decaf8431befbe8512886945d774b' => $baseDir . '/classes/API.php',
     '917bf7ec6a3e6646039a9b8c5b2ecc25' => $baseDir . '/classes/Database.php',
     'c5b80ea92512c54e001dc711eb1072d3' => $baseDir . '/classes/Telegram.php',
+    '7caeb4d88622aa93260291a3cf2b77d3' => $baseDir . '/classes/TelegramUpdates.php',
     'fe0c544326d74b5040ede4f76cae1bba' => $baseDir . '/helper.php',
 );

@@ -1,6 +1,7 @@
 <?php
 
-class TelegramUpdates{
+class TelegramUpdates
+{
     public $update;
     public $message;
     public $message_id;
