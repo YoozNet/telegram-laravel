@@ -2,7 +2,7 @@
 
 include_once("vendor/autoload.php");
 use Dotenv\Dotenv;
-$env = Dotenv::createImmutable("./");
+$env = Dotenv::createImmutable("../../");
 $env->load();
 
 
