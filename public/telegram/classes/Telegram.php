@@ -6,8 +6,15 @@ class Telegram {
     {
         self::$token = $token;
     }
-    public static function api($method,$data=[]) : array
+    public static function api($method,$data=[]) : \Psr\Http\Message\ResponseInterface 
     {
+        $client = new GuzzleHttp\Client();
+        if(isset($data['reply_markup'])) {
+            $data['reply_markup'] = json_encode($data['reply_markup']);
+        }
+        $response = $client->request("post","https://api.telegram.org/bot".self::$token."/".$method,['query'=>$data]);
+        return $response;
+        /*
         $request = curl_init("https://api.telegram.org/bot".self::$token."/".$method);
         curl_setopt($request,CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($request,CURLOPT_POST,1);
@@ -23,6 +30,7 @@ class Telegram {
             die("error in request");
         }
         return $data;
+        */
     }
     public static function updates () : array
     {

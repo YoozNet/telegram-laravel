@@ -2,9 +2,9 @@
 
 include_once("boot.php");
 
-$Updates = Telegram::Updates();
+$Updates = Telegram::updates();
 
-Telegram::Api('sendMessage',[
+Telegram::api('sendMessage',[
     'chat_id'=>000000,
     'text'=>'hello world'
 ]);
