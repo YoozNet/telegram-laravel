@@ -139,7 +139,7 @@ class TelegramUpdates
             $this->author_signature = isset($this->message['author_signature']) ? $this->message['author_signature'] : null;
             $this->referral = (isset($this->text) && explode(" ",$this->text)[0] == "/start") ? explode(" ",$this->text)[1] : null;
             if ($this->referral != null) {
-                $this->text = explode(" ",$this->text)[0];
+                $this->text = "/start";
             } else {
                 $this->text = isset($this->message['text']) ? $this->message['text'] : null;
             }
