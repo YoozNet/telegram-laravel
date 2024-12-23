@@ -156,7 +156,7 @@ try {
             "message_id" => $update->cb_data_message_id,
             'text' => "
 ℹ️ اطلاعات حساب کاربری:
-جی میل: ".$email."
+ایمیل: ".$email."
 شماره کارت پیشفرض برای پرداخت: ".splitCardNumber($cardInfo)."
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
@@ -176,6 +176,31 @@ try {
                 ],
             ]
         ]);
+    } elseif ($data == "web_service") {
+        $userData = getUser($update->cb_data_chatid);
+        $ip = $userData['ip_address'] ?? "تنظیم نشده";
+        $api_token = $userData['api_token'] ?? "تنظیم نشده";
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "در این بخش، ارتباطی بین کسب و کار شما و توسعه‌دهندگانی که می‌خواهند از API ما استفاده کنند، برقرار می‌کنید. با ارائه توکن اختصاصی و تعریف آی‌پی سرور خود، آنها می‌توانند به API ما متصل شوند. ما به توسعه‌دهندگان اجازه می‌دهیم با داده‌های ما کار کنند و از قابلیت‌های API استفاده کنند.
+
+در این بخش، شما می‌توانید کسب و کار خود را با توسعه‌دهندگانی که می‌خواهند روند اتصال و اتصال به سیستم‌های خود را مشاهده کنند، با کلیک بر روی دکمه مشاهده داکیومنت ارتباط برقرار کنید.
+
+آی پی متصل به توکن شما : " . $ip ."
+توکن شما : ```" . $api_token . "````",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'مشاهده داکیومنت', 'url' => 'https://documenter.getpostman.com/view/19387923/2sA3sAfmZ6'],
+                    ],
+                    [
+                        ['text' => 'تنظیم آی پی سرور', 'callback_data'=>'set_default_cardnumber'],['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+
     } elseif ($data == "set_default_cardnumber") {
         $activeBanks = getAdminCards();
         if ($activeBanks == []) {
