@@ -111,7 +111,7 @@ try {
     } elseif ($text == '👤 حساب کاربری') {
         $userData = getUser($chat_id);
         # file_put_contents("test.json",json_encode($userData,128|256));
-        $email = $userData['email'];
+        $email = $userData['email'] ?? "تنظیم نشده";
         $group_id = $userData['group_id'];
         $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
         $discount = $userData['discount'];
@@ -120,7 +120,7 @@ try {
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
-اطلاعات حساب کاربری:
+ℹ️ اطلاعات حساب کاربری:
 جی میل: ".$email."
 شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
 گروه کاربری: ".$group_id."
