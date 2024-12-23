@@ -11,6 +11,18 @@ try {
     $chat_id = $update->chat_id ?? null;
     $text = $update->text ?? null;
     $data = $update->cb_data ?? null;
+    
+    if($data == "back") {
+        // back button clicked
+        // handle back button click
+        $backData = getBack($update->cb_data_chatid);
+        if($backData['as'] == 'text') {
+            $text = $backData['to'];
+        } elseif($backData['as'] == 'data') {
+            $data = $backData['to'];
+        }
+
+    }
 
     if(isset($text) && $text == "/start" || explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
@@ -39,7 +51,7 @@ try {
                         ],
                         'resize_keyboard' => true,
                     ]
-            ]);
+            ]); 
         } else {
             $parts = explode(" ", $update->text);
             $referral_code = isset($parts[1]) ? $parts[1] : null;
@@ -110,6 +122,7 @@ try {
             }
         }
     } elseif ($text == '👤 حساب کاربری') {
+        setBackTo($chat_id,'/start','text');
         $userData = getUser($chat_id);
         # file_put_contents("test.json",json_encode($userData,128|256));
         $email = $userData['email'] ?? "تنظیم نشده";
@@ -144,6 +157,7 @@ try {
         ]);
     } 
     if ($data == "Profile") {
+        setBackTo($update->cb_data_chatid,'/start','text');
         $userData = getUser($update->cb_data_chatid);
         $email = $userData['email'] ?? "تنظیم نشده";
         $group_id = $userData['group_id'];
@@ -177,6 +191,7 @@ try {
             ]
         ]);
     } elseif ($data == "web_service") {
+        setBackTo($update->cb_data_chatid,'Profile','data');
         $userData = getUser($update->cb_data_chatid);
         $ip = $userData['ip_address'] ?? "تنظیم نشده";
         $api_token = $userData['api_token'] ?? "تنظیم نشده";
@@ -207,6 +222,7 @@ $api_token
         ]);
 
     } elseif ($data == "invite_friends") {
+        setBackTo($update->cb_data_chatid,'Profile','data');
         $userData = getUser($update->cb_data_chatid);
         $referral = $userData['referral_id'];
         $referral_count = count(Database::select("YN_users", ["id"], "referred_by = ?", [$referral]));
@@ -232,6 +248,7 @@ https://t.me/YoozNetBot?start=$referral
         ]);
 
     } elseif ($data == "set_default_cardnumber") {
+        setBackTo($update->cb_data_chatid,'Profile','data');
         $activeBanks = getAdminCards();
         if ($activeBanks == []) {
             Telegram::api('editMessageText',[
@@ -264,6 +281,7 @@ https://t.me/YoozNetBot?start=$referral
             ]);
         }
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
+        setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];
         $existingCard = adminCardNumber($update->cb_data_chatid);
 

@@ -94,3 +94,40 @@ if(!function_exists("splitCardNumber")) {
     }
     echo splitCardNumber ('1234567812341234');
 }
+
+if(!function_exists('setUserStep')) {
+    function setUserStep($userId, $step) {
+        $getData = getUser($userId);
+        $getData = json_decode($getData['data'],1);
+        $getData['step'] = $step;
+        return Database::update('YN_users', ['data' => json_encode($getData)], 'user_id =?', [$userId]);
+    }
+}
+
+if(!function_exists('setUserStep')) {
+    function getUserStep($userId) {
+        $getData = getUser($userId);
+        $getData = json_decode($getData['data'],1);
+        return $getData['step'];
+    }
+}
+
+
+if(!function_exists('setBack')) {
+    function setBackTo($userId, $back_to,$as="text") {
+        $getData = getUser($userId);
+        $getData = json_decode($getData['data'],1);
+        $getData['back'] = ['to'=>$back_to, 'as'=>$as];
+        return Database::update('YN_users', ['data' => json_encode($getData)], 'user_id =?', [$userId]);
+    }
+}
+
+
+if(!function_exists('getBack')) {
+    function getBack($userId) {
+        $getData = getUser($userId);
+        $getData = json_decode($getData['data'],1);
+        return $getData['back'];
+    }
+}
+
