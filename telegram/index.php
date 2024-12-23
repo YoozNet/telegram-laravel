@@ -11,7 +11,8 @@ try {
     $chat_id = $update->chat_id ?? null;
     $text = $update->text ?? null;
     $data = $update->cb_data ?? null;
-    
+    $step = getUserStep($chat_id) ?? null;
+
     if($data == "back") {
         $backData = getBack($update->cb_data_chatid);
         if($backData['as'] == 'text') {
@@ -166,7 +167,7 @@ try {
         $userData = getUser($chat_id);
         $wallet = $userData['irr_wallet'] ?? 0.00;
         $config = GetConfig();
-        
+
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
@@ -278,7 +279,7 @@ $api_token
                 ],
             ]
         ]);
-    } elseif (getUserStep($chat_id) == 'set_ip_address_1') {
+    } elseif ($step == 'set_ip_address_1') {
         if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
             $response = "این یک IP نیست";
         } else {
