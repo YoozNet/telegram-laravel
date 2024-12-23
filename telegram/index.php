@@ -11,7 +11,7 @@ try {
     $chat_id = isset($update->chat_id) ? $update->chat_id : null;
     $text = isset($update->text) ? $update->text : null;
 
-    if($text == "/start" || (isset($text) && explode(" ", $text)[0] == "/start")) {
+    if($text == "/start" || explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
 
         if ($existing_user) {
@@ -25,10 +25,11 @@ try {
         } else {
             $parts = explode(" ", $update->text);
             $referral_code = isset($parts[1]) ? $parts[1] : null;
+            createUser($chat_id);
             if ($referral_code) {
                 $referrer = Database::select("YN_users", ["*"], "referral_id = ?", [$referral_code]);
                 if ($referrer) {
-                    createUser($chat_id);
+                    # createUser($chat_id);
                     $referrer_chat_id = $referrer[0]['user_id'];
                     Database::update('YN_users',['referred_by'],[$referral_code],'user_id = ?',[$chat_id]);
                     
