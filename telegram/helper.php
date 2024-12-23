@@ -86,3 +86,11 @@ if(!function_exists("getAdminCards")) {
         return Database::select("YN_admin_bank_cards", ["bank","card_number"], $where);
     }
 }
+
+if(!function_exists("splitCardNumber")) {
+    function splitCardNumber ($card_number) {
+        $card_number = trim($card_number);
+        return rtrim(preg_replace('/(.{4})/','$1-',$card_number),"-");
+    }
+    echo splitCardNumber ('1234567812341234');
+}

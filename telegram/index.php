@@ -10,6 +10,7 @@ $update = new TelegramUpdates();
 try {
     $chat_id = isset($update->chat_id) ? $update->chat_id : null;
     $text = isset($update->text) ? $update->text : null;
+    $data = isset($update->cb_data) ? $update->cb_data : null;
 
     if($text == "/start" || explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
@@ -122,7 +123,7 @@ try {
             'text' => "
 ℹ️ اطلاعات حساب کاربری:
 جی میل: ".$email."
-شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
+شماره کارت پیشفرض برای پرداخت: ".splitCardNumber($cardInfo)."
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
             ",
@@ -150,6 +151,29 @@ try {
 data : $encode
             ",
         ]);
+    } elseif ($data == "set_default_cardnumber") {
+        $activeBanks = getAdminCards();
+        if ($activeBanks = []) {
+            Telegram::api('editMessageText',[
+                'chat_id' => $chat_id,
+                'text' => "
+کارت بانکی فعالی وجود ندارد
+                ",
+            ]);
+        } else {
+            $text = "";
+            foreach ($activeBanks as $cardData) {
+                $text .= "".$cardData['bank']." - ".$cardData['card_number'];
+                $text .= "\n";
+            }
+            Telegram::api('editMessageText',[
+                'chat_id' => $chat_id,
+                "message_id" => $update->cb_data_message_id,
+                'text' => "
+        data : $text
+                ",
+            ]);
+        }
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
