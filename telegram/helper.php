@@ -48,7 +48,7 @@ if(!function_exists("adminCardNumber")) {
             return null;
         }
         $findCard = Database::select("YN_admin_bank_cards", ["id","bank","card_number"], "id = ?", [$adminCard])[0];
-        return ['bank'=>$findCard['bank'],'card_number'=>$findCard['card_number']];
+        return ['id'=>$findCard['id'],'bank'=>$findCard['bank'],'card_number'=>$findCard['card_number']];
     }
 }
 if(!function_exists("createUser")) {

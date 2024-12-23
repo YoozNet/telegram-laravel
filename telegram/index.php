@@ -211,7 +211,7 @@ try {
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
         $selectedCardId = $result[1];
         $existingCard = adminCardNumber($update->cb_data_chatid);
-        
+
         if ($existingCard && $existingCard['id'] == $selectedCardId) {
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
