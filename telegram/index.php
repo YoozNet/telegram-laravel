@@ -113,7 +113,7 @@ try {
         # file_put_contents("test.json",json_encode($userData,128|256));
         $email = $userData['email'];
         $group_id = $userData['group_id'];
-        $group_id = UserGroupEnum::from($group_id)->getLabel();
+        $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
         $discount = $userData['discount'];
         $cardNumber = adminCardNumber($chat_id);
         $cardInfo = $cardNumber['card_number'] ?? "تنظیم نشده";
