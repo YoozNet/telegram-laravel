@@ -140,7 +140,7 @@ if(!function_exists('setUserIP')) {
 
 if(!function_exists('GetConfig')) {
     function GetConfig() {
-        $value = include_once '../../config/site-settings.php';
+        $value = require_once '../../config/site-settings.php';
         return $value;
     }
 }
