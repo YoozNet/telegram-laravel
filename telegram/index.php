@@ -108,6 +108,42 @@ try {
                 ]);
             }
         }
+    } elseif ($text == '👤 حساب کاربری') {
+        $userData = getUser($chat_id);
+        $email = $userData['email'];
+        $group_id = $userData['group_id'];
+        $discount = $userData['discount'];
+        $cardNumber = adminCardNumber($chat_id);
+        if(is_null($cardNumber)) {
+            $cardInfo = "تنظیم نشده";
+        } else {
+            $cardInfo = $cardNumber['bank']." - ".$cardNumber['card_number'];
+        }
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+اطلاعات حساب کاربری:
+جی میل: ".$email."
+شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
+گروه کاربری: ".$group_id."
+تخفیف: ".$discount."%
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
+                    ],
+                    [
+                        ['text' => 'وب سرویس', 'callback_data'=>'web_service'],
+                        ['text' => 'دعوت از دوستان', 'callback_data'=>'invite_friends'],
+                    ],
+                    [
+                        ['text' => 'برگشت', 'callback_data'=>'back'],
+                    ]
+                ],
+                'resize_keyboard' => true,
+            ]
+        ]);
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());

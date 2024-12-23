@@ -23,7 +23,7 @@ class Database
     {
         return self::$db->query($query);
     }
-    public static function select(string $table, array $columns, string $where = "", array $bindings = [])
+    public static function select(string $table, array $columns, string $where = "", array $bindings = []): array
     {
         $sql = "SELECT " . implode(",", $columns) . " FROM " . $table;
         if ($where) {

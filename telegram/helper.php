@@ -31,7 +31,7 @@ if(!function_exists("generateString")) {
 if(!function_exists("getUser")) {
     function getUser($userId): array
     {
-        return [];
+        return Database::select("YN_users", ["id"], "user_id = ?", [$userId])[0];
     }
 }
 if(!function_exists("userExists")) {
@@ -40,7 +40,17 @@ if(!function_exists("userExists")) {
         return true;
     }
 }
-
+if(!function_exists("adminCardNumber")) {
+    function adminCardNumber($userId) {
+        $userData = getUser($userId);
+        $adminCard = $userData['admin_bank_card_id'];
+        if(is_null($adminCard)) {
+            return null;
+        }
+        $findCard = Database::select("YN_admin_bank_cards", ["bank","card_number"], "id = ?", [$adminCard])[0];
+        return ['bank'=>$findCard['bank'],'card_number'=>$findCard['card_number']];
+    }
+}
 if(!function_exists("createUser")) {
     function createUser($userId,$try=0): bool
     {
