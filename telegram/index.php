@@ -227,7 +227,43 @@ $api_token
                 ],
             ]
         ]);
-
+    } elseif ($data == "set_ip_address") {
+        setUserStep($update->cb_data_chatid,'set_ip_address_1');
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "
+لطف کنید IP مورد نظر را ارسال کنید
+            ",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif (getUserStep($chat_id) == 'set_ip_address_1') {
+        if(!filter_var($text,FILTER_FLAG_IPV4)) {
+            $response = "این یک IP نیست";
+        } else {
+            setUserStep($chat_id,'none');
+            setUserIP($chat_id,$text);
+            $response = "تنظیم شد";
+        }
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => $response,
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
+                    ]
+                ],
+            ]
+        ]);
     } elseif ($data == "invite_friends") {
         setBackTo($update->cb_data_chatid,'Profile','data');
         $userData = getUser($update->cb_data_chatid);

@@ -131,3 +131,8 @@ if(!function_exists('getBack')) {
     }
 }
 
+if(!function_exists('setUserIP')) {
+    function setUserIP($userId,$ip_address) {
+        return Database::update('YN_users', ['ip_address'],[$ip_address], 'user_id =?', [$userId]);
+    }
+}
