@@ -140,7 +140,6 @@ try {
                         ['text' => 'برگشت', 'callback_data'=>'back'],
                     ]
                 ],
-                'resize_keyboard' => true,
             ]
         ]);
     } elseif ($text == "/debug") {
@@ -161,29 +160,28 @@ data : $encode
                 ",
             ]);
         } else {
-            Telegram::api('sendMessage',[
-                'chat_id' => $update->cb_data_chatid,
-                'text' => "
-        data : ".json_encode($activeBanks,128|256)."
-                ",
-            ]);
-            $text = "";
+            $inline_keyboard = [];
             foreach ($activeBanks as $cardData) {
-                $text .= "".$cardData['bank']." - ".$cardData['card_number'];
-                $text .= "\n";
-                Telegram::api('sendMessage',[
-                    'chat_id' => $update->cb_data_chatid,
-                    'text' => "
-            data : ".json_encode($cardData,128|256)."
-                    ",
-                ]);
+                $inline_keyboard[] = [
+                    ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
+                    ['text' => $cardData['bank'], 'callback_data'=>'set_default_card_'. $cardData['id']],
+                    ['text' => 'تنظیم', 'callback_data'=>'set_default_card_'. $cardData['id']],
+                ];
             }
+            $inline_keyboard[] = [
+                ['text' => 'برگشت', 'callback_data'=>'back'],
+            ];
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
                 'text' => "
-        data : $text
+لیست شماره کارت های فعال
                 ",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        $inline_keyboard
+                    ],
+                ]
             ]);
         }
     }
