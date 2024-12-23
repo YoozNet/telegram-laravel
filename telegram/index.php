@@ -8,9 +8,9 @@ include_once("boot.php");
 
 $update = new TelegramUpdates();
 try {
-    $chat_id = isset($update->chat_id) ? $update->chat_id : null;
-    $text = isset($update->text) ? $update->text : null;
-    $data = isset($update->cb_data) ? $update->cb_data : null;
+    $chat_id = $update->chat_id ?? null;
+    $text = $update->text ?? null;
+    $data = $update->cb_data ?? null;
 
     if(isset($text) && $text == "/start" || explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
@@ -223,15 +223,6 @@ try {
 
         Database::update('YN_users',['admin_bank_card_id'],[$result[1]],'user_id = ?',[$update->cb_data_chatid]);
 
-        $inline_keyboard = [];
-        foreach ($activeBanks as $cardData) {
-            $is_setted = ($cardData['card_number'] == $existingCard['card_number']) ? "✅" : "تنظیم";
-            $inline_keyboard[] = [
-                ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
-                ['text' => $cardData['bank'], 'callback_data'=>'set_default_card_'. $cardData['id']],
-                ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
-            ];
-        }
         $inline_keyboard[] = [
             ['text' => 'بازگشت ◀️', 'callback_data'=>'set_default_cardnumber'],
         ];
