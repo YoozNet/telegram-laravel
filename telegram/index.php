@@ -110,7 +110,7 @@ try {
         }
     } elseif ($text == '👤 حساب کاربری') {
         $userData = getUser($chat_id);
-        file_put_contents("test.json",json_encode($userData,128|256));
+        # file_put_contents("test.json",json_encode($userData,128|256));
         $email = $userData['email'];
         $group_id = $userData['group_id'];
         $group_id = UserGroupEnum::from($group_id)->getLabel();
