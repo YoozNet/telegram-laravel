@@ -155,7 +155,7 @@ try {
             $activeCardNumber = adminCardNumber($update->cb_data_chatid);
             $inline_keyboard = [];
             foreach ($activeBanks as $cardData) {
-                $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "اینه" : "تنظیم";
+                $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "✅" : "تنظیم";
                 $inline_keyboard[] = [
                     ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
                     ['text' => $cardData['bank'], 'callback_data'=>'set_default_card_'. $cardData['id']],
@@ -181,7 +181,7 @@ try {
         $activeCardNumber = adminCardNumber($update->cb_data_chatid);
         $inline_keyboard = [];
         foreach ($activeBanks as $cardData) {
-            $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "اینه" : "تنظیم";
+            $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "✅" : "تنظیم";
             $inline_keyboard[] = [
                 ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
                 ['text' => $cardData['bank'], 'callback_data'=>'set_default_card_'. $cardData['id']],
@@ -189,7 +189,7 @@ try {
             ];
         }
         $inline_keyboard[] = [
-            ['text' => 'برگشت', 'callback_data'=>'back'],
+            ['text' => 'برگشت', 'callback_data'=>'set_default_cardnumber'],
         ];
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
