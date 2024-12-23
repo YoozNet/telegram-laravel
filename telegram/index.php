@@ -167,7 +167,7 @@ data : $encode
                 $text .= "\n";
             }
             Telegram::api('editMessageText',[
-                'chat_id' => $chat_id,
+                'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
                 'text' => "
         data : $text
