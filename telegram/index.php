@@ -200,7 +200,7 @@ $api_token
                         ['text' => 'مشاهده داکیومنت', 'url' => 'https://documenter.getpostman.com/view/19387923/2sA3sAfmZ6'],
                     ],
                     [
-                        ['text' => 'تنظیم آی پی سرور', 'callback_data'=>'set_default_cardnumber'],['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ['text' => 'تنظیم آی پی سرور', 'callback_data'=>'set_ip_address'],['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
                     ]
                 ],
             ]
