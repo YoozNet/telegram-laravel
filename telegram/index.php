@@ -18,6 +18,7 @@ try {
         $backData = getBack($update->cb_data_chatid);
         if($backData['as'] == 'text') {
             $text = $backData['to'];
+            $chat_id = $update->cb_data_chatid;
         } elseif($backData['as'] == 'data') {
             $data = $backData['to'];
         }
