@@ -212,10 +212,15 @@ try {
         $selectedCardId = $result[1];
         $existingCard = adminCardNumber($update->cb_data_chatid);
         if ($existingCard && $existingCard['id'] == $selectedCardId) {
-            Telegram::api('answerCallbackQuery', [
-                'callback_query_id' => $update->cb_data_id,
+            Telegram::api('editMessageText', [
+                'chat_id' => $update->cb_data_chatid,
+                "message_id" => $update->cb_data_message_id,
                 'text' => "این شماره کارت قبلاً به‌عنوان کارت پیش‌فرض تنظیم شده است. ⛔️",
-                'show_alert' => true,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'set_default_cardnumber'],
+                    ],
+                ]
             ]);
             return;
         }
