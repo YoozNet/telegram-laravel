@@ -142,14 +142,6 @@ try {
                 ],
             ]
         ]);
-    } elseif ($text == "/debug") {
-        $encode = json_encode(getAdminCards(),128|256);
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "
-data : $encode
-            ",
-        ]);
     } elseif ($data == "set_default_cardnumber") {
         $activeBanks = getAdminCards();
         if ($activeBanks == []) {
@@ -160,12 +152,14 @@ data : $encode
                 ",
             ]);
         } else {
+            $activeCardNumber = adminCardNumber($update->cb_data_chatid);
             $inline_keyboard = [];
             foreach ($activeBanks as $cardData) {
+                $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "اینه" : "تنظیم";
                 $inline_keyboard[] = [
-                    ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
+                    ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
                     ['text' => $cardData['bank'], 'callback_data'=>'set_default_card_'. $cardData['id']],
-                    ['text' => 'تنظیم', 'callback_data'=>'set_default_card_'. $cardData['id']],
+                    ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
                 ];
             }
             $inline_keyboard[] = [
@@ -175,13 +169,38 @@ data : $encode
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
                 'text' => "
-لیست شماره کارت های فعال
+در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود
                 ",
                 'reply_markup' => [
                     'inline_keyboard' => $inline_keyboard,
                 ]
             ]);
         }
+    } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
+        Database::update('YN_users',['admin_bank_card_id'],[$result[1]],'user_id = ?',[$update->cb_data_chatid]);
+        $activeCardNumber = adminCardNumber($update->cb_data_chatid);
+        $inline_keyboard = [];
+        foreach ($activeBanks as $cardData) {
+            $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "اینه" : "تنظیم";
+            $inline_keyboard[] = [
+                ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
+                ['text' => $cardData['bank'], 'callback_data'=>'set_default_card_'. $cardData['id']],
+                ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
+            ];
+        }
+        $inline_keyboard[] = [
+            ['text' => 'برگشت', 'callback_data'=>'back'],
+        ];
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "
+در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
