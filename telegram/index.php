@@ -142,6 +142,39 @@ try {
                 ],
             ]
         ]);
+    } 
+    if ($data == "Profile") {
+        $userData = getUser($update->cb_data_chatid);
+        $email = $userData['email'] ?? "تنظیم نشده";
+        $group_id = $userData['group_id'];
+        $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
+        $discount = $userData['discount'];
+        $cardNumber = adminCardNumber($update->cb_data_chatid);
+        $cardInfo = $cardNumber['card_number'] ?? "تنظیم نشده";
+        Telegram::api('sendMessage',[
+            'chat_id' => $update->cb_data_chatid,
+            'text' => "
+ℹ️ اطلاعات حساب کاربری:
+جی میل: ".$email."
+شماره کارت پیشفرض برای پرداخت: ".splitCardNumber($cardInfo)."
+گروه کاربری: ".$group_id."
+تخفیف: ".$discount."%
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
+                    ],
+                    [
+                        ['text' => 'وب سرویس', 'callback_data'=>'web_service'],
+                        ['text' => 'دعوت از دوستان', 'callback_data'=>'invite_friends'],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
     } elseif ($data == "set_default_cardnumber") {
         $activeBanks = getAdminCards();
         if ($activeBanks == []) {
@@ -163,7 +196,7 @@ try {
                 ];
             }
             $inline_keyboard[] = [
-                ['text' => 'برگشت', 'callback_data'=>'back'],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
             ];
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
@@ -189,16 +222,13 @@ try {
             ];
         }
         $inline_keyboard[] = [
-            ['text' => 'برگشت', 'callback_data'=>'set_default_cardnumber'],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'set_default_cardnumber'],
         ];
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => "
-در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود
-
-".microtime(1)."
-            ",
+            'text' => "شماره کارت شما با موفقیت تنظیم شد ✅
+برای ادامه بر روی بازگشت کلیک کنید! 👇😎",
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
             ]
