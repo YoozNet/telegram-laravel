@@ -110,6 +110,7 @@ try {
         }
     } elseif ($text == '👤 حساب کاربری') {
         $userData = getUser($chat_id);
+        file_put_contents("test.json",json_encode($userData,128|256));
         $email = $userData['email'];
         $group_id = $userData['group_id'];
         $discount = $userData['discount'];
