@@ -12,7 +12,7 @@ try {
     $text = isset($update->text) ? $update->text : null;
     $data = isset($update->cb_data) ? $update->cb_data : null;
 
-    if($text == "/start" || explode(" ", $text)[0] == "/start") {
+    if(isset($text) && $text == "/start" || explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
 
         if ($existing_user) {
@@ -161,10 +161,22 @@ data : $encode
                 ",
             ]);
         } else {
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "
+        data : ".json_encode($activeBanks,128|256)."
+                ",
+            ]);
             $text = "";
             foreach ($activeBanks as $cardData) {
                 $text .= "".$cardData['bank']." - ".$cardData['card_number'];
                 $text .= "\n";
+                Telegram::api('sendMessage',[
+                    'chat_id' => $update->cb_data_chatid,
+                    'text' => "
+            data : ".json_encode($cardData,128|256)."
+                    ",
+                ]);
             }
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
