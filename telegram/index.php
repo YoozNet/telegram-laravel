@@ -153,7 +153,7 @@ data : $encode
         ]);
     } elseif ($data == "set_default_cardnumber") {
         $activeBanks = getAdminCards();
-        if ($activeBanks = []) {
+        if ($activeBanks == []) {
             Telegram::api('editMessageText',[
                 'chat_id' => $chat_id,
                 'text' => "
