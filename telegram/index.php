@@ -206,6 +206,34 @@ $api_token
             ]
         ]);
 
+    } elseif ($data == "invite_friends") {
+        $userData = getUser($update->cb_data_chatid);
+        $referral = $userData['referral_id'];
+        $referral_by = Database::select("YN_users", ["id"], "referred_by = ?", [$referral]);
+        $referral_count = count(array_filter($users, function ($user) use ($referral) {
+            return $user['referred_by'] === $referral;
+        }));
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "میتوانید از طریق ارسال و به اشتراک گذاری لینک، دعوت دیگران به این سایت را داشته باشید. با هر خریدی که از لینک شما انجام شود، شما می‌توانید 0.1 درصد پورسانت دریافت کنید. همچنین، با جذب افراد جدید و دعوت آن‌ها برای استفاده از این سایت می‌توانید درآمد رفرال نیز کسب کنید.
+
+تعداد رفرال های دریافتی : `$referral_count`
+لینک دعوت شما : 
+```
+https://t.me/YoozNetBot?start=$referral
+```
+",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
+                    ]
+                ],
+            ]
+        ]);
+
     } elseif ($data == "set_default_cardnumber") {
         $activeBanks = getAdminCards();
         if ($activeBanks == []) {
