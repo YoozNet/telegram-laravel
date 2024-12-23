@@ -209,8 +209,7 @@ $api_token
     } elseif ($data == "invite_friends") {
         $userData = getUser($update->cb_data_chatid);
         $referral = $userData['referral_id'];
-        $referral_by = Database::select("YN_users", ["id"], "referred_by = ?", [$referral]);
-        $referral_count = count($referral_by);
+        $referral_count = count(Database::select("YN_users", ["id"], "referred_by = ?", [$referral]));
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
