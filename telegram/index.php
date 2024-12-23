@@ -245,7 +245,7 @@ $api_token
             ]
         ]);
     } elseif (getUserStep($chat_id) == 'set_ip_address_1') {
-        if(!filter_var($text,FILTER_FLAG_IPV4)) {
+        if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
             $response = "این یک IP نیست";
         } else {
             setUserStep($chat_id,'none');
