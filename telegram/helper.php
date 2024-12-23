@@ -118,7 +118,7 @@ if(!function_exists('setBack')) {
         $getData = getUser($userId);
         $getData = json_decode($getData['data'],1);
         $getData['back'] = ['to'=>$back_to, 'as'=>$as];
-        return Database::update('YN_users', ['data' => json_encode($getData)], 'user_id =?', [$userId]);
+        return Database::update('YN_users', ['data'],[json_encode($getData)], 'user_id =?', [$userId]);
     }
 }
 
