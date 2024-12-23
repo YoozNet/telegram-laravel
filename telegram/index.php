@@ -211,16 +211,12 @@ try {
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
         $selectedCardId = $result[1];
         $existingCard = adminCardNumber($update->cb_data_chatid);
+        
         if ($existingCard && $existingCard['id'] == $selectedCardId) {
-            Telegram::api('editMessageText', [
-                'chat_id' => $update->cb_data_chatid,
-                "message_id" => $update->cb_data_message_id,
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
                 'text' => "این شماره کارت قبلاً به‌عنوان کارت پیش‌فرض تنظیم شده است. ⛔️",
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'set_default_cardnumber'],
-                    ],
-                ]
+                'show_alert' => true,
             ]);
             return;
         }
