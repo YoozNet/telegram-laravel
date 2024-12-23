@@ -31,7 +31,7 @@ if(!function_exists("generateString")) {
 if(!function_exists("getUser")) {
     function getUser($userId): array
     {
-        return Database::select("YN_users", ["id"], "user_id = ?", [$userId]);
+        return Database::select("YN_users", ["*"], "user_id = ?", [$userId])[0];
     }
 }
 if(!function_exists("userExists")) {
