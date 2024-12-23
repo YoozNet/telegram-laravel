@@ -104,7 +104,7 @@ if(!function_exists('setUserStep')) {
     }
 }
 
-if(!function_exists('setUserStep')) {
+if(!function_exists('getUserStep')) {
     function getUserStep($userId) {
         $getData = getUser($userId);
         $getData = json_decode($getData['data'],1);
