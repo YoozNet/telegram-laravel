@@ -131,13 +131,13 @@ try {
         $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
         $discount = $userData['discount'];
         $cardNumber = adminCardNumber($chat_id);
-        $cardInfo = $cardNumber['card_number'] ?? "تنظیم نشده";
+        $cardInfo = splitCardNumber($cardNumber['card_number']) ?? "تنظیم نشده";
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
 ℹ️ اطلاعات حساب کاربری:
 جی میل: ".$email."
-شماره کارت پیشفرض برای پرداخت: ".splitCardNumber($cardInfo)."
+شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
             ",
