@@ -78,3 +78,11 @@ if(!function_exists("createUser")) {
         }
     }
 }
+
+if(!function_exists("getAdminCards")) {
+    function getAdminCards($just_active=true): array
+    {
+        $where = ($just_active == true) ? "status = 0" : null;
+        return Database::select("YN_admin_bank_cards", ["bank","card_number"], $where)[0];
+    }
+}

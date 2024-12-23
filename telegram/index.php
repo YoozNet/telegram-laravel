@@ -142,6 +142,14 @@ try {
                 'resize_keyboard' => true,
             ]
         ]);
+    } elseif ($text == "/debug") {
+        $encode = json_encode(getAdminCards(),128|256);
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+data : $encode
+            ",
+        ]);
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
