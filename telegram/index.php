@@ -153,6 +153,7 @@ try {
         $cardInfo = $cardNumber['card_number'] ?? "تنظیم نشده";
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
             'text' => "
 ℹ️ اطلاعات حساب کاربری:
 جی میل: ".$email."
