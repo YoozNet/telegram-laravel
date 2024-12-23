@@ -52,7 +52,7 @@ if(!function_exists("createUser")) {
         try {
             return Database::create('YN_users',
             ['user_id','referral_id','api_token'],
-                [$userId,'121243421',generateUUID()]
+                [$userId,generateString(),generateUUID()]
             );
         } catch (\PDOException $error) {
             $message = $error->getMessage();

@@ -33,4 +33,17 @@ class Database
         $prepare->execute($bindings);
         return $prepare->fetchAll(PDO::FETCH_ASSOC);
     }
+    public static function update(string $table, array $columns, array $values, string $where = "", array $bindings = []): bool
+    {
+        $set_clause = implode(",", array_map(fn($col) => "$col = ?", $columns));
+        $sql = "UPDATE $table SET $set_clause";
+
+        if ($where) {
+            $sql .= " WHERE $where";
+        }
+
+        $all_bindings = array_merge($values, $bindings);
+        $prepare = self::$db->prepare($sql);
+        return $prepare->execute($all_bindings);
+    }
 }
