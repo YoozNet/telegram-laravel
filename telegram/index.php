@@ -33,7 +33,7 @@ try {
 
     if(isset($text) && $text == "/start" || explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
-
+        setUserStep($chat_id,'none');
         if ($existing_user) {
             Telegram::api('sendMessage',[
                 'reply_to_message_id' => $update->message_id,
@@ -129,6 +129,7 @@ try {
             }
         }
     } elseif ($text == '👤 حساب کاربری') {
+        setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
         $userData = getUser($chat_id);
         # file_put_contents("test.json",json_encode($userData,128|256));
@@ -164,6 +165,7 @@ try {
         ]);
     } 
     if ($data == "Profile") {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'/start','text');
         $userData = getUser($update->cb_data_chatid);
         $email = $userData['email'] ?? "تنظیم نشده";
@@ -198,6 +200,7 @@ try {
             ]
         ]);
     } elseif ($data == "web_service") {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');
         $userData = getUser($update->cb_data_chatid);
         $ip = $userData['ip_address'] ?? "تنظیم نشده";
