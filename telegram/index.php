@@ -178,9 +178,7 @@ data : $encode
 لیست شماره کارت های فعال
                 ",
                 'reply_markup' => [
-                    'inline_keyboard' => [
-                        $inline_keyboard
-                    ],
+                    'inline_keyboard' => $inline_keyboard,
                 ]
             ]);
         }
