@@ -30,14 +30,10 @@ try {
                 if ($referrer) {
                     createUser($chat_id);
                     $referrer_chat_id = $referrer[0]['user_id'];
-                    Database::update(
-                        'YN_users',
-                        ['referred_by'],
-                        [$referrer_chat_id],
-                        'user_id = ?',
-                        [$chat_id]
-                    );
+                    Database::update('YN_users',['referred_by'],[$referral_code],'user_id = ?',[$chat_id]);
+                    
                     Telegram::api('sendMessage',[
+                        'reply_to_message_id' => $update->message_id,
                         'chat_id' => $chat_id,
                         'text' => "شما به پیشنهاد یک دوست قابل‌اعتماد ، به خانواده یوزنت پیوستید!  😍🌷
     از حالا می‌توانید از خدمات حرفه‌ای کاهش پینگ ما لذت ببرید و با خیالی آسوده و ناشناس در اینترنت گشت‌وگذار کنید! 🥷🏻"
