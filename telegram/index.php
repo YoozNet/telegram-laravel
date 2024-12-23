@@ -19,6 +19,12 @@ try {
         if($backData['as'] == 'text') {
             $text = $backData['to'];
             $chat_id = $update->cb_data_chatid;
+            if($backData['delete_message'] == true) {
+                Telegram::api('deleteMessage',[
+                    'message_id' => $update->cb_data_message_id,
+                    'chat_id' => $chat_id
+                ]);
+            }
         } elseif($backData['as'] == 'data') {
             $data = $backData['to'];
         }
