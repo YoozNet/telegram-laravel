@@ -100,7 +100,7 @@ if(!function_exists('setUserStep')) {
         $getData = getUser($userId);
         $getData = json_decode($getData['data'],1);
         $getData['step'] = $step;
-        return Database::update('YN_users', ['data' => json_encode($getData)], 'user_id =?', [$userId]);
+        return Database::update('YN_users', ['data'],[json_encode($getData)], 'user_id =?', [$userId]);
     }
 }
 
