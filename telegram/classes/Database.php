@@ -23,4 +23,14 @@ class Database
     {
         return self::$db->query($query);
     }
+    public static function select(string $table, array $columns, string $where = "", array $bindings = [])
+    {
+        $sql = "SELECT " . implode(",", $columns) . " FROM " . $table;
+        if ($where) {
+            $sql .= " WHERE " . $where;
+        }
+        $prepare = self::$db->prepare($sql);
+        $prepare->execute($bindings);
+        return $prepare->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

@@ -137,7 +137,6 @@ class TelegramUpdates
             $this->has_protected_content = isset($this->message['has_protected_content']) ? $this->message['has_protected_content'] : null;
             $this->media_group_id = isset($this->message['media_group_id']) ? $this->message['media_group_id'] : null;
             $this->author_signature = isset($this->message['author_signature']) ? $this->message['author_signature'] : null;
-            $this->text = isset($this->message['text']) ? $this->message['text'] : null;
             $this->caption = isset($this->message['caption']) ? $this->message['caption'] : null;
             $this->has_media_spoiler = isset($this->message['has_media_spoiler']) ? $this->message['has_media_spoiler'] : null;
             $this->delete_chat_photo = isset($this->message['delete_chat_photo']) ? $this->message['delete_chat_photo'] : null;
