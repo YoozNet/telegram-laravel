@@ -113,13 +113,10 @@ try {
         file_put_contents("test.json",json_encode($userData,128|256));
         $email = $userData['email'];
         $group_id = $userData['group_id'];
+        $group_id = UserGroupEnum::from($group_id)->getLabel();
         $discount = $userData['discount'];
         $cardNumber = adminCardNumber($chat_id);
-        if(is_null($cardNumber)) {
-            $cardInfo = "تنظیم نشده";
-        } else {
-            $cardInfo = $cardNumber['bank']." - ".$cardNumber['card_number'];
-        }
+        $cardInfo = $cardNumber['card_number'] ?? "تنظیم نشده";
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "

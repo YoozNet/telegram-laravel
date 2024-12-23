@@ -1,6 +1,7 @@
 <?php
 
 include_once("vendor/autoload.php");
+include_once("../../app/Enum/UserGroupEnum.php");
 use Dotenv\Dotenv;
 $env = Dotenv::createImmutable("../../");
 $env->load();
