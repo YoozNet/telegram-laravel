@@ -53,7 +53,7 @@ try {
                     ]
             ]); 
         } else {
-            $parts = explode(" ", $update->text);
+            $parts = explode(" ", $text);
             $referral_code = isset($parts[1]) ? $parts[1] : null;
             createUser($chat_id);
             if ($referral_code) {
