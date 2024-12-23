@@ -151,7 +151,7 @@ try {
         $discount = $userData['discount'];
         $cardNumber = adminCardNumber($update->cb_data_chatid);
         $cardInfo = $cardNumber['card_number'] ?? "تنظیم نشده";
-        Telegram::api('sendMessage',[
+        Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             'text' => "
 ℹ️ اطلاعات حساب کاربری:
@@ -201,20 +201,29 @@ try {
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
-                'text' => "
-در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود
-                ",
+                'text' => "در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود",
                 'reply_markup' => [
                     'inline_keyboard' => $inline_keyboard,
                 ]
             ]);
         }
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
+        $selectedCardId = $result[1];
+        $existingCard = adminCardNumber($update->cb_data_chatid);
+        if ($existingCard && $existingCard['id'] == $selectedCardId) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "این شماره کارت قبلاً به‌عنوان کارت پیش‌فرض تنظیم شده است. ⛔️",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+
         Database::update('YN_users',['admin_bank_card_id'],[$result[1]],'user_id = ?',[$update->cb_data_chatid]);
-        $activeCardNumber = adminCardNumber($update->cb_data_chatid);
+
         $inline_keyboard = [];
         foreach ($activeBanks as $cardData) {
-            $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "✅" : "تنظیم";
+            $is_setted = ($cardData['card_number'] == $existingCard['card_number']) ? "✅" : "تنظیم";
             $inline_keyboard[] = [
                 ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
                 ['text' => $cardData['bank'], 'callback_data'=>'set_default_card_'. $cardData['id']],
