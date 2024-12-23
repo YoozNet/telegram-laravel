@@ -13,8 +13,6 @@ try {
     $data = $update->cb_data ?? null;
     
     if($data == "back") {
-        // back button clicked
-        // handle back button click
         $backData = getBack($update->cb_data_chatid);
         if($backData['as'] == 'text') {
             $text = $backData['to'];
@@ -132,7 +130,6 @@ try {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
         $userData = getUser($chat_id);
-        # file_put_contents("test.json",json_encode($userData,128|256));
         $email = $userData['email'] ?? "تنظیم نشده";
         $group_id = $userData['group_id'];
         $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
@@ -151,19 +148,51 @@ try {
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
+                        ['text' => '🔹 تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
                     ],
                     [
-                        ['text' => 'وب سرویس', 'callback_data'=>'web_service'],
-                        ['text' => 'دعوت از دوستان', 'callback_data'=>'invite_friends'],
+                        ['text' => '📨 وب سرویس', 'callback_data'=>'web_service'],
+                        ['text' => '➕ دعوت از دوستان', 'callback_data'=>'invite_friends'],
                     ],
                     [
-                        ['text' => 'برگشت', 'callback_data'=>'back'],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                     ]
                 ],
             ]
         ]);
-    } 
+    } elseif ($text == "👝 کیف پول") {
+        setUserStep($chat_id,'none');
+        setBackTo($chat_id,'/start','text');
+        $userData = getUser($chat_id);
+        $wallet = $userData['irr_wallet'] ?? 0.00;
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
+
+💰 **افزایش اعتبار:** می‌توانید اعتبار خود را از 10,000 تا 2,000,000 تومان افزایش دهید!🥹
+
+📊 **صورتحساب‌ها:** مشاهده صورتحساب های شما.
+
+💳 ** کارت بانکی  ** : شما برای اینکه بتوانید کیف پول خود را شارژ کنید نیاز هست ابتدا کارت بانکی خود را تایید کنید و بعد از تایید میتوانید کارت تایید شده خود را مشاهده کنید و در صورت نیاز حذفش کنید!
+
+اعتبار اکانت شما: `$wallet` یوزکوین  (هر یوزکوین معادل **x تومان** است.)
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '📊 صورتحساب ها', 'callback_data'=>'Invoices'],
+                        ['text' => '💰 افزایش اعتبار', 'callback_data'=>'AddBalance'],
+                    ],
+                    [
+                        ['text' => '💳 کارت بانکی', 'callback_data'=>'web_service'],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+    }
     if ($data == "Profile") {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'/start','text');
@@ -187,11 +216,11 @@ try {
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
+                        ['text' => '🔹 تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
                     ],
                     [
-                        ['text' => 'وب سرویس', 'callback_data'=>'web_service'],
-                        ['text' => 'دعوت از دوستان', 'callback_data'=>'invite_friends'],
+                        ['text' => '📨 وب سرویس', 'callback_data'=>'web_service'],
+                        ['text' => '➕ دعوت از دوستان', 'callback_data'=>'invite_friends'],
                     ],
                     [
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
