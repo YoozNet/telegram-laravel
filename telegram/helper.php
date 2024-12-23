@@ -34,12 +34,14 @@ if(!function_exists("getUser")) {
         return Database::select("YN_users", ["*"], "user_id = ?", [$userId])[0];
     }
 }
+
 if(!function_exists("userExists")) {
     function userExists($userId): bool
     {
         return true;
     }
 }
+
 if(!function_exists("adminCardNumber")) {
     function adminCardNumber($userId) {
         $userData = getUser($userId);
@@ -51,6 +53,7 @@ if(!function_exists("adminCardNumber")) {
         return ['id'=>$findCard['id'],'bank'=>$findCard['bank'],'card_number'=>$findCard['card_number']];
     }
 }
+
 if(!function_exists("createUser")) {
     function createUser($userId,$try=0): bool
     {
@@ -112,7 +115,6 @@ if(!function_exists('getUserStep')) {
     }
 }
 
-
 if(!function_exists('setBack')) {
     function setBackTo($userId, $back_to,$as="text",$delete_message=true) {
         $getData = getUser($userId);
@@ -121,7 +123,6 @@ if(!function_exists('setBack')) {
         return Database::update('YN_users', ['data'],[json_encode($getData)], 'user_id =?', [$userId]);
     }
 }
-
 
 if(!function_exists('getBack')) {
     function getBack($userId) {
@@ -134,5 +135,12 @@ if(!function_exists('getBack')) {
 if(!function_exists('setUserIP')) {
     function setUserIP($userId,$ip_address) {
         return Database::update('YN_users', ['ip_address'],[$ip_address], 'user_id =?', [$userId]);
+    }
+}
+
+if(!function_exists('GetConfig')) {
+    function GetConfig() {
+        $value = include_once '../../config/site-settings.php';
+        return $value;
     }
 }

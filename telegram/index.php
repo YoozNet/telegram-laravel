@@ -163,6 +163,7 @@ try {
     } elseif ($text == "👝 کیف پول") {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
+        error_log("show Config" .GetConfig());
         $userData = getUser($chat_id);
         $wallet = $userData['irr_wallet'] ?? 0.00;
         Telegram::api('sendMessage',[
