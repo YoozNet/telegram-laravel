@@ -315,6 +315,13 @@ try {
                 ],
             ]
         ]);
+    } elseif ($data == "Invoices") {
+        $invoiceList = getUserInvoices($update->cb_data_chatid,2);
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "debug : ".json_encode($invoiceList,128|256),
+        ]);
     } elseif ($data == "web_service") {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');

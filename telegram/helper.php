@@ -304,3 +304,12 @@ if (!function_exists('GenerateTaxPrice')) {
         return 2000;
     }
 }
+
+if (!function_exists('getFactors')) {
+    function getUserInvoices($user_id,$limit=10)
+    {
+        $where = "user_id = ?";
+        return Database::select("YN_invoices", ["*"], $where, [$user_id],$limit);
+    }
+
+}
