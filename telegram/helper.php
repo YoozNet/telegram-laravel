@@ -64,8 +64,15 @@ if(!function_exists("createUser")) {
         }
         try {
             return Database::create('YN_users',
-            ['user_id','referral_id','api_token'],
-                [$userId,generateString(),generateUUID()]
+            ['user_id','referral_id','api_token','data', 'created_at', 'updated_at'],
+                [$userId,generateString(),generateUUID(),json_encode([
+                    "back" => [
+                        "to" => "none",
+                        "as" => "none",
+                        "delete_message" => false
+                    ],
+                    "step" => "none"
+                ]),date("Y-m-d H:i:s"), date("Y-m-d H:i:s")]
             );
         } catch (\PDOException $error) {
             $message = $error->getMessage();
