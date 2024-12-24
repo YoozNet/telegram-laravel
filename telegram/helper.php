@@ -216,7 +216,7 @@ if (!function_exists('generateLoginLink')) {
         ];
 
         $query = http_build_query($params);
-        $link = $baseUrl . '/login?' . $query;
+        $link = 'https://'. $baseUrl . '/login?' . $query;
         $secretKey = base64_decode(substr($_ENV['APP_KEY'], 7));
         $signature = hash_hmac('sha256', $link, $secretKey);
     
