@@ -282,9 +282,13 @@ try {
         $formattedWallet = formatWallet($wallet);
         $walletInToman = $formattedWallet * $YC_Price;
         $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
-        Telegram::api('editMessageText',[
+        Telegram::api('deleteMessage',[
+            'message_id' => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid
+        ]);
+
+        Telegram::api('sendMessage',[
             'chat_id' => $update->cb_data_chatid,
-            "message_id" => $update->cb_data_message_id,
             'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
 
 💰 **افزایش اعتبار:** می‌توانید اعتبار خود را از 10,000 تا 2,000,000 تومان افزایش دهید!🥹
