@@ -198,8 +198,8 @@ if (!function_exists('LoginToken')) {
         $expiresAt = date("Y-m-d H:i:s", strtotime("+15 minutes"));
 
         Database::create('YN_login_tokens', 
-            ['user_id', 'token', 'expires_at', 'consumed_at'], 
-            [$getData['id'], $newToken, $expiresAt, null]
+            ['user_id', 'token', 'expires_at', 'consumed_at','created_at','updated_at'], 
+            [$getData['id'], $newToken, $expiresAt, null,date("Y-m-d H:i:s"),date("Y-m-d H:i:s")]
         );
         return generateLoginLink($newToken,strtotime($expiresAt));
     }
