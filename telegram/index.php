@@ -572,15 +572,6 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
                 'photo' => $cardBankImage,
-                'caption' => $cardBankNumber,
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'در انتظار ارسال رسید...', 'callback_data'=>'none'],
-                            ['text' => 'لغو', 'callback_data'=>'wallet'],
-                        ]
-                    ],
-                ]
             ]);
         } else {
             setUserStep($update->cb_data_chatid,'none');
