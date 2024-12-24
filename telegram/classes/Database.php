@@ -17,7 +17,10 @@ class Database
     {
         $sql = "INSERT INTO ".$table." (".implode(",",$columns).") VALUES (".implode(",",array_fill(0,count($columns),"?")).")";
         $prepare = self::$db->prepare($sql);
-        return $prepare->execute($values);
+        if ($prepare->execute($values)) {
+            return (int)self::$db->lastInsertId(); 
+        }
+        return null;
     }
     public static function query(string $query)
     {
