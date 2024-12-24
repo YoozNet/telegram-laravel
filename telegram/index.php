@@ -416,14 +416,14 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             ]);
         }
     } elseif ($data == "AddBalance") {
-        setBackTo($chat_id,'👝 کیف پول','text');
-        $userData = getUser($chat_id);
+        setBackTo($update->cb_data_chatid,'👝 کیف پول','text');
+        $userData = getUser($update->cb_data_chatid);
         $group_id = $userData['group_id'];
         $addBalance = "AddBalance";
         if ($group_id < 1) {
             die();
         } else {
-            setUserStep($chat_id,'addBalance_1');
+            setUserStep($update->cb_data_chatid,'addBalance_1');
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
