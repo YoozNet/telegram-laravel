@@ -194,13 +194,11 @@ try {
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => '🔹 تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
+                        ['text' => '📊 صورتحساب ها', 'callback_data'=>'Invoices'],
+                        ['text' => '💰 افزایش اعتبار', 'callback_data'=>$addBalance],
                     ],
                     [
-                        ['text' => '📨 وب سرویس', 'callback_data'=>'web_service'],
-                        ['text' => '➕ دعوت از دوستان', 'callback_data'=>'invite_friends'],
-                    ],
-                    [
+                        ['text' => '💳 کارت بانکی', 'callback_data'=>'bankCards'],
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                     ]
                 ],
