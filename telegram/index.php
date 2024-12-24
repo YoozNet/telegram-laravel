@@ -167,9 +167,11 @@ try {
         $userData = getUser($chat_id);
         $wallet = $userData['irr_wallet'] ?? 0.00;
         $config = GetConfig();
-        
         $YC_Price = $config['yc_price'];
-
+        
+        $formattedWallet = formatWallet($wallet);
+        $walletInToman = $formattedWallet * $YC_Price;
+        $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
@@ -180,8 +182,8 @@ try {
 
 💳 ** کارت بانکی  ** : شما برای اینکه بتوانید کیف پول خود را شارژ کنید نیاز هست ابتدا کارت بانکی خود را تایید کنید و بعد از تایید میتوانید کارت تایید شده خود را مشاهده کنید و در صورت نیاز حذفش کنید!
 
-اعتبار اکانت شما: `$wallet` یوزکوین  (هر یوزکوین معادل **".$YC_Price." تومان** است.)
-👉 بنابراین موجودی شما معادل **" . $wallet * $YC_Price . " تومان** می‌باشد! 💸
+اعتبار اکانت شما: `". $formattedWallet ."` یوزکوین  (هر یوزکوین معادل **".$YC_Price." تومان** است.)
+👉 بنابراین موجودی شما معادل " . $formattedWalletInToman . " تومان می‌باشد! 💸
 
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'parse_mode' => 'Markdown',
@@ -345,7 +347,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                 $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "✅" : "تنظیم";
                 $inline_keyboard[] = [
                     ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
-                    ['text' => $cardData['bank'], 'callback_data'=>'set_default_card_'. $cardData['id']],
+                    ['text' => getBankName($cardData['bank']), 'callback_data'=>'set_default_card_'. $cardData['id']],
                     ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
                 ];
             }

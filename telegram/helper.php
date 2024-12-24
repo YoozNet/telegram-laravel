@@ -144,3 +144,38 @@ if(!function_exists('GetConfig')) {
         return $value;
     }
 }
+if (!function_exists('displayNumber')) {
+    function displayNumber($number, $withDecimals = false){
+        if (strpos((string)$number, '.') !== false) {
+            if ($withDecimals) {
+                $parts = explode('.', (string)$number);
+                $decimalPart = substr($parts[1], 0, 4);
+                return $parts[0] . '.' . $decimalPart;
+            } else {
+                return (int)$number;
+            }
+        } else {
+            return $number;
+        }
+    }
+}
+if (!function_exists('getBankName')) {
+    function getBankName(string $key){
+        $banks = include 'classes/banks.php';
+        if (isset($banks['lists'][$key]) && isset($banks['lists'][$key]['name'])) {
+            return $banks['lists'][$key]['name'];
+        }
+        return $banks['lists']['UNKNOWN']['name'];
+    }
+    
+}
+if (!function_exists('formatWallet')) {
+    function formatWallet(float $amount): string
+    {
+        if (fmod($amount, 1) == 0) {
+            return displayNumber((int)$amount);
+        } else {
+            return displayNumber($amount, true);
+        }
+    }
+}
