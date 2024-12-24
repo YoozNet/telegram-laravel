@@ -517,7 +517,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $response = "لطفاً کارتی که قصد دارید وجه را با آن پرداخت کنید انتخاب کنید 💳";
             foreach ($cardBanks as $cardData) {
                 $inline_keyboard[] = [
-                    ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'addBalance_select_'. $cardData['id']],
+                    ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
                 ];
             }
             $inline_keyboard[] = [
