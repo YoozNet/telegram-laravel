@@ -501,15 +501,12 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             ]
         ]);
     } elseif ($step == 'addBalance_1') {
+        $inline_keyboard = [];
         if (!is_numeric($text) || $text < 10000 || $text > 2000000) {
             $response = "لطفاً توجه نمایید که مبلغ مورد نظر برای افزایش اعتبار باید بین ۱۰,۰۰۰ تا ۲,۰۰۰,۰۰۰ تومان باشد! 💵✨ 
 لطفا مبلغ مورد نظر خود را مجدداً ارسال کنید! 🙏😊";
-            $inline_keyboard = [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
-                    ]
-                ],
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
             ];
         } else {
             setBackTo($chat_id,'addBalance','data');
@@ -518,21 +515,22 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $userID = getUser($chat_id)['id'];
             $cardBanks = getCardsBank($userID);
             $response = "لطفاً کارتی که قصد دارید وجه را با آن پرداخت کنید انتخاب کنید 💳";
-            $inline_keyboard = [];
             foreach ($cardBanks as $cardData) {
                 $inline_keyboard[] = [
                     ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'addBalance_select_'. $cardData['id']],
                 ];
             }
             $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
             ];
         }
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => $response,
             'parse_mode' => 'Markdown',
-            'reply_markup' => $inline_keyboard,
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
         ]);
     } elseif ($step == 'addBalance_2') {
         $id = preg_match("/addBalance_select_(.*)/",$data,$result);
