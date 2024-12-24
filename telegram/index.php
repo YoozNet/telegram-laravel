@@ -536,7 +536,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
         $id = preg_match("/addBalance_select_(.*)/",$data,$result);
         if(isset($result[1])) {
             $data = getCardById($result[1]);
-            setUserTmp($chat_id,'addBalance_userCardId',$result[1]);
+            setUserTmp($update->cb_data_chatid,'addBalance_userCardId',$result[1]);
             $cardNumber = adminCardNumber($update->cb_data_chatid);
             $cardInfo = $cardNumber['card_number'] ?? null;
             if(!is_null($cardInfo)) {
