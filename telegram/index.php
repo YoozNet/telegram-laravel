@@ -555,11 +555,12 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
                 }
             }
-            
+            setUserTmp($update->cb_data_chatid,'addBalance_cardBankNumber',$cardBankNumber);
+            setUserStep($update->cb_data_chatid,'addBalance_3');
             Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
                 'photo' => "https://maindns.space/file/" . $cardBankImage,
-                'caption' => $cardBankNumber,
+                'caption' => $cardBankNumber." مبلغ: ".getUserTmp($update->cb_data_chatid,'addBalance_amount'),
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
@@ -571,6 +572,35 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             ]);
         } else {
             setUserStep($update->cb_data_chatid,'none');
+        }
+    } elseif ($step == 'addBalance_3') {
+        if(isset($update->photo_file_id)) {
+            $tmp = getAllUserTmp($chat_id);
+            $adminCardNumber = $tmp['addBalance_cardBankNumber'];
+            $clientCardId = $tmp['addBalance_userCardId'];
+            $amount = $tmp['addBalance_amount'];
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "
+                لیست داده های tmp
+
+                کارت بانکی که باید واریز کرده باشه:
+                $adminCardNumber
+                کارت بانکی که باید با اون واریز کرده باشه:
+                $clientCardId
+                مبلغی که باید واریز کرده باشه:
+                $amount
+                فایل آیدی عکسی که ارسال کرده:
+                ".$update->photo_file_id."
+                ",
+                'parse_mode' => 'Markdown',
+            ]);
+        } else {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "تنها مجاز به ارسال عکس هستید",
+                'parse_mode' => 'Markdown',
+            ]);
         }
     }
 } catch (Exception $e) {

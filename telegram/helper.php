@@ -274,6 +274,15 @@ if(!function_exists('getUserTmp')) {
     }
 }
 
+
+if(!function_exists('getAllUserTmp')) {
+    function getAllUserTmp($userId) {
+        $getData = getUser($userId);
+        $getData = json_decode($getData['data'],1);
+        return $getData['tmp'];
+    }
+}
+
 if (!function_exists('GenerateTaxPrice')) {
     function GenerateTaxPrice($price) {
         if ($price < 10000) {
