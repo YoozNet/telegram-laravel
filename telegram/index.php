@@ -544,7 +544,8 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             } else {
                 $findAsName = getBankByName($data['bank']);
                 if(count($findAsName) > 0) {
-                    $cardBankNumber = $findAsName[0]['card_number'];
+                    $randKey = array_rand($findAsName);
+                    $cardBankNumber = $findAsName[$randKey]['card_number'];
                 } else {
                     $adminCards = getAdminCards();
                     $randKey = array_rand($adminCards);
