@@ -541,7 +541,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $cardInfo = $cardNumber['card_number'] ?? null;
             if(!is_null($cardInfo)) {
                 $cardBankNumber = $cardInfo;
-                $cardBankImage = $cardNumber['card_image_file_id'] ?? null;
+                $cardBankImage = $cardNumber['card_image_file_id'];
             } else {
                 $findAsName = getBankByName($data['bank']);
                 if(count($findAsName) > 0) {
@@ -563,7 +563,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     ]);
                 }
             }
-            Telegram::api('editMessageText',[
+            Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
                 'text' => "$cardBankImage - $cardBankNumber ",
