@@ -241,6 +241,12 @@ if(!function_exists('getCardsBank'))
     }
 }
 
+if(!function_exists('getCardById')) {
+    function getCardById($cardID) {
+        return Database::select("YN_bank_cards", ["*"], "id =?", [$cardID])[0];
+    }
+}
+
 
 if(!function_exists('setUserTmp')) {
     function setUserTmp($userId,$key,$value) {

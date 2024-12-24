@@ -476,6 +476,10 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
     if (!is_null($chat_id)) {
         $step = getUserStep($chat_id);
     }
+    if(!is_null($update->cb_data_chatid)) {
+        $step = getUserStep($update->cb_data_chatid);
+    }
+
     if ($step == 'set_ip_address_1') {
         if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
             $response = "این یک IP نیست";
@@ -530,6 +534,27 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             'parse_mode' => 'Markdown',
             'reply_markup' => $inline_keyboard,
         ]);
+    } elseif ($step == 'addBalance_2') {
+        $id = preg_match("/addBalance_select_(.*)/",$data,$result);
+        if(isset($result[1])) {
+            $data = getCardById($result[1]);
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                "message_id" => $update->cb_data_message_id,
+                'text' => "json: ".json_encode($data,128|256)." - ".$result[1],
+            ]);
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "tmp: ".getUserTmp($update->cb_data_chatid,'addBalance_amount'),
+            ]);
+        } else {
+            setUserStep($update->cb_data_chatid,'none');
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                "message_id" => $update->cb_data_message_id,
+                'text' => "step error",
+            ]);
+        }
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
