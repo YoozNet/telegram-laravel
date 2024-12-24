@@ -548,7 +548,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                 } else {
                     $adminCards = getAdminCards();
                     $randKey = array_rand($adminCards);
-                    $cardBankNumber = $findAsName[$randKey]['card_number'];
+                    $cardBankNumber = $adminCards[$randKey]['card_number'];
                 }
             }
             /*Telegram::api('editMessageText',[
