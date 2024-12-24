@@ -607,6 +607,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $adminCardNumber = $tmp['addBalance_cardBankNumber'];
             $clientCardId = $tmp['addBalance_userCardId'];
             $amount = $tmp['addBalance_amount'];
+            $tax = $tmp['Tax_value'];
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "
@@ -618,6 +619,10 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                 $clientCardId
                 مبلغی که باید واریز کرده باشه:
                 $amount
+                مقدار مالیات :
+                $tax
+                جمع : 
+                ".$amount + $tax."
                 فایل آیدی عکسی که ارسال کرده:
                 ".$update->photo_file_id."
                 ",
