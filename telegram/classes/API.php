@@ -26,6 +26,6 @@ class API
     }
     public static function sendInvoice($invoiceData)
     {
-        return self::request('telegram/invoice', $invoiceData); 
+        return self::request('tg/invoice', $invoiceData); 
     }
 }
