@@ -571,7 +571,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             setUserStep($update->cb_data_chatid,'addBalance_3');
 
             $amount = getUserTmp($update->cb_data_chatid,'addBalance_amount');
-            
+
             $tax = GenerateTaxPrice($amount);
             setUserTmp($update->cb_data_chatid,'Tax_value',$tax);
 
@@ -585,10 +585,11 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
 ` $card_number_format `
 💳 به شماره شبا : 
 ` $iban `
-💎 به نام :  $bank ( $fullname )
+💎 به نام :  $bank ( ".$fullname." )
 واریز بفرمایید و سپس اسکرین شات واریزی را برای ما ارسال کنید!😅
 
 ‼️ لطفا با کارتی که تایید کردید واریز بفرمایید تا تراکنش شما تایید شود 😊",
+                'parse_mode' => 'Markdown',
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
