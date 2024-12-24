@@ -246,7 +246,12 @@ if(!function_exists('getCardById')) {
         return Database::select("YN_bank_cards", ["*"], "id =?", [$cardID])[0];
     }
 }
-
+if(!function_exists('getBankByName'))
+{
+    function getBankByName($bankName) {
+        return Database::select("YN_bank_cards", ["*"], "bank = ?", [$bankName])[0];
+    }
+}
 
 if(!function_exists('setUserTmp')) {
     function setUserTmp($userId,$key,$value) {
@@ -261,5 +266,11 @@ if(!function_exists('getUserTmp')) {
         $getData = getUser($userId);
         $getData = json_decode($getData['data'],1);
         return $getData['tmp'][$key];
+    }
+}
+if(!function_exists('getAdminCards')) {
+    function getAdminCards ($just_active=true) {
+        $where = ($just_active == true) ? "status = 1" : null;
+        return Database::select("YN_admin_bank_cards", ["id","bank","card_number"],$where)[0];
     }
 }

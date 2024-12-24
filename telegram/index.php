@@ -536,22 +536,33 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
         $id = preg_match("/addBalance_select_(.*)/",$data,$result);
         if(isset($result[1])) {
             $data = getCardById($result[1]);
-            Telegram::api('editMessageText',[
+            setUserTmp($chat_id,'addBalance_userCardId',$result[1]);
+            $cardNumber = adminCardNumber($update->cb_data_chatid);
+            $cardInfo = $cardNumber['card_number'] ?? null;
+            if(!is_null($cardInfo)) {
+                $cardBankNumber = $cardInfo;
+            } else {
+                $findAsName = getBankByName($data['bank']);
+                if(count($findAsName) > 0) {
+                    $cardBankNumber = $findAsName[0]['card_number'];
+                } else {
+                    $adminCards = getAdminCards();
+                    $randKey = array_rand($adminCards);
+                    $cardBankNumber = $findAsName[$randKey]['card_number'];
+                }
+            }
+            /*Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
                 'text' => "json: ".json_encode($data,128|256)." - ".$result[1],
             ]);
+            */
             Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
-                'text' => "tmp: ".getUserTmp($update->cb_data_chatid,'addBalance_amount'),
+                'text' => "card number admin: ".$cardBankNumber,
             ]);
         } else {
             setUserStep($update->cb_data_chatid,'none');
-            Telegram::api('editMessageText',[
-                'chat_id' => $update->cb_data_chatid,
-                "message_id" => $update->cb_data_message_id,
-                'text' => "step error",
-            ]);
         }
     }
 } catch (Exception $e) {
