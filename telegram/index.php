@@ -547,7 +547,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                 if(count($findAsName) > 0) {
                     $randKey = array_rand($findAsName);
                     $cardBankNumber = $findAsName[$randKey]['card_number'];
-                    $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
+                    $cardBankImage =  $findAsName[$randKey]['card_image_file_id'];
                     Telegram::api('sendMessage',[
                         'chat_id' => $update->cb_data_chatid,
                         'text' => "Rand HamBank: ".json_encode($findAsName,128|256)." RandID: ".$randKey,
