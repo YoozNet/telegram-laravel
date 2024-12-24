@@ -474,6 +474,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
     } elseif ($data == "AddBalance") {
         setBackTo($update->cb_data_chatid,'👝 کیف پول','text');
         $userData = getUser($update->cb_data_chatid);
+        setUserTmp($update->cb_data_chatid,'userID',$userData['id']);
         $group_id = $userData['group_id'];
         $addBalance = "AddBalance";
         if ($group_id < 1) {
@@ -555,25 +556,35 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
         if (!is_numeric($text) || $text < 10000 || $text > 2000000) {
             $response = "لطفاً توجه نمایید که مبلغ مورد نظر برای افزایش اعتبار باید بین ۱۰,۰۰۰ تا ۲,۰۰۰,۰۰۰ تومان باشد! 💵✨ 
 لطفا مبلغ مورد نظر خود را مجدداً ارسال کنید! 🙏😊";
+            $inline_keyboard = [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                    ]
+                ],
+            ];
         } else {
-
             setBackTo($chat_id,'addBalance','data');
-            setUserStep($chat_id,'none');
+            setUserStep($chat_id,'addBalance_2');
             setUserTmp($chat_id,'addBalance_amount',$text);
-
+            $userID = getUserTmp($chat_id,'userID');
+            $cardBanks = getCardsBank($userID);
             $response = "لطفاً کارتی که قصد دارید وجه را با آن پرداخت کنید انتخاب کنید 💳";
+            $inline_keyboard = [];
+            foreach ($cardBanks as $cardData) {
+                $inline_keyboard[] = [
+                    ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'addBalance_select_'. $cardData['id']],
+                ];
+            }
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
+            ];
         }
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => $response,
             'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
-                    ]
-                ],
-            ]
+            'reply_markup' => $inline_keyboard,
         ]);
     }
 } catch (Exception $e) {
