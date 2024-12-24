@@ -182,9 +182,6 @@ try {
         $walletInToman = $formattedWallet * $YC_Price;
         $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
 
-        file_put_contents("cards.json",json_encode($cardBanks,128|256));
-
-
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
@@ -198,7 +195,9 @@ try {
 اعتبار اکانت شما: `". $formattedWallet ."` یوزکوین  (هر یوزکوین معادل **".$YC_Price." تومان** است.)
 👉 بنابراین موجودی شما معادل " . $formattedWalletInToman . " تومان می‌باشد! 💸
 
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎
+".count($cardBanks)." | $group_id | $addBalance
+            ",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
