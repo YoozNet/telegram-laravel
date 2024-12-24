@@ -376,6 +376,7 @@ $api_token
         $userData = getUser($update->cb_data_chatid);
         $referral = $userData['referral_id'];
         $referral_count = count(Database::select("YN_users", ["id"], "referred_by = ?", [$referral]));
+        $link = "https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral";
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
@@ -384,13 +385,14 @@ $api_token
 تعداد رفرال های دریافتی : `$referral_count`
 لینک دعوت شما : 
 ```
-https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
+$link
 ```
 ",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
+                        ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
                     ]
                 ],
@@ -654,32 +656,46 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     date("Y-m-d H:i:s"), 
                     date("Y-m-d H:i:s")]
             );
-            error_log("id" . json_encode($invoiceId));
-            Telegram::api('sendMessage',[
-                'chat_id' => $chat_id,
-                'text' => "
-                لیست داده های tmp
-
-                کارت بانکی که باید واریز کرده باشه:
-                $adminCardNumber
-                $adminCardId
-                کارت بانکی که باید با اون واریز کرده باشه:
-                $clientCardId
-                مبلغی که باید واریز کرده باشه:
-                $amount
-                مقدار مالیات :
-                $tax
-                جمع : 
-                ".$amount + $tax."
-                فایل آیدی عکسی که ارسال کرده:
-                ".$update->photo_file_id."
-                ",
-            ]);
+            $webservice = API::sendInvoice(["user_id" => $userid,"invoice_id" => $invoiceId]);
+            if ($webservice['status'] == true) {
+                Telegram::api('sendMessage',[
+                    'chat_id' => $chat_id,
+                    'text' => "تایید",
+                    'parse_mode' => 'Markdown',
+                    'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                            ]
+                        ],
+                    ]
+                ]);
+            } else {
+                Telegram::api('sendMessage',[
+                    'chat_id' => $chat_id,
+                    'text' => "رد",
+                    'parse_mode' => 'Markdown',
+                    'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                            ]
+                        ],
+                    ]
+                ]);
+            }
         } else {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "تنها مجاز به ارسال عکس هستید",
                 'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                        ]
+                    ],
+                ]
             ]);
         }
     }
