@@ -539,33 +539,60 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             setUserTmp($update->cb_data_chatid,'addBalance_userCardId',$result[1]);
             $cardNumber = adminCardNumber($update->cb_data_chatid);
             $cardInfo = $cardNumber['card_number'] ?? null;
+            $iban = null;
+            $bank = null;
+            $fullname = null;
             if(!is_null($cardInfo)) {
                 $cardBankNumber = $cardInfo;
                 $cardBankImage = $cardNumber['card_image_file_id'];
+                $iban = $cardNumber['iban'];
+                $bank = getBankName($cardNumber['bank']);
+                $fullname = $cardNumber['first_name'] . " " . $cardNumber['last_name'];
             } else {
                 $findAsName = getBankByName($data['bank']);
                 if(count($findAsName) > 0) {
                     $randKey = array_rand($findAsName);
                     $cardBankNumber = $findAsName[$randKey]['card_number'];
                     $cardBankImage =  $findAsName[$randKey]['card_image_file_id'];
+                    $iban = $findAsName['iban'];
+                    $bank = getBankName($findAsName['bank']);
+                    $fullname = $findAsName['first_name'] . " " . $findAsName['last_name'];
                 } else {
                     $adminCards = getAdminCards();
                     $randKey = array_rand($adminCards);
                     $cardBankNumber = $adminCards[$randKey]['card_number'];
                     $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
+                    $iban = $adminCards['iban'];
+                    $bank = getBankName($adminCards['bank']);
+                    $fullname = $adminCards['first_name'] . " " . $adminCards['last_name'];
                 }
             }
             setUserTmp($update->cb_data_chatid,'addBalance_cardBankNumber',$cardBankNumber);
             setUserStep($update->cb_data_chatid,'addBalance_3');
+
+            $amount = getUserTmp($update->cb_data_chatid,'addBalance_amount');
+            
+            $tax = GenerateTaxPrice($amount);
+            setUserTmp($update->cb_data_chatid,'Tax_value',$tax);
+
+            $amount_format = number_format($amount + $tax, 0, '', ',');
+            $card_number_format = splitCardNumber($cardBankNumber);
             Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
                 'photo' => "https://maindns.space/file/" . $cardBankImage,
-                'caption' => $cardBankNumber." مبلغ: ".getUserTmp($update->cb_data_chatid,'addBalance_amount'),
+                'caption' => "💰 لطفا مبلغ : ` $amount_format ` تومان
+💳 به شماره کارت : 
+` $card_number_format `
+💳 به شماره شبا : 
+` $iban `
+💎 به نام :  $bank ( $fullname )
+واریز بفرمایید و سپس اسکرین شات واریزی را برای ما ارسال کنید!😅
+
+‼️ لطفا با کارتی که تایید کردید واریز بفرمایید تا تراکنش شما تایید شود 😊",
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'در انتظار ارسال رسید...', 'callback_data'=>'none'],
-                            ['text' => 'لغو', 'callback_data'=>'wallet'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
                         ]
                     ],
                 ]
