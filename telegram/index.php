@@ -166,8 +166,9 @@ try {
         setBackTo($chat_id,'/start','text');
         $userData = getUser($chat_id);
         $wallet = $userData['irr_wallet'] ?? 0.00;
-        $YC_Price = $config['yc_price'];
         $config = GetConfig();
+        
+        $YC_Price = $config['yc_price'];
 
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
