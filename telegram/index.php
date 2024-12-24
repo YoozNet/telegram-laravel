@@ -545,6 +545,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             if(!is_null($cardInfo)) {
                 $cardBankNumber = $cardInfo;
                 $cardBankImage = $cardNumber['card_image_file_id'];
+                $cardBankId = $cardNumber['id'];
                 $iban = $cardNumber['iban'];
                 $bank = getBankName($cardNumber['bank']);
                 $fullname = $cardNumber['first_name'] . " " . $cardNumber['last_name'];
@@ -554,6 +555,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     $randKey = array_rand($findAsName);
                     $cardBankNumber = $findAsName[$randKey]['card_number'];
                     $cardBankImage =  $findAsName[$randKey]['card_image_file_id'];
+                    $cardBankId =  $findAsName[$randKey]['id'];
                     $iban = $findAsName[$randKey]['iban'];
                     $bank = getBankName($findAsName[$randKey]['bank']);
                     $fullname = $findAsName[$randKey]['first_name'] . " " . $findAsName[$randKey]['last_name'];
@@ -562,12 +564,14 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     $randKey = array_rand($adminCards);
                     $cardBankNumber = $adminCards[$randKey]['card_number'];
                     $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
+                    $cardBankId =  $adminCards[$randKey]['id'];
                     $iban = $adminCards[$randKey]['iban'];
                     $bank = getBankName($adminCards[$randKey]['bank']);
                     $fullname = $adminCards[$randKey]['first_name'] . " " . $adminCards[$randKey]['last_name'];
                 }
             }
             setUserTmp($update->cb_data_chatid,'addBalance_cardBankNumber',$cardBankNumber);
+            setUserTmp($update->cb_data_chatid,'addBalance_cardBankId',$cardBankId);
             setUserStep($update->cb_data_chatid,'addBalance_3');
 
             $amount = getUserTmp($update->cb_data_chatid,'addBalance_amount');
@@ -613,6 +617,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
         if(isset($update->photo_file_id)) {
             $tmp = getAllUserTmp($chat_id);
             $adminCardNumber = $tmp['addBalance_cardBankNumber'];
+            $adminCardId = $tmp['addBalance_cardBankId'];
             $clientCardId = $tmp['addBalance_userCardId'];
             $amount = $tmp['addBalance_amount'];
             $tax = $tmp['Tax_value'];
@@ -623,6 +628,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
 
                 کارت بانکی که باید واریز کرده باشه:
                 $adminCardNumber
+                $adminCardId
                 کارت بانکی که باید با اون واریز کرده باشه:
                 $clientCardId
                 مبلغی که باید واریز کرده باشه:

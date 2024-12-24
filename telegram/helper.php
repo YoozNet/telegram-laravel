@@ -98,6 +98,13 @@ if(!function_exists("getAdminCards")) {
     }
 }
 
+if(!function_exists("getAdminCardById")) {
+    function getAdminCardById($id): array
+    {
+        return Database::select("YN_admin_bank_cards", ["bank","card_number","id","card_image_file_id"], 'id = ?',[$id])[0];
+    }
+}
+
 if(!function_exists("splitCardNumber")) {
     function splitCardNumber ($card_number) {
         $card_number = trim($card_number);
