@@ -33,8 +33,8 @@ try {
 
     if(isset($text) && $text == "/start" || explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
-        setUserStep($chat_id,'none');
         if ($existing_user) {
+            setUserStep($chat_id,'none');
             Telegram::api('sendMessage',[
                 'reply_to_message_id' => $update->message_id,
                 'chat_id' => $chat_id,
