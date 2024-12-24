@@ -172,6 +172,11 @@ try {
         $group_id = $userData['group_id'];
         $config = GetConfig();
         $YC_Price = $config['yc_price'];
+        
+        $addBalance = "AddBalance";
+        if ($group_id < 1 or count($cardBanks) < 1) {
+            $addBalance = "bankCards";
+        }
 
         $formattedWallet = formatWallet($wallet);
         $walletInToman = $formattedWallet * $YC_Price;
