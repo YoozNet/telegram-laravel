@@ -182,18 +182,7 @@ try {
         $walletInToman = $formattedWallet * $YC_Price;
         $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
 
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "json: ".json_encode($cardBanks,128|256)
-        ]);
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "json: ".json_encode(getCardsBank(2114),128|256)
-        ]);
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "json: ".json_encode($userData,128|256)
-        ]);
+        file_put_contents("cards.json",json_encode($cardBanks,128|256));
 
 
         Telegram::api('sendMessage',[
