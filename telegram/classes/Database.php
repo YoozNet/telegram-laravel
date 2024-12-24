@@ -23,11 +23,14 @@ class Database
     {
         return self::$db->query($query);
     }
-    public static function select(string $table, array $columns, string $where = "", array $bindings = [],$limit=null,$offset=null): array
+    public static function select(string $table, array $columns, string $where = "", array $bindings = [],$limit=null,$offset=null,$order_by=null): array
     {
         $sql = "SELECT " . implode(",", $columns) . " FROM " . $table;
         if ($where) {
             $sql .= " WHERE " . $where;
+        }
+        if(!is_null($order_by)) {
+            $sql .= " ORDER BY $order_by DESC";
         }
         if(!is_null($limit)) {
             $sql .= " LIMIT " . $limit;
