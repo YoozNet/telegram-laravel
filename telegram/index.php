@@ -182,6 +182,7 @@ try {
         $walletInToman = $formattedWallet * $YC_Price;
         $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
 
+
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
@@ -196,7 +197,6 @@ try {
 👉 بنابراین موجودی شما معادل " . $formattedWalletInToman . " تومان می‌باشد! 💸
 
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎
-".count($cardBanks)." | $group_id | $addBalance
             ",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
@@ -524,6 +524,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             setUserStep($chat_id,'addBalance_2');
             setUserTmp($chat_id,'addBalance_amount',$text);
             $userID = getUser($chat_id)['id'];
+            setUserTmp($chat_id,'user_id',$userID);
             $cardBanks = getCardsBank($userID);
             $response = "لطفاً کارتی که قصد دارید وجه را با آن پرداخت کنید انتخاب کنید 💳";
             foreach ($cardBanks as $cardData) {
@@ -633,6 +634,26 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $clientCardId = $tmp['addBalance_userCardId'];
             $amount = $tmp['addBalance_amount'];
             $tax = $tmp['Tax_value'];
+            $yc_amount = $tmp['YC_value'];
+            $userid = $tmp['user_id'];
+
+            $invoice = Database::create('YN_invoices',
+            ['user_id','admin_bank_card_id','bank_card_id','amount','tax_avoidance','yc_amount','currency','status','file_id','paid_at','created_at', 'updated_at'],
+                [
+                    $userid,
+                    $adminCardId,
+                    $clientCardId,
+                    $amount,
+                    $tax,
+                    $yc_amount,
+                    "IRT",
+                    App\Enum\InvoiceStatus::WAITING_CONFIRMATION->value,
+                    $update->photo_file_id,
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s")]
+            );
+
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "
