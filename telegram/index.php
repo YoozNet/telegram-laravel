@@ -605,7 +605,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'کپی شماره کارت', 'copy_text'=>$cardBankNumber],
+                            ['text' => 'کپی شماره کارت', 'copy_text' => ['text' => $cardBankNumber]],
                             ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
                         ]
                     ],
