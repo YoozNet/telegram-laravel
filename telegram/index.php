@@ -654,7 +654,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     date("Y-m-d H:i:s"), 
                     date("Y-m-d H:i:s")]
             );
-            error_log("id" . $invoiceId);
+            error_log("id" . json_encode($invoiceId));
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "

@@ -18,7 +18,11 @@ class Database
         $sql = "INSERT INTO ".$table." (".implode(",",$columns).") VALUES (".implode(",",array_fill(0,count($columns),"?")).")";
         $prepare = self::$db->prepare($sql);
         if ($prepare->execute($values)) {
-            return self::$db->lastInsertId();
+            $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", $columns));
+            $query = "SELECT * FROM " . $table . " WHERE " . $whereClause . " LIMIT 1";
+            $stmt = self::$db->prepare($query);
+            $stmt->execute($values);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
         return false;
     }
