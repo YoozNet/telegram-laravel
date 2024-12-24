@@ -33,7 +33,7 @@ try {
 
     }
 
-    if(isset($text) && ($text == "/start" || (is_string($text) && explode(" ", $text)[0] == "/start"))) {
+    if(isset($text) && $text == "/start" || explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
         setUserStep($chat_id,'none');
         if ($existing_user) {
