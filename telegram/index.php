@@ -128,11 +128,7 @@ try {
                 ]);
             }
         }
-    } 
-    if ($chat_id) {
-        $step = getUserStep($chat_id);
-    }
-    if ($text == '👤 حساب کاربری') {
+    } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
         $userData = getUser($chat_id);
@@ -397,6 +393,11 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
         ]);
     }
 
+
+    ## Step's ## <-------------------------
+    if (!is_null($chat_id)) {
+        $step = getUserStep($chat_id);
+    }
     if ($step == 'set_ip_address_1') {
         if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
             $response = "این یک IP نیست";
