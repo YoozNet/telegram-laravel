@@ -249,7 +249,7 @@ if(!function_exists('getCardById')) {
 if(!function_exists('getBankByName'))
 {
     function getBankByName($bankName) {
-        return Database::select("YN_bank_cards", ["*"], "bank = ?", [$bankName])[0];
+        return Database::select("YN_bank_cards", ["*"], "bank = ?", [$bankName]);
     }
 }
 
