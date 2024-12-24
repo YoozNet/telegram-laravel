@@ -546,10 +546,18 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                 if(count($findAsName) > 0) {
                     $randKey = array_rand($findAsName);
                     $cardBankNumber = $findAsName[$randKey]['card_number'];
+                    Telegram::api('sendMessage',[
+                        'chat_id' => $update->cb_data_chatid,
+                        'text' => "Rand HamBank: ".json_encode($findAsName,128|256)." RandID: ".$randKey,
+                    ]);
                 } else {
                     $adminCards = getAdminCards();
                     $randKey = array_rand($adminCards);
                     $cardBankNumber = $adminCards[$randKey]['card_number'];
+                    Telegram::api('sendMessage',[
+                        'chat_id' => $update->cb_data_chatid,
+                        'text' => "Rand All: ".json_encode($findAsName,128|256)." RandID: ".$randKey,
+                    ]);
                 }
             }
             /*Telegram::api('editMessageText',[
