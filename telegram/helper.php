@@ -231,3 +231,28 @@ if (!function_exists('generateLoginLink')) {
         return $finalLink;
     }    
 }
+
+if(!function_exists('getCardsBank'))
+{
+    function getCardsBank($userIdTable,$just_active=true): array {
+        $where = ($just_active == true) ? "status = 1" : null;
+        return Database::select("YN_bank_cards", ["id","bank","card_number"], $where);
+    }
+}
+
+
+if(!function_exists('setUserTmp')) {
+    function setUserTmp($userId,$key,$value) {
+        $getData = getUser($userId);
+        $getData = json_decode($getData['data'],1);
+        $getData['tmp'][$key] = $value;
+        return Database::update('YN_users', ['data'],[json_encode($getData)], 'user_id =?', [$userId]);
+    }
+}
+if(!function_exists('getUserTmp')) {
+    function getUserTmp($userId,$key) {
+        $getData = getUser($userId);
+        $getData = json_decode($getData['data'],1);
+        return $getData['tmp'][$key];
+    }
+}
