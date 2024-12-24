@@ -186,12 +186,12 @@ if (!function_exists('formatWallet')) {
 if (!function_exists('LoginToken')) {
     function LoginToken($userId) {
         $getData = getUser($userId);
-        $tokenData = Database::select("YN_login_tokens", ["*"], "user_id = ?", [$getData['id']])[0];
+        $tokenData = Database::select("YN_login_tokens", ["*"], "user_id = ? ORDER BY id DESC LIMIT 1", [$getData['id']])[0];
         if ($tokenData) {
             $consumedAt = $tokenData['consumed_at'];
             $expiresAt = $tokenData['expires_at'];
             if (is_null($consumedAt) && strtotime($expiresAt) > time()) {
-                return generateLoginLink($tokenData['token'],strtotime($expiresAt));
+                return generateLoginLink($tokenData['token'], strtotime($expiresAt));
             } 
         } 
         $newToken = generateString(24);
