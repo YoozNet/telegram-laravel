@@ -638,7 +638,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $yc_amount = $tmp['YC_value'];
             $userid = $tmp['user_id'];
 
-            $invoice = Database::create('YN_invoices',
+            $invoiceId = Database::create('YN_invoices',
             ['user_id','admin_bank_card_id','bank_card_id','amount','tax_avoidance','yc_amount','currency','status','file_id','paid_at','created_at', 'updated_at'],
                 [
                     $userid,
@@ -654,7 +654,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     date("Y-m-d H:i:s"), 
                     date("Y-m-d H:i:s")]
             );
-            error_log(print_r($invoice, true));
+            error_log("id" . $invoiceId);
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "
