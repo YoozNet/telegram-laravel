@@ -541,11 +541,13 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $cardInfo = $cardNumber['card_number'] ?? null;
             if(!is_null($cardInfo)) {
                 $cardBankNumber = $cardInfo;
+                $cardBankImage = $cardNumber['card_image_file_id'] ?? null;
             } else {
                 $findAsName = getBankByName($data['bank']);
                 if(count($findAsName) > 0) {
                     $randKey = array_rand($findAsName);
                     $cardBankNumber = $findAsName[$randKey]['card_number'];
+                    $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
                     Telegram::api('sendMessage',[
                         'chat_id' => $update->cb_data_chatid,
                         'text' => "Rand HamBank: ".json_encode($findAsName,128|256)." RandID: ".$randKey,
@@ -554,21 +556,31 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     $adminCards = getAdminCards();
                     $randKey = array_rand($adminCards);
                     $cardBankNumber = $adminCards[$randKey]['card_number'];
+                    $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
                     Telegram::api('sendMessage',[
                         'chat_id' => $update->cb_data_chatid,
                         'text' => "Rand All: ".json_encode($findAsName,128|256)." RandID: ".$randKey,
                     ]);
                 }
             }
-            /*Telegram::api('editMessageText',[
+            Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
-                'text' => "json: ".json_encode($data,128|256)." - ".$result[1],
+                'text' => "$cardBankImage - $cardBankNumber ",
             ]);
-            */
-            Telegram::api('sendMessage',[
+            
+            Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
-                'text' => "card number admin: ".$cardBankNumber,
+                'photo' => $cardBankImage,
+                'caption' => $cardBankNumber,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'در انتظار ارسال رسید...', 'callback_data'=>'none'],
+                            ['text' => 'لغو', 'callback_data'=>'wallet'],
+                        ]
+                    ],
+                ]
             ]);
         } else {
             setUserStep($update->cb_data_chatid,'none');
