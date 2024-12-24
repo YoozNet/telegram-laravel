@@ -660,7 +660,8 @@ $link
             if ($webservice['status'] == true) {
                 Telegram::api('sendMessage',[
                     'chat_id' => $chat_id,
-                    'text' => "تایید",
+                    'text' => "پرداخت شما با موفقیت به واحد مالی ارسال شد ، بعد از بررسی نتیجه را به شما اطلاع می‌دهیم.
+        با تشکر از شما",
                     'parse_mode' => 'Markdown',
                     'reply_markup' => [
                         'inline_keyboard' => [
@@ -670,24 +671,11 @@ $link
                         ],
                     ]
                 ]);
-            } else {
-                Telegram::api('sendMessage',[
-                    'chat_id' => $chat_id,
-                    'text' => "رد",
-                    'parse_mode' => 'Markdown',
-                    'reply_markup' => [
-                        'inline_keyboard' => [
-                            [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
-                            ]
-                        ],
-                    ]
-                ]);
-            }
+            } 
         } else {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
-                'text' => "تنها مجاز به ارسال عکس هستید",
+                'text' => "لطفا در قالب عکس ارسال کنید",
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
                     'inline_keyboard' => [
