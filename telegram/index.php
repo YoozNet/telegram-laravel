@@ -554,17 +554,17 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     $randKey = array_rand($findAsName);
                     $cardBankNumber = $findAsName[$randKey]['card_number'];
                     $cardBankImage =  $findAsName[$randKey]['card_image_file_id'];
-                    $iban = $findAsName['iban'];
-                    $bank = getBankName($findAsName['bank']);
-                    $fullname = $findAsName['first_name'] . " " . $findAsName['last_name'];
+                    $iban = $findAsName[$randKey]['iban'];
+                    $bank = getBankName($findAsName[$randKey]['bank']);
+                    $fullname = $findAsName[$randKey]['first_name'] . " " . $findAsName[$randKey]['last_name'];
                 } else {
                     $adminCards = getAdminCards();
                     $randKey = array_rand($adminCards);
                     $cardBankNumber = $adminCards[$randKey]['card_number'];
                     $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
-                    $iban = $adminCards['iban'];
-                    $bank = getBankName($adminCards['bank']);
-                    $fullname = $adminCards['first_name'] . " " . $adminCards['last_name'];
+                    $iban = $adminCards[$randKey]['iban'];
+                    $bank = getBankName($adminCards[$randKey]['bank']);
+                    $fullname = $adminCards[$randKey]['first_name'] . " " . $adminCards[$randKey]['last_name'];
                 }
             }
             setUserTmp($update->cb_data_chatid,'addBalance_cardBankNumber',$cardBankNumber);
