@@ -52,7 +52,7 @@ try {
                             ],
                             [
                                 ['text' => '📞 پشتیبانی'],
-                                ['text' => ' 🌐 ورود به سایت 🌐']
+                                ['text' => '🌐 ورود به سایت 🌐']
                             ]
                         ],
                         'resize_keyboard' => true,
@@ -200,6 +200,8 @@ try {
                 ],
             ]
         ]);
+    } elseif ($text == "🌐 ورود به سایت 🌐"){
+        error_log(LoginToken($chat_id));
     }
     if ($data == "Profile") {
         setUserStep($update->cb_data_chatid,'none');

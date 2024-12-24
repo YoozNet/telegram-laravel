@@ -144,6 +144,7 @@ if(!function_exists('GetConfig')) {
         return $value;
     }
 }
+
 if (!function_exists('displayNumber')) {
     function displayNumber($number, $withDecimals = false){
         if (strpos((string)$number, '.') !== false) {
@@ -159,6 +160,7 @@ if (!function_exists('displayNumber')) {
         }
     }
 }
+
 if (!function_exists('getBankName')) {
     function getBankName(string $key){
         $banks = include 'classes/banks.php';
@@ -169,6 +171,7 @@ if (!function_exists('getBankName')) {
     }
     
 }
+
 if (!function_exists('formatWallet')) {
     function formatWallet(float $amount): string
     {
@@ -178,4 +181,47 @@ if (!function_exists('formatWallet')) {
             return displayNumber($amount, true);
         }
     }
+}
+
+if (!function_exists('LoginToken')) {
+    function LoginToken($userId) {
+        $getData = getUser($userId);
+        $tokenData = Database::select("YN_login_tokens", ["*"], "user_id = ?", [$getData['id']])[0];
+        if ($tokenData) {
+            $consumedAt = $tokenData['consumed_at'];
+            $expiresAt = $tokenData['expires_at'];
+            if (is_null($consumedAt) && strtotime($expiresAt) > time()) {
+                return generateLoginLink($tokenData['token'],strtotime($expiresAt));
+            } 
+        } 
+        $newToken = generateString(24);
+        $expiresAt = date("Y-m-d H:i:s", strtotime("+15 minutes"));
+
+        Database::create('YN_login_tokens', 
+            ['user_id', 'token', 'expires_at', 'consumed_at'], 
+            [$getData['id'], $newToken, $expiresAt, null]
+        );
+        return generateLoginLink($newToken,strtotime($expiresAt));
+    }
+}
+
+if (!function_exists('generateLoginLink')) {
+    function generateLoginLink($token, $expiresAt) {
+        global $_ENV;
+        $baseUrl = GetConfig()['url_unfiltered'];
+
+        $params = [
+            'token' => $token,
+            'expires' => $expiresAt,
+        ];
+
+        $query = http_build_query($params);
+        $link = $baseUrl . '/login?' . $query;
+        $secretKey = base64_decode(substr($_ENV['APP_KEY'], 7));
+        $signature = hash_hmac('sha256', $link, $secretKey);
+    
+        $finalLink = $link . '&signature=' . $signature;
+    
+        return $finalLink;
+    }    
 }
