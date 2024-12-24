@@ -316,7 +316,8 @@ try {
             ]
         ]);
     } elseif ($data == "Invoices") {
-        $invoiceList = getUserInvoices($update->cb_data_chatid,2);
+        $userData = getUser($update->cb_data_chatid);
+        $invoiceList = getUserInvoices($userData['id'],2);
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
