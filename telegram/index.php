@@ -555,11 +555,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
                 }
             }
-            Telegram::api('sendMessage',[
-                'chat_id' => $update->cb_data_chatid,
-                "message_id" => $update->cb_data_message_id,
-                'text' => "$cardBankImage - $cardBankNumber ",
-            ]);
+            
             Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
                 'photo' => "https://maindns.space/file/" . $cardBankImage,

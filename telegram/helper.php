@@ -247,6 +247,7 @@ if(!function_exists('getCardById')) {
         return Database::select("YN_bank_cards", ["*"], "id =?", [$cardID])[0];
     }
 }
+
 if(!function_exists('getBankByName'))
 {
     function getBankByName($bankName,$just_active=true) {
@@ -264,10 +265,26 @@ if(!function_exists('setUserTmp')) {
         return Database::update('YN_users', ['data'],[json_encode($getData)], 'user_id =?', [$userId]);
     }
 }
+
 if(!function_exists('getUserTmp')) {
     function getUserTmp($userId,$key) {
         $getData = getUser($userId);
         $getData = json_decode($getData['data'],1);
         return $getData['tmp'][$key];
+    }
+}
+
+if (!function_exists('GenerateTaxPrice')) {
+    function GenerateTaxPrice($price) {
+        if ($price < 10000) {
+            return 100;
+        }
+        if ($price < 1700000) {
+            $increments = intdiv($price - 10000, 50000);
+            $minRand = 100 + ($increments * 50);
+            $maxRand = $minRand + 50;
+            return rand($minRand, $maxRand);
+        }
+        return 2000;
     }
 }
