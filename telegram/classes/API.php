@@ -7,7 +7,7 @@ class API
     public static function request($url, $data = [])
     {
         $client = new GuzzleHttp\Client([
-            'base_uri' => 'https://yooznet.online/',
+            'base_uri' => 'https://yooznet.online/api/',
             'timeout'  => 30.0
         ]);
         $body = json_encode($data);
