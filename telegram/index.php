@@ -315,7 +315,7 @@ $api_token
 تعداد رفرال های دریافتی : `$referral_count`
 لینک دعوت شما : 
 ```
-https://t.me/YoozNetBot?start=$referral
+https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
 ```
 ",
             'parse_mode' => 'Markdown',
