@@ -13,16 +13,12 @@ class Database
             die("Connection failed: " . $e->getMessage());
         }
     }
-    public static function create(string $table,array $columns,array $values): bool
+    public static function create(string $table,array $columns,array $values)
     {
         $sql = "INSERT INTO ".$table." (".implode(",",$columns).") VALUES (".implode(",",array_fill(0,count($columns),"?")).")";
         $prepare = self::$db->prepare($sql);
         if ($prepare->execute($values)) {
-            $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", $columns));
-            $query = "SELECT * FROM " . $table . " WHERE " . $whereClause . " LIMIT 1";
-            $stmt = self::$db->prepare($query);
-            $stmt->execute($values);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            return self::$db->lastInsertId();
         }
         return false;
     }
