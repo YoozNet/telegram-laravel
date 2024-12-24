@@ -120,7 +120,7 @@ try {
                             ],
                             [
                                 ['text' => '📞 پشتیبانی'],
-                                ['text' => ' 🌐 ورود به سایت 🌐']
+                                ['text' => '🌐 ورود به سایت 🌐']
                             ]
                         ],
                         'resize_keyboard' => true,
@@ -207,33 +207,6 @@ try {
                 ],
             ]
         ]);
-    } elseif ($data == "AddBalance") {
-        setBackTo($chat_id,'👝 کیف پول','text');
-        $userData = getUser($chat_id);
-        $cardBanks = getCardsBank($userData['id']);
-        $group_id = $userData['group_id'];
-        $addBalance = "AddBalance";
-        if ($group_id < 1 or count($cardBanks) < 1) {
-            die();
-        } else {
-            setUserStep($chat_id,'addBalance_1');
-            Telegram::api('editMessageText',[
-                'chat_id' => $update->cb_data_chatid,
-                "message_id" => $update->cb_data_message_id,
-                'text' => "
-    مبلغ را به تومان وارد کنید: 
-                ",
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                        ]
-                    ],
-                ]
-            ]);
-        }
-
-    
     } elseif ($text == "🌐 ورود به سایت 🌐"){
         $link = LoginToken($chat_id);
         setUserStep($chat_id,'none');
@@ -274,6 +247,52 @@ try {
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
             ",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '🔹 تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
+                    ],
+                    [
+                        ['text' => '📨 وب سرویس', 'callback_data'=>'web_service'],
+                        ['text' => '➕ دعوت از دوستان', 'callback_data'=>'invite_friends'],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($data == "wallet") {
+        setUserStep($update->cb_data_chatid,'none');
+        setBackTo($update->cb_data_chatid,'/start','text');
+        
+        $userData = getUser($update->cb_data_chatid);
+
+        $cardBanks = getCardsBank($userData['id']);
+        $wallet = $userData['irr_wallet'] ?? 0.00;
+        $group_id = $userData['group_id'];
+        $config = GetConfig();
+        $YC_Price = $config['yc_price'];
+
+        $formattedWallet = formatWallet($wallet);
+        $walletInToman = $formattedWallet * $YC_Price;
+        $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
+
+💰 **افزایش اعتبار:** می‌توانید اعتبار خود را از 10,000 تا 2,000,000 تومان افزایش دهید!🥹
+
+📊 **صورتحساب‌ها:** مشاهده صورتحساب های شما.
+
+💳 ** کارت بانکی  ** : شما برای اینکه بتوانید کیف پول خود را شارژ کنید نیاز هست ابتدا کارت بانکی خود را تایید کنید و بعد از تایید میتوانید کارت تایید شده خود را مشاهده کنید و در صورت نیاز حذفش کنید!
+
+اعتبار اکانت شما: `". $formattedWallet ."` یوزکوین  (هر یوزکوین معادل **".$YC_Price." تومان** است.)
+👉 بنابراین موجودی شما معادل " . $formattedWalletInToman . " تومان می‌باشد! 💸
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -396,6 +415,31 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                 ]
             ]);
         }
+    } elseif ($data == "AddBalance") {
+        setBackTo($chat_id,'👝 کیف پول','text');
+        $userData = getUser($chat_id);
+        $group_id = $userData['group_id'];
+        $addBalance = "AddBalance";
+        if ($group_id < 1) {
+            die();
+        } else {
+            setUserStep($chat_id,'addBalance_1');
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                "message_id" => $update->cb_data_message_id,
+                'text' => "لطفا مبلغی که قصد دارید ، اعتبار شما به اندازه آن بیشتر شود بصورت تومان وارد کنید! 😅 
+لطفاً توجه داشته باشید که این مبلغ باید در محدوده بین  10,000 تا 2,000,000  تومان باشد! ",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+
+    
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];
@@ -452,15 +496,16 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             ]
         ]);
     } elseif ($step == 'addBalance_1') {
-        if (!is_numeric($text) || $text < 20000 || $text > 2000000) {
-            $response = "باید یک مقدار عددی بین 20 هزار و 2 ملیون وارد کنید:";
+        if (!is_numeric($text) || $text < 10000 || $text > 2000000) {
+            $response = "لطفاً توجه نمایید که مبلغ مورد نظر برای افزایش اعتبار باید بین ۱۰,۰۰۰ تا ۲,۰۰۰,۰۰۰ تومان باشد! 💵✨ 
+لطفا مبلغ مورد نظر خود را مجدداً ارسال کنید! 🙏😊";
         } else {
+
             setBackTo($chat_id,'addBalance','data');
             setUserStep($chat_id,'none');
             setUserTmp($chat_id,'addBalance_amount',$text);
-            $config = GetConfig();
-            $YC_Price = $config['yc_price'];
-            $response = "مقدار وارد شده معادل $YC_Price میباشد، لطفا شماره کارتی که قصد واریز با آنرا دارد مشخص کنید";
+
+            $response = "لطفاً کارتی که قصد دارید وجه را با آن پرداخت کنید انتخاب کنید 💳";
         }
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
