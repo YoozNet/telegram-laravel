@@ -574,13 +574,21 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
 
             $tax = GenerateTaxPrice($amount);
             setUserTmp($update->cb_data_chatid,'Tax_value',$tax);
-
-            $amount_format = number_format($amount + $tax, 0, '', ',');
+            
+            $total = $amount + $tax;
+            $amount_format = number_format($total, 0, '', ',');
             $card_number_format = splitCardNumber($cardBankNumber);
+
+            $config = GetConfig();
+            $YC_Price = $config['yc_price'];
+
+            $YC_COIN = displayNumber($total / $YC_Price,true);
+            setUserTmp($update->cb_data_chatid,'YC_value',$YC_COIN);
+
             Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
                 'photo' => "https://maindns.space/file/" . $cardBankImage,
-                'caption' => "💰 لطفا مبلغ : ` $amount_format ` تومان
+                'caption' => "💰 لطفا مبلغ : ` $amount_format ` تومان معادل ( ".$YC_COIN." ) یوزکوین
 💳 به شماره کارت : 
 ` $card_number_format `
 💳 به شماره شبا : 
