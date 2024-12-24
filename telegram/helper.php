@@ -211,12 +211,11 @@ if (!function_exists('generateLoginLink')) {
         $baseUrl = GetConfig()['url_unfiltered'];
 
         $params = [
-            'token' => $token,
             'expires' => $expiresAt,
         ];
 
         $query = http_build_query($params);
-        $link = 'https://'. $baseUrl . '/login?' . $query;
+        $link = 'https://'. $baseUrl . '/login/' . $token . '?' . $query;
         $secretKey = base64_decode(substr($_ENV['APP_KEY'], 7));
         $signature = hash_hmac('sha256', $link, $secretKey);
     
