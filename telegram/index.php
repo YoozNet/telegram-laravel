@@ -593,7 +593,6 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                 فایل آیدی عکسی که ارسال کرده:
                 ".$update->photo_file_id."
                 ",
-                'parse_mode' => 'Markdown',
             ]);
         } else {
             Telegram::api('sendMessage',[
