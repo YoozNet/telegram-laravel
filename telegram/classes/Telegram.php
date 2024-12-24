@@ -19,4 +19,14 @@ class Telegram {
         $response = $client->request('POST', $method, ['query' => $data]);
         return $response;
     }
+    public static function file($file_id) {
+        $response = self::api('getFile', ['file_id' => $file_id]);
+        $body = json_decode($response->getBody(), true);
+
+        if (isset($body['ok']) && $body['ok'] && isset($body['result']['file_path'])) {
+            return $body['result']['file_path'];
+        }
+
+        return null;
+    }
 }
