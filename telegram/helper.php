@@ -94,14 +94,14 @@ if(!function_exists("getAdminCards")) {
     function getAdminCards($just_active=true): array
     {
         $where = ($just_active == true) ? "status = 0" : null;
-        return Database::select("YN_admin_bank_cards", ["bank","card_number","id","card_image_file_id"], $where);
+        return Database::select("YN_admin_bank_cards", ["*"], $where);
     }
 }
 
 if(!function_exists("getAdminCardById")) {
     function getAdminCardById($id): array
     {
-        return Database::select("YN_admin_bank_cards", ["bank","card_number","id","card_image_file_id"], 'id = ?',[$id])[0];
+        return Database::select("YN_admin_bank_cards", ["*"], 'id = ?',[$id])[0];
     }
 }
 
