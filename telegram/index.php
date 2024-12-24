@@ -167,15 +167,21 @@ try {
         setUserStep($chat_id,'none');
         $userData = getUser($chat_id);
 
+        $cardBanks = getCardsBank($userData['id']);
         $wallet = $userData['irr_wallet'] ?? 0.00;
         $group_id = $userData['group_id'];
         $config = GetConfig();
         $YC_Price = $config['yc_price'];
 
+        $addBalance = "AddBalance";
+        if ($group_id < 1 or count($cardBanks) < 1) {
+            $addBalance = "bankCards";
+        }
 
         $formattedWallet = formatWallet($wallet);
         $walletInToman = $formattedWallet * $YC_Price;
         $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
+
 
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
