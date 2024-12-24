@@ -172,7 +172,7 @@ try {
         $group_id = $userData['group_id'];
         $config = GetConfig();
         $YC_Price = $config['yc_price'];
-        
+
         $addBalance = "AddBalance";
         if ($group_id < 1 or count($cardBanks) < 1) {
             $addBalance = "bankCards";
@@ -181,6 +181,21 @@ try {
         $formattedWallet = formatWallet($wallet);
         $walletInToman = $formattedWallet * $YC_Price;
         $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
+
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "json: ".json_encode($cardBanks,128|256)
+        ]);
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "json: ".json_encode(getCardsBank(2114),128|256)
+        ]);
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "json: ".json_encode($userData,128|256)
+        ]);
+
+
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
