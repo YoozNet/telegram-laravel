@@ -11,7 +11,10 @@ try {
     $chat_id = $update->chat_id ?? null;
     $text = $update->text ?? null;
     $data = $update->cb_data ?? null;
-    $step = getUserStep($chat_id ?? $update->cb_data_chatid);
+    $step = null;
+    if ($chat_id) {
+        $step = getUserStep($chat_id);
+    }
 
     if($data == "back") {
         $backData = getBack($update->cb_data_chatid);
@@ -219,6 +222,7 @@ try {
             ]
         ]);
     }
+
     if ($data == "Profile") {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'/start','text');
@@ -293,26 +297,6 @@ $api_token
             'text' => "
 لطف کنید IP مورد نظر را ارسال کنید
             ",
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
-                    ]
-                ],
-            ]
-        ]);
-    } elseif ($step == 'set_ip_address_1') {
-        if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
-            $response = "این یک IP نیست";
-        } else {
-            setUserStep($chat_id,'none');
-            setUserIP($chat_id,$text);
-            $response = "تنظیم شد";
-        }
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => $response,
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
@@ -407,6 +391,28 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
 برای ادامه بر روی بازگشت کلیک کنید! 👇😎",
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
+    }
+
+    if ($step == 'set_ip_address_1') {
+        if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
+            $response = "این یک IP نیست";
+        } else {
+            setUserStep($chat_id,'none');
+            setUserIP($chat_id,$text);
+            $response = "تنظیم شد";
+        }
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => $response,
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
+                    ]
+                ],
             ]
         ]);
     }
