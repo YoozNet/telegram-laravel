@@ -163,6 +163,55 @@ try {
             ]
         ]);
     } elseif ($text == "👝 کیف پول") {
+
+        setUserStep($chat_id,'none');
+        $userData = getUser($chat_id);
+
+        $cardBanks = getCardsBank($userData['id']);
+        $wallet = $userData['irr_wallet'] ?? 0.00;
+        $group_id = $userData['group_id'];
+        $config = GetConfig();
+        $YC_Price = $config['yc_price'];
+
+        $formattedWallet = formatWallet($wallet);
+        $walletInToman = $formattedWallet * $YC_Price;
+        $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
+
+💰 **افزایش اعتبار:** می‌توانید اعتبار خود را از 10,000 تا 2,000,000 تومان افزایش دهید!🥹
+
+📊 **صورتحساب‌ها:** مشاهده صورتحساب های شما.
+
+💳 ** کارت بانکی  ** : شما برای اینکه بتوانید کیف پول خود را شارژ کنید نیاز هست ابتدا کارت بانکی خود را تایید کنید و بعد از تایید میتوانید کارت تایید شده خود را مشاهده کنید و در صورت نیاز حذفش کنید!
+
+اعتبار اکانت شما: `". $formattedWallet ."` یوزکوین  (هر یوزکوین معادل **".$YC_Price." تومان** است.)
+👉 بنابراین موجودی شما معادل " . $formattedWalletInToman . " تومان می‌باشد! 💸
+
+".json_encode($cardBanks,128|256)."
+".$userData['id']."
+".json_encode(getCardsBank(2114),128|256)."
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '🔹 تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
+                    ],
+                    [
+                        ['text' => '📨 وب سرویس', 'callback_data'=>'web_service'],
+                        ['text' => '➕ دعوت از دوستان', 'callback_data'=>'invite_friends'],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+
+        /*
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
         $userData = getUser($chat_id);
@@ -207,6 +256,7 @@ try {
                 ],
             ]
         ]);
+        */
     } elseif ($text == "🌐 ورود به سایت 🌐"){
         $link = LoginToken($chat_id);
         setUserStep($chat_id,'none');
