@@ -12,9 +12,7 @@ try {
     $text = $update->text ?? null;
     $data = $update->cb_data ?? null;
     $step = null;
-    if ($chat_id) {
-        $step = getUserStep($chat_id);
-    }
+    
 
     if($data == "back") {
         $backData = getBack($update->cb_data_chatid);
@@ -130,7 +128,11 @@ try {
                 ]);
             }
         }
-    } elseif ($text == '👤 حساب کاربری') {
+    } 
+    if ($chat_id) {
+        $step = getUserStep($chat_id);
+    }
+    if ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
         $userData = getUser($chat_id);
