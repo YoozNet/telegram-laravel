@@ -631,7 +631,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $userid = $tmp['user_id'];
 
             $invoice = Database::create('YN_invoices',
-            ['user_id','admin_bank_card_id','bank_card_id','amount','tax_avoidance','yc_amount','currency','status','created_at', 'updated_at'],
+            ['user_id','admin_bank_card_id','bank_card_id','amount','tax_avoidance','yc_amount','currency','status','file_id','paid_at','created_at', 'updated_at'],
                 [
                     $userid,
                     $adminCardId,
@@ -641,7 +641,10 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     $yc_amount,
                     "IRT",
                     App\Enum\InvoiceStatus::WAITING_CONFIRMATION->value,
-                    date("Y-m-d H:i:s"), date("Y-m-d H:i:s")]
+                    $update->photo_file_id,
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s")]
             );
 
             Telegram::api('sendMessage',[
