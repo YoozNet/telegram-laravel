@@ -235,7 +235,8 @@ if (!function_exists('generateLoginLink')) {
 if(!function_exists('getCardsBank'))
 {
     function getCardsBank($userIdTable,$just_active=true): array {
-        $where = ($just_active == true) ? "status = 1" : null;
+        $where = ($just_active == true) ? "status = 1 AND" : null;
+        $where .= "user_id = ".$userIdTable;
         return Database::select("YN_bank_cards", ["id","bank","card_number"], $where);
     }
 }
