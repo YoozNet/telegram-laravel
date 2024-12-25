@@ -733,13 +733,20 @@ $link
             setUserTmp($update->cb_data_chatid,'show_ticket',1);
             Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
-                'text' => " ticket data: 
-    ".json_encode($ticketData,128|256)."
-                ",
+                'text' => "🛠 جزئیات تیکت 🛠 
+🆔 شناسه : ".$ticketData['id']."
+✨ عنوان: ".$ticketData['title']."
+🔧 دپارتمان : ".GetDepartments($ticketData['department'])."
+🔍 وضعیت : ".App\Enum\TicketStatus::from($ticketData['status'])->text()."
+📅 تاریخ ایجاد : ".$ticketData['created_at']."
+🗓 آخرین بروزرسانی : ".$ticketData['updated_at']."
+
+                برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'ثبت پاسخ', 'callback_data'=>'ticket_reply_to_'.$ticketId],
+                            ['text' => '🔸 ثبت پاسخ جدید', 'callback_data'=>'ticket_reply_to_'.$ticketId],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
                         ]
                     ],
                 ]
@@ -747,34 +754,47 @@ $link
         }
         if(!is_null($getTicketMessage[$ticketMessageId]['file_id'])) {
             $inline_keyboard[] = [
-                ['text' => 'دانلود پیوست', 'callback_data'=>'ticket_attachment_'.$ticketId.'_'.$ticketMessageId],
+                ['text' => '◾️ دانلود پیوست', 'callback_data'=>'ticket_attachment_'.$ticketId.'_'.$ticketMessageId],
             ];
         }
         if(isset($getTicketMessage[$ticketMessageId + 1]) && isset($getTicketMessage[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
-                ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
-                ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
-            ];
-            $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                ['text' => 'بعدی ⬅️', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
+                ['text' => 'قبلی ➡️', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
             ];
         } elseif (isset($getTicketMessage[$ticketMessageId + 1]) && !isset($getTicketMessage[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
-                ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                ['text' => 'بعدی ⬅️', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
             ];
         } elseif (!isset($getTicketMessage[$ticketMessageId + 1]) && isset($getTicketMessage[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
-                ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                ['text' => 'قبلی ➡️', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
             ];
+        }
+        $message = $getTicketMessage[$ticketMessageId];
+        $response = "";
+        if ($message['is_admin']) {
+            $response = "🌟 پیام از طرف پشتیبان به شناسه ( ".$message['admin_id']." ) :
+            📅 جزئیات پیام:
+            ".$message['message']."
+            - زمان ارسال: ". $message['created_at'];
+        } elseif ($message['is_system']) {
+            $response = "🚨 پیام سیستم :
+            🔔 جزئیات :
+            ".$message['message']."
+            - زمان ارسال: ". $message['created_at'];
+        } else {
+            $response = "💬 پیام از کاربر :
+            تیکت به شماره $ticketId از کاربر با شناسه ".$message['user_id']." ثبت شده است.
+            🔔 جزئیات :
+            ".$message['message']."
+            - زمان ارسال: ". $message['created_at'];
         }
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => " ticket message data: 
-".json_encode($getTicketMessage[$ticketMessageId],128|256)."
-            ",
+            'text' => $response,
+            'parse_mode' => 'HTML',
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
             ]
