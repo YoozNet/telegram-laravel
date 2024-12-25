@@ -377,9 +377,16 @@ if (!function_exists('getUserTickets')) {
     }
 }
 
-if(!function_exists('getTicket')) {
-    function getTicket ($ticketId) 
+if(!function_exists('getTicketMessage')) {
+    function getTicketMessage ($ticketId) 
     {
         return Database::select("YN_ticket_messages", ["*"], 'ticket_id = ?', [$ticketId],null,null,'id');
+    }
+}
+
+if(!function_exists('getTicketData')) {
+    function getTicketData ($ticketId) 
+    {
+        return Database::select("YN_tickets", ["*"], 'id = ?', [$ticketId])[0];
     }
 }

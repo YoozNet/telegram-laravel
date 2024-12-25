@@ -690,7 +690,7 @@ $link
         setBackTo($update->cb_data_chatid,'support','data');
         $userData = getUser($update->cb_data_chatid);
         $TicketList = getUserTickets($userData['id']);
-
+        setUserTmp($update->cb_data_chatid,'show_ticket',0);
         $inline_keybaord = [];
         $inline_keyboard[] = [
             ['text' => 'جزییات', 'callback_data'=>'ticket_details'],
@@ -726,9 +726,22 @@ $link
     } elseif (isset($data) && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
         $ticketId = $result[1];
         $ticketMessageId = $result[2];
-        $ticketData = getTicket($ticketId);
-        // setUserTmp($update->cb_data_chatid,'ticket_message_page',0); <----- debug
-        if(isset($ticketData[$ticketMessageId + 1]) && isset($ticketData[$ticketMessageId - 1])) {
+        $show_ticket = getUserTmp($update->cb_data_chatid,'show_ticket');
+        $getTicketMessage = getTicketMessage($ticketId);
+        if($show_ticket == 0)  {
+            $ticketData = getTicketData ($ticketId);
+            setUserTmp($update->cb_data_chatid,'show_ticket',1);
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => " ticket data: 
+    ".json_encode($ticketData,128|256)."
+                ",
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard,
+                ]
+            ]);
+        }
+        if(isset($getTicketMessage[$ticketMessageId + 1]) && isset($getTicketMessage[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
                 ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
                 ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
@@ -736,12 +749,12 @@ $link
             $inline_keyboard[] = [
                 ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
             ];
-        } elseif (isset($ticketData[$ticketMessageId + 1]) && !isset($ticketData[$ticketMessageId - 1])) {
+        } elseif (isset($getTicketMessage[$ticketMessageId + 1]) && !isset($getTicketMessage[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
                 ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
                 ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
             ];
-        } elseif (!isset($ticketData[$ticketMessageId + 1]) && isset($ticketData[$ticketMessageId - 1])) {
+        } elseif (!isset($getTicketMessage[$ticketMessageId + 1]) && isset($getTicketMessage[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
                 ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
                 ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
@@ -750,8 +763,8 @@ $link
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => " ticket data: 
-".json_encode($ticketData[$ticketMessageId],128|256)."
+            'text' => " ticket message data: 
+".json_encode($getTicketMessage[$ticketMessageId],128|256)."
             ",
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
