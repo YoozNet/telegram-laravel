@@ -426,6 +426,7 @@ try {
         } else {
             setBackTo($update->cb_data_chatid,'bankCards','data');
             setUserStep($update->cb_data_chatid,'addBankCard');
+            setUserTmp($chat_id,'user_id',$userData['id']);
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
@@ -1007,7 +1008,7 @@ $link
         if(isset($update->photo_file_id)) {
             $tmp = getAllUserTmp($chat_id);
             $cardnumber = $tmp['add_cardBank_number'];
-            
+            $userid = $tmp['user_id'];
             $cardId = Database::create('YN_bank_cards',
             ['user_id','card_number','status','card_image_file_id','created_at', 'updated_at'],
                 [
