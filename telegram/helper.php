@@ -380,6 +380,6 @@ if (!function_exists('getUserTickets')) {
 if(!function_exists('getTicket')) {
     function getTicket ($ticketId) 
     {
-        return Database::select("YN_ticket_messages", ["*"], 'ticket_id = ?', [$ticketId],null,null,'ORDER BY id');
+        return Database::select("YN_ticket_messages", ["*"], 'ticket_id = ?', [$ticketId],null,null,'id');
     }
 }

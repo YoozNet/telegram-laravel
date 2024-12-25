@@ -31,7 +31,7 @@ try {
 
     }
 
-    if(isset($text) && $text == "/start" || explode(" ", $text)[0] == "/start") {
+    if($text == "/start" || isset($text) && explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
         if ($existing_user) {
             setUserStep($chat_id,'none');
@@ -711,7 +711,7 @@ $link
             ];
         }
         $inline_keyboard[] = [
-            ['text' => 'بعدی', 'callback_data'=>'new_ticket'],
+            ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
             ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
         ];
 
