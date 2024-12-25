@@ -726,17 +726,32 @@ $link
     } elseif (isset($data) && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
         $ticketId = $result[1];
         $ticketMessageId = $result[2];
-        $ticketData = getTicket($ticketId)[$ticketMessageId];
+        $ticketData = getTicket($ticketId);
         // setUserTmp($update->cb_data_chatid,'ticket_message_page',0); <----- debug
-        $inline_keyboard[] = [
-            ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-        ];
+        if(isset($ticketData[$ticketMessageId + 1]) && isset($ticketData[$ticketMessageId - 1])) {
+            $inline_keyboard[] = [
+                ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
+                ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
+            ];
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
+        } elseif (isset($ticketData[$ticketMessageId + 1]) && !isset($ticketData[$ticketMessageId - 1])) {
+            $inline_keyboard[] = [
+                ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
+        } elseif (!isset($ticketData[$ticketMessageId + 1]) && isset($ticketData[$ticketMessageId - 1])) {
+            $inline_keyboard[] = [
+                ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
+        }
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
             'text' => " ticket data: 
-".json_encode($ticketData,128|256)."
+".json_encode($ticketData[$ticketMessageId],128|256)."
             ",
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
