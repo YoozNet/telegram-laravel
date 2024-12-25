@@ -347,3 +347,9 @@ if(!function_exists('addUserBankCard')) {
         );
     }
 }
+
+if(!function_exists('getUserCardBankByNumber')) {
+    function getUserCardBankByNumber($cardNumber) {
+        return Database::select("YN_bank_cards", ["*"], "card_number =?", [$cardNumber])[0];
+    }
+}

@@ -412,20 +412,39 @@ try {
             ]
         ]);
     } elseif ($data == "add_bank_card") {
-        setBackTo($update->cb_data_chatid,'bankCards','data');
-        setUserStep($update->cb_data_chatid,'addBankCard');
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            "message_id" => $update->cb_data_message_id,
-            'text' => "لطفا شماره کارت را ارسال کنید",
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                    ]
-                ],
-            ]
-        ]);
+        $userData = getUser($update->cb_data_chatid);
+        $group_id = $userData['group_id'];
+        $group_id = App\Enum\UserGroupEnum::from($group_id)->bankCardLimit();
+        $getCountBankCardActive = count(getUserBankCardsActive($userId));
+        if($getCountBankCardActive >= $group_id) {
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                "message_id" => $update->cb_data_message_id,
+                'text' => "شما در محدودیت تعداد کارت بانکی فعال قرار دارید",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ]
+                    ],
+                ]
+            ]);
+        } else {
+            setBackTo($update->cb_data_chatid,'bankCards','data');
+            setUserStep($update->cb_data_chatid,'addBankCard');
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                "message_id" => $update->cb_data_message_id,
+                'text' => "لطفا شماره کارت را ارسال کنید",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
 
     
 
@@ -953,11 +972,23 @@ $link
                 ]
             ]);
         }
-        setUserStep($chat_id,'addBankCard_2');
-        setUserTmp($chat_id,'add_cardBank_number',$text);
+        $checkExists = getUserCardBankByNumber($text);
+        if (is_null($checkExists)) {
+            setUserStep($chat_id,'addBankCard_2');
+            setUserTmp($chat_id,'add_cardBank_number',$text);
+            $response = "لطفا تصویر کارت بانکی را ارسال کنید";
+        } else {
+            if($checkExists['status'] == 0 or $checkExists['status'] == 1) {
+                $response = "این شماره کارت از قبل درحال بررسی است";  
+            } else {
+                setUserStep($chat_id,'addBankCard_2');
+                setUserTmp($chat_id,'add_cardBank_number',$text);
+                $response = "لطفا تصویر کارت بانکی را ارسال کنید";
+            }
+        }
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
-            'text' => "لطفا تصویر کارت بانکی را ارسال کنید",
+            'text' => $response,
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -966,6 +997,7 @@ $link
                 ],
             ]
         ]);
+        
     } elseif ($step == "addBankCard_2") {
         if(isset($update->photo_file_id)) {
             setUserTmp($chat_id,'add_cardBank_fileid',$update->photo_file_id);
