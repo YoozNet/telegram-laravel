@@ -400,6 +400,7 @@ try {
         }
         $inline_keyboard[] = [
             ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ['text' => 'افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
         ];
 
         Telegram::api('editMessageText',[
@@ -410,6 +411,24 @@ try {
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
+    } elseif ($data == "add_bank_card") {
+        setBackTo($update->cb_data_chatid,'bankCards','data');
+        setUserStep($update->cb_data_chatid,'addBankCard');
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "لطفا شماره کارت را ارسال کنید",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+
+    
+
     } elseif (preg_match("/bankcard_data_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'bankCards','data');
 
@@ -912,7 +931,69 @@ $link
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'add_bank_card'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+    } elseif ($step == "addBankCard") {
+        if(!is_numeric($text) or strlen($text) < 16) {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "فرمت ارسالی یک شماره کارت نیست",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'add_bank_card'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+        setUserStep($chat_id,'addBankCard_2');
+        setUserTmp($chat_id,'add_cardBank_number',$text);
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "لطفا تصویر کارت بانکی را ارسال کنید",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'add_bank_card'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($step == "addBankCard_2") {
+        if(isset($update->photo_file_id)) {
+            setUserTmp($chat_id,'add_cardBank_fileid',$update->photo_file_id);
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "
+                داده های جمع اوری شده:
+
+                فایل آیدی: ".$update->photo_file_id."
+                شماره کارت: ".getUserTmp($chat_id,'add_cardBank_number')."
+                ",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'add_bank_card'],
+                        ]
+                    ],
+                ]
+            ]);
+        } else {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "لطفا در قالب عکس ارسال کنید",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'add_bank_card'],
                         ]
                     ],
                 ]

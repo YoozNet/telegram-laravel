@@ -337,3 +337,12 @@ if (!function_exists('getUserBankCardsActive')) {
         return Database::select("YN_bank_cards", ["*"], "id =? AND status = '1'", [$id])[0];
     }
 }
+
+if(!function_exists('addUserBankCard')) {
+    function addUserBankCard($userId,$card_number,$card_image_file_id,$status=0) {
+        return Database::create('YN_bank_cards', 
+        ['user_id', 'card_number','card_image_file_id', 'created_at', 'updated_at','status'], 
+        [$userId, $card_number, $card_image_file_id,date("Y-m-d H:i:s"), date("Y-m-d H:i:s"),$status]
+        );
+    }
+}
