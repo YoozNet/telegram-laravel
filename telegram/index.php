@@ -681,7 +681,7 @@ $link
                         ],
                         [
                             ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                         ]
                     ],
                 ]
