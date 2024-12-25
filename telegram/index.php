@@ -400,7 +400,7 @@ try {
         }
         $inline_keyboard[] = [
             ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-            ['text' => 'افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
+            ['text' => '➕ افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
         ];
 
         Telegram::api('editMessageText',[
@@ -413,29 +413,32 @@ try {
         ]);
     } elseif ($data == "add_bank_card") {
         $userData = getUser($update->cb_data_chatid);
-        $group_id = $userData['group_id'];
-        $group_id = App\Enum\UserGroupEnum::from($group_id)->bankCardLimit();
+        $group_id = App\Enum\UserGroupEnum::from($userData['group_id'])->bankCardLimit();
         $getCountBankCardActive = count(getUserBankCardsActive($userId));
         if($getCountBankCardActive >= $group_id) {
-            Telegram::api('editMessageText',[
-                'chat_id' => $update->cb_data_chatid,
-                "message_id" => $update->cb_data_message_id,
-                'text' => "شما در محدودیت تعداد کارت بانکی فعال قرار دارید",
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                        ]
-                    ],
-                ]
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "❌ در گروه کاربری شما ، امکان ثبت کارت بیشتر نمی باشد.",
+                'show_alert' => true,
             ]);
+            return;
         } else {
             setBackTo($update->cb_data_chatid,'bankCards','data');
             setUserStep($update->cb_data_chatid,'addBankCard');
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
-                'text' => "لطفا شماره کارت را ارسال کنید",
+                'text' => "🔹 چرا باید در یک ربات VPN احراز هویت انجام دهیم؟ 🤖🔑
+
+برای جلوگیری از فیشینگ و حفاظت از اطلاعات شما، نیاز است که عکس کارت بانکی خود را ارسال کنید. ✅
+
+▫️ فیشینگ به معنای برداشت و انتقال غیرمجاز وجه از کارت بانکی بدون اطلاع صاحب آن است. ⚠️
+
+پس از تایید کارت بانکی شما، عکس کارت بانکی به سرعت از سرورهای ما حذف خواهد شد. 🗑
+
+لطفاً شماره کارت خود را بدون خط تیره و فاصله وارد کنید. 
+
+به عنوان مثال: 1234567890123456 ✨",
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
@@ -961,7 +964,7 @@ $link
         if(!is_numeric($text) or strlen($text) < 16) {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
-                'text' => "فرمت ارسالی یک شماره کارت نیست",
+                'text' => "لطفا با استفاده از اعداد انگلیسی و حداکثر 16 رقم ، شماره کارت خود را مجدد برای ما ارسال کنید.",
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
                     'inline_keyboard' => [
@@ -973,27 +976,24 @@ $link
             ]);
         }
         $checkExists = checkUserCardBankExists($text);
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => 'response : '.json_encode($checkExists,128|256),
-        ]);
-
+        
         if ($checkExists == []) {
             setUserStep($chat_id,'addBankCard_2');
             setUserTmp($chat_id,'add_cardBank_number',$text);
-            $response = "لطفا تصویر کارت بانکی را ارسال کنید : []";
+            $response = "با پوشاندن cvv2 و تاریخ انقضا ، عکس کارت خود را برای ما ارسال کنید ! 🥷🏻";
         } else {
             if($checkExists['status'] == 0 or $checkExists['status'] == 1) {
-                $response = "این شماره کارت از قبل درحال بررسی است";  
+                $response = "🔒✨ متأسفانه امکان افزودن این شماره کارت به سیستم وجود ندارد. لطفاً شماره کارت دیگری را ارسال نمایید. 🙏💳";  
             } else {
                 setUserStep($chat_id,'addBankCard_2');
                 setUserTmp($chat_id,'add_cardBank_number',$text);
-                $response = "لطفا تصویر کارت بانکی را ارسال کنید : status error";
+                $response = "با پوشاندن cvv2 و تاریخ انقضا ، عکس کارت خود را برای ما ارسال کنید ! 🥷🏻";
             }
         }
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => $response,
+            'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
