@@ -454,7 +454,14 @@ try {
         setBackTo($update->cb_data_chatid,'bankCards','data');
 
         $BankCard = getbankcard($result[1]);
-
+        if ($BankCard['status'] == App\Enum\BankCardStatus::PENDING->value || $BankCard['status'] == App\Enum\BankCardStatus::WAITING_CONFIRMATION->value) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⚠️ تا تایید شدن کارت بانکی خود لطفا منتظر بنمایید.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
         $bankcardname = getBankName($BankCard['bank'] ?? "UNKNOWN");
         $cardnumber = splitCardNumber($BankCard['card_number']);
         $bankcardStatus = App\Enum\BankCardStatus::from($BankCard['status'])->text();
