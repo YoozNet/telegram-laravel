@@ -41,6 +41,7 @@ class Database
                 $sql .= " OFFSET $offset";
             }
         }
+        error_log($sql);
         $prepare = self::$db->prepare($sql);
         $prepare->execute($bindings);
         return $prepare->fetchAll(PDO::FETCH_ASSOC);
