@@ -772,29 +772,29 @@ $link
             ];
         }
         $message = $getTicketMessage[$ticketMessageId];
+        $strip_message = strip_tags($message['message']);
         $response = "";
         if ($message['is_admin']) {
             $response = "🌟 پیام از طرف پشتیبان به شناسه ( ".$message['admin_id']." ) :
             📅 جزئیات پیام:
-            ".$message['message']."
+            ".$strip_message."
             - زمان ارسال: ". $message['created_at'];
         } elseif ($message['is_system']) {
             $response = "🚨 پیام سیستم :
             🔔 جزئیات :
-            ".$message['message']."
+            ".$strip_message."
             - زمان ارسال: ". $message['created_at'];
         } else {
             $response = "💬 پیام از کاربر :
             تیکت به شماره $ticketId از کاربر با شناسه ".$message['user_id']." ثبت شده است.
             🔔 جزئیات :
-            ".$message['message']."
+            ".$strip_message."
             - زمان ارسال: ". $message['created_at'];
         }
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
             'text' => $response,
-            'parse_mode' => 'HTML',
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
             ]
