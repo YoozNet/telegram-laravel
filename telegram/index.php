@@ -137,7 +137,7 @@ try {
         $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
         $discount = $userData['discount'];
         $cardNumber = adminCardNumber($chat_id);
-        $cardInfo = $cardNumber['card_number'] != null ? splitCardNumber($cardNumber['card_number']) : "تنظیم نشده";
+        $cardInfo = isset($cardNumber['card_number']) && $cardNumber['card_number'] != null ? splitCardNumber($cardNumber['card_number'])  : "تنظیم نشده";
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
