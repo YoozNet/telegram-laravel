@@ -327,25 +327,40 @@ try {
         setBackTo($update->cb_data_chatid,'wallet','data');
         $userData = getUser($update->cb_data_chatid);
         $invoiceList = getUserInvoices($userData['id'],10);
+        if (empty($invoiceList)) {
+            Telegram::api('editMessageText', [
+                'chat_id' => $update->cb_data_chatid,
+                'message_id' => $update->cb_data_message_id,
+                'text' => "فاکتوری برای شما تولید نشده است! برای ادامه، لطفاً بر روی ( بازگشت ◀️ ) کلیک کنید و سپس  ( افزایش اعتبار ) را انتخاب کنید تا بتوانید یک فاکتور جدید ایجاد کنید.",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                        ]
+                    ],
+                ]
+            ]);
+            return; 
+        }
         $inline_keybaord = [];
+        $inline_keyboard[] = [
+            ['text' => 'جزییات', 'callback_data'=>'invoice_status'],
+            ['text' => 'وضعیت', 'callback_data'=>'invoice_status'],
+            ['text' => 'مبلغ', 'callback_data'=>'invoice_amount'],
+            ['text' => 'شناسه', 'callback_data'=>'invoice_title'],
+        ];
         foreach($invoiceList as $invoices) {
             $invoiceId = $invoices['id'] ?? 'error';
             $invoiceAmount = $invoices['amount'] ?? 'error';
             $invoiceStatus = $invoices['status'] ?? 'error';
             $formattedInvoiceAmount = formatWallet($invoiceAmount);
             $invoiceStatusLabel = App\Enum\InvoiceStatus::from($invoiceStatus)->text();
-            /*
-            $invoiceNumber = $invoices['invoice_number'];
-            $invoiceYcAmount = $invoices['yc_amount'];
-            $invoiceTaxAvoidance = $invoices['tax_avoidance'];
-            $invoiceDate = $invoices['created_at'];
-            $invoiceDate = date('Y-m-d H:i:s', strtotime($invoiceDate));
-            */
+
             $inline_keyboard[] = [
-                ['text' => 'جزییات', 'callback_data'=>'invoice_data_'.$invoiceId],
-                ['text' => $invoiceStatusLabel, 'callback_data'=>'invoice_data_'.$invoiceId],
-                ['text' => $formattedInvoiceAmount, 'callback_data'=>'invoice_data_'.$invoiceId],
-                ['text' => $invoiceId, 'callback_data'=>'invoice_data_'.$invoiceId],
+                ['text' => '🔎', 'callback_data' => 'invoice_data_'.$invoiceId],
+                ['text' => $invoiceStatusLabel, 'callback_data' => 'invoice_data_'.$invoiceId],
+                ['text' => number_format($formattedInvoiceAmount, 0, '', ',') . " ت", 'callback_data' => 'invoice_data_'.$invoiceId],
+                ['text' => $invoiceId, 'callback_data' => 'invoice_data_'.$invoiceId],
             ];
         }
         $inline_keyboard[] = [
@@ -355,7 +370,7 @@ try {
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => "ده تراکنش اخیر",
+            'text' => "در این بخش شما لیست فاکتورهای خود را مشاهده می‌کنید و می‌توانید آنها را مدیریت کنید.",
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
             ]
@@ -364,35 +379,37 @@ try {
         setBackTo($update->cb_data_chatid,'Invoices','data');
 
         $invoices = getInvoice($result[1]);
-        $invoiceAmount = $invoices['amount'] ?? 'error';
-        $invoiceStatus = $invoices['status'] ?? 'error';
-        $formattedInvoiceAmount = formatWallet($invoiceAmount);
-        $invoiceStatusLabel = App\Enum\InvoiceStatus::from($invoiceStatus)->text();
-        $invoiceNumber = $invoices['invoice_number'];
-        $invoiceYcAmount = $invoices['yc_amount'];
-        $invoiceTaxAvoidance = $invoices['tax_avoidance'];
-        $invoiceDate = $invoices['created_at'];
-        $invoiceDate = date('Y-m-d H:i:s', strtotime($invoiceDate));
+
+        $invoiceYcAmount = formatWallet($invoices['yc_amount']);
+        $invoiceStatus = App\Enum\InvoiceStatus::from($invoices['status'])->text();
+        $invoiceAmount = number_format($invoices['amount'], 0, '', ',');
+        $invoiceTaxAvoidance = number_format($invoices['tax_avoidance'], 0, '', ',');
+
         $invoiceReason = $invoices['reason_id'];
-        $reason_text = ($invoiceReason != null) ? "\n $invoiceReason" : "\n";
-        $invoicePaidAt = $invoices['paid_at'];
-        $invoicePaidAt = date('Y-m-d H:i:s', strtotime($invoicePaidAt));
+        $invoiceReasonText = "";
+        if (($invoiceReason != null && $invoices['status'] == 3) ) {
+            $db = Database::select("YN_invoices_reasons", ["*"], "id =?", [$invoiceReason])[0];
+            $invoiceReasonText = "🔴 در صورتی که رد شده، دلیل رد: ".$db['content'];
+        }
+
+        $invoiceDate = date('Y-m-d H:i:s', strtotime($invoices['created_at']));
+        $invoicePaidAt = date('Y-m-d H:i:s', strtotime($invoices['paid_at']));
 
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => "
-جزییات فاکتور
+            'text' => "📊 جزئیات فاکتور
 
-مبلغ به تومان: $formattedInvoiceAmount
-مبلغ به یوزر کوین: $invoiceYcAmount
-مانع زنی مالیاتی: $invoiceTaxAvoidance
-وضعیت: $invoiceStatusLabel
-$reason_text
+💰 مبلغ به تومان: $invoiceAmount
+🪙 مبلغ به یوز کوین: $invoiceYcAmount
+🚫 مانع زنی مالیاتی: $invoiceTaxAvoidance
+✅ وضعیت: $invoiceStatus
+$invoiceReasonText
 
-تاریخ ایجاد فاکتور: $invoiceDate
-تاریخ پرداخت فاکتور: $invoicePaidAt
-            ",
+📅 تاریخ ایجاد: $invoiceDate
+💳 تاریخ پرداخت: $invoicePaidAt
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
