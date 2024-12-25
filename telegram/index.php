@@ -253,6 +253,7 @@ try {
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
             ",
+            'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
