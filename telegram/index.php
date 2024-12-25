@@ -147,7 +147,9 @@ try {
 شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
-            ",
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -197,8 +199,8 @@ try {
 اعتبار اکانت شما: `". $formattedWallet ."` یوزکوین  (هر یوزکوین معادل **".$YC_Price." تومان** است.)
 👉 بنابراین موجودی شما معادل " . $formattedWalletInToman . " تومان می‌باشد! 💸
 
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎
-            ",
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_to_message_id' => $update->message_id,
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
@@ -218,14 +220,43 @@ try {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
         Telegram::api('sendMessage',[
+            'reply_to_message_id' => $update->message_id,
             'chat_id' => $chat_id,
             'text' => "یک لینک ورود به سایت برای شما ایجاد شد! 😍
-              لطفا توجه داشته باشید که این لینک تنها برای 15 دقیقه فعال خواهد بود. پس از ورود، لینک منقضی خواهد شد و شما برای ورود بعدی خود نیاز به دریافت مجدد لینک از ربات خواهید داشت. همچنین هر لینک تنها یکبار قابل استفاده است!🤗",
+              لطفا توجه داشته باشید که این لینک تنها برای 15 دقیقه فعال خواهد بود. پس از ورود، لینک منقضی خواهد شد و شما برای ورود بعدی خود نیاز به دریافت مجدد لینک از ربات خواهید داشت. همچنین هر لینک تنها یکبار قابل استفاده است!🤗
+              
+              برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
                         ['text' => '🔹 ورود به سایت ', 'url' => $link],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ],
+                ],
+            ]
+        ]);
+    } elseif ($text == "📞 پشتیبانی"){
+        setUserStep($chat_id,'none');
+        setBackTo($chat_id,'/start','text');
+        Telegram::api('sendMessage',[
+            'reply_to_message_id' => $update->message_id,
+            'chat_id' => $chat_id,
+            'text' => "خوش آمدید به بخش پشتیبانی! 👋 
+
+📩 برای مشکلات و سوالات خود، تیکت ارسال کنید.
+
+❓ سوالات رایج را بررسی کنید تا سریع‌تر به پاسخ‌ها برسید.
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'تیکت 📬', 'callback_data'=>'Tickets'],
+                        ['text' => 'سوالات رایج ❓', 'callback_data'=>'faqs'],
+                    ],
+                    [
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                     ],
                 ],
@@ -253,7 +284,8 @@ try {
 شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
-            ",
+            
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -450,146 +482,6 @@ try {
                 ]
             ]);
         }
-    } elseif (preg_match("/bankcard_data_(.*)/",$data,$result)) {
-        setBackTo($update->cb_data_chatid,'bankCards','data');
-
-        $BankCard = getbankcard($result[1]);
-        if ($BankCard['status'] == App\Enum\BankCardStatus::PENDING->value || $BankCard['status'] == App\Enum\BankCardStatus::WAITING_CONFIRMATION->value) {
-            Telegram::api('answerCallbackQuery', [
-                'callback_query_id' => $update->cb_data_id,
-                'text' => "⚠️ تا تایید شدن کارت بانکی خود لطفا منتظر بنمایید.",
-                'show_alert' => true,
-            ]);
-            return;
-        }
-        $bankcardname = getBankName($BankCard['bank'] ?? "UNKNOWN");
-        $cardnumber = splitCardNumber($BankCard['card_number']);
-        $bankcardStatus = App\Enum\BankCardStatus::from($BankCard['status'])->text();
-
-        $bankcardReason = $BankCard['reason_id'];
-        $bankcardReasonText = "";
-        if (($bankcardReason != null && $BankCard['status'] == 2) ) {
-            $db = Database::select("YN_bank_card_reasons", ["*"], "id =?", [$bankcardReason])[0];
-            $bankcardReasonText = "🔴 دلیل رد: ".$db['content'];
-        }
-
-        $bankcardDate = date('Y-m-d H:i:s', strtotime($BankCard['created_at']));
-        $inline_keybaord = [];
-        if ($BankCard['status'] == App\Enum\BankCardStatus::APPROVED->value){
-            $inline_keyboard[] = [
-                ['text' => 'حذف 🗑', 'callback_data'=>'delete_bankcard_'.$BankCard['id']],
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-            ];
-        } else {
-            $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-            ];
-        }
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            "message_id" => $update->cb_data_message_id,
-            'text' => "📊 جزئیات کارت بانکی
-
-🏦 نام بانک: $bankcardname
-💳 شماره کارت: $cardnumber
-✅ وضعیت کارت: $bankcardStatus 
-$bankcardReasonText
-
-📅 تاریخ ایجاد: $bankcardDate
-
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
-            'reply_markup' => [
-                'inline_keyboard' => $inline_keyboard,
-            ]
-        ]);
-
-    } elseif (preg_match("/delete_bankcard_(.*)/",$data,$result)) {
-        setBackTo($update->cb_data_chatid,'bankCards','data');
-
-        $BankCard = getbankcard($result[1]);
-        $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
-        if ($BankCard['status'] != App\Enum\BankCardStatus::APPROVED->value) {
-            Telegram::api('answerCallbackQuery', [
-                'callback_query_id' => $update->cb_data_id,
-                'text' => "❌ کارت مورد نظر فعال نیست و امکان حذف آن وجود ندارد.",
-                'show_alert' => true,
-            ]);
-            return;
-        }
-        if ($BankcardactiveCount <= 1) {
-            Telegram::api('answerCallbackQuery', [
-                'callback_query_id' => $update->cb_data_id,
-                'text' => "❌ امکان حذف کارت وجود ندارد، زیرا حداقل یک کارت فعال باید وجود داشته باشد.",
-                'show_alert' => true,
-            ]);
-            return;
-        }
-        Database::update('YN_bank_cards',['status'],[3],'id = ?',[$BankCard['id']]);
-        Telegram::api('editMessageText', [
-            'chat_id' => $update->cb_data_chatid,
-            'message_id' => $update->cb_data_message_id,
-            'text' => "کارت بانکی شما با موفقیت حذف شد ✅
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎 ",
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                    ]
-                ],
-            ]
-        ]);
-
-    } elseif (preg_match("/invoice_data_(.*)/",$data,$result)) {
-        setBackTo($update->cb_data_chatid,'Invoices','data');
-
-        $invoices = getInvoice($result[1]);
-        if ($invoices['status'] == 0) {
-            Telegram::api('answerCallbackQuery', [
-                'callback_query_id' => $update->cb_data_id,
-                'text' => "لطفا از طریق سایت اقدام به پرداخت نمایید . ⛔️",
-                'show_alert' => true,
-            ]);
-            return;
-        }
-        $invoiceYcAmount = formatWallet($invoices['yc_amount']);
-        $invoiceStatus = App\Enum\InvoiceStatus::from($invoices['status'])->text();
-        $invoiceAmount = number_format($invoices['amount'], 0, '', ',');
-        $invoiceTaxAvoidance = number_format($invoices['tax_avoidance'], 0, '', ',');
-
-        $invoiceReason = $invoices['reason_id'];
-        $invoiceReasonText = "";
-        if (($invoiceReason != null && $invoices['status'] == 3) ) {
-            $db = Database::select("YN_invoices_reasons", ["*"], "id =?", [$invoiceReason])[0];
-            $invoiceReasonText = "🔴 دلیل رد: ".$db['content'];
-        }
-
-        $invoiceDate = date('Y-m-d H:i:s', strtotime($invoices['created_at']));
-        $invoicePaidAt = date('Y-m-d H:i:s', strtotime($invoices['paid_at']));
-
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            "message_id" => $update->cb_data_message_id,
-            'text' => "📊 جزئیات فاکتور
-
-💰 مبلغ : $invoiceAmount ( تومان )
-🪙 مبلغ : $invoiceYcAmount ( یوز کوین )
-🚫 مانع زنی مالیاتی: $invoiceTaxAvoidance ت ( مانع زنی مالیاتی برای اینکه ما تراکنش‌های تکراری روی یک حساب بانکی نداشته باشیم اینه که از این روش برای جلوگیری از مشکلات مالیاتی استفاده می‌کنیم. همچنین وقتی این رقم به فاکتور اضافه میشه، با مبلغ نهایی جمع میشه و بعد از تایید رسید به حساب شما واریز میشه )
-✅ وضعیت: $invoiceStatus 
-$invoiceReasonText
-
-📅 تاریخ ایجاد: $invoiceDate
-💳 تاریخ پرداخت: $invoicePaidAt
-
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                    ]
-                ],
-            ]
-        ]);
-
     } elseif ($data == "web_service") {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');
@@ -758,7 +650,147 @@ $link
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    }
+    } elseif (preg_match("/bankcard_data_(.*)/",$data,$result)) {
+        setBackTo($update->cb_data_chatid,'bankCards','data');
+
+        $BankCard = getbankcard($result[1]);
+        if ($BankCard['status'] == App\Enum\BankCardStatus::PENDING->value || $BankCard['status'] == App\Enum\BankCardStatus::WAITING_CONFIRMATION->value) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⚠️ تا تایید شدن کارت بانکی خود لطفا منتظر بنمایید.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        $bankcardname = getBankName($BankCard['bank'] ?? "UNKNOWN");
+        $cardnumber = splitCardNumber($BankCard['card_number']);
+        $bankcardStatus = App\Enum\BankCardStatus::from($BankCard['status'])->text();
+
+        $bankcardReason = $BankCard['reason_id'];
+        $bankcardReasonText = "";
+        if (($bankcardReason != null && $BankCard['status'] == 2) ) {
+            $db = Database::select("YN_bank_card_reasons", ["*"], "id =?", [$bankcardReason])[0];
+            $bankcardReasonText = "🔴 دلیل رد: ".$db['content'];
+        }
+
+        $bankcardDate = date('Y-m-d H:i:s', strtotime($BankCard['created_at']));
+        $inline_keybaord = [];
+        if ($BankCard['status'] == App\Enum\BankCardStatus::APPROVED->value){
+            $inline_keyboard[] = [
+                ['text' => 'حذف 🗑', 'callback_data'=>'delete_bankcard_'.$BankCard['id']],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
+        } else {
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
+        }
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "📊 جزئیات کارت بانکی
+
+🏦 نام بانک: $bankcardname
+💳 شماره کارت: $cardnumber
+✅ وضعیت کارت: $bankcardStatus 
+$bankcardReasonText
+
+📅 تاریخ ایجاد: $bankcardDate
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
+
+    } elseif (preg_match("/delete_bankcard_(.*)/",$data,$result)) {
+        setBackTo($update->cb_data_chatid,'bankCards','data');
+
+        $BankCard = getbankcard($result[1]);
+        $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
+        if ($BankCard['status'] != App\Enum\BankCardStatus::APPROVED->value) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "❌ کارت مورد نظر فعال نیست و امکان حذف آن وجود ندارد.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        if ($BankcardactiveCount <= 1) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "❌ امکان حذف کارت وجود ندارد، زیرا حداقل یک کارت فعال باید وجود داشته باشد.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        Database::update('YN_bank_cards',['status'],[3],'id = ?',[$BankCard['id']]);
+        Telegram::api('editMessageText', [
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => "کارت بانکی شما با موفقیت حذف شد ✅
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎 ",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+
+    } elseif (preg_match("/invoice_data_(.*)/",$data,$result)) {
+        setBackTo($update->cb_data_chatid,'Invoices','data');
+
+        $invoices = getInvoice($result[1]);
+        if ($invoices['status'] == 0) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "لطفا از طریق سایت اقدام به پرداخت نمایید . ⛔️",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        $invoiceYcAmount = formatWallet($invoices['yc_amount']);
+        $invoiceStatus = App\Enum\InvoiceStatus::from($invoices['status'])->text();
+        $invoiceAmount = number_format($invoices['amount'], 0, '', ',');
+        $invoiceTaxAvoidance = number_format($invoices['tax_avoidance'], 0, '', ',');
+
+        $invoiceReason = $invoices['reason_id'];
+        $invoiceReasonText = "";
+        if (($invoiceReason != null && $invoices['status'] == 3) ) {
+            $db = Database::select("YN_invoices_reasons", ["*"], "id =?", [$invoiceReason])[0];
+            $invoiceReasonText = "🔴 دلیل رد: ".$db['content'];
+        }
+
+        $invoiceDate = date('Y-m-d H:i:s', strtotime($invoices['created_at']));
+        $invoicePaidAt = date('Y-m-d H:i:s', strtotime($invoices['paid_at']));
+
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "📊 جزئیات فاکتور
+
+💰 مبلغ : $invoiceAmount ( تومان )
+🪙 مبلغ : $invoiceYcAmount ( یوز کوین )
+🚫 مانع زنی مالیاتی: $invoiceTaxAvoidance ت ( مانع زنی مالیاتی برای اینکه ما تراکنش‌های تکراری روی یک حساب بانکی نداشته باشیم اینه که از این روش برای جلوگیری از مشکلات مالیاتی استفاده می‌کنیم. همچنین وقتی این رقم به فاکتور اضافه میشه، با مبلغ نهایی جمع میشه و بعد از تایید رسید به حساب شما واریز میشه )
+✅ وضعیت: $invoiceStatus 
+$invoiceReasonText
+
+📅 تاریخ ایجاد: $invoiceDate
+💳 تاریخ پرداخت: $invoicePaidAt
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+
+    } 
 
 
     ## Step's ## <-------------------------
