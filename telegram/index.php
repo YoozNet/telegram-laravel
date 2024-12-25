@@ -784,7 +784,7 @@ $link
         # ticket_attachment_'.$ticketId.'_'.$ticketMessageId
         $getTicketMessages = getTicketMessage($result[1]);
         $getTicketMessage = $getTicketMessages[$result[2]];
-        Telegram::api('editMessageText',[
+        Telegram::api('sendMessage',[
             'chat_id' => $update->cb_data_chatid,
             'text' => " ticket photo data: 
 ".json_encode($getTicketMessage,128|256)."
