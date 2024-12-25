@@ -426,7 +426,7 @@ try {
         } else {
             setBackTo($update->cb_data_chatid,'bankCards','data');
             setUserStep($update->cb_data_chatid,'addBankCard');
-            setUserTmp($chat_id,'user_id',$userData['id']);
+            setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 "message_id" => $update->cb_data_message_id,
