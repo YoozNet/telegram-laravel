@@ -780,6 +780,21 @@ $link
             ]
         ]);
 
+    } elseif (isset($data) && preg_match("/ticket_attachment_(.*)_(.*)/",$data,$result)) {
+        # ticket_attachment_'.$ticketId.'_'.$ticketMessageId
+        $getTicketMessages = getTicketMessage($result[1]);
+        $getTicketMessage = $getTicketMessages[$result[2]];
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'text' => " ticket photo data: 
+".json_encode($getTicketMessage,128|256)."
+            ",
+        ]);
+        Telegram::api('sendPhoto',[
+            'chat_id' => $update->cb_data_chatid,
+            'photo' => $getTicketMessage['file_id'],
+        ]);
+
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];
