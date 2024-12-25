@@ -322,7 +322,8 @@ if (!function_exists('getUserBankCards')) {
     function getUserBankCards($user_id,$limit=10)
     {
         $where = "user_id = ?";
-        return Database::select("YN_bank_cards", ["*"], $where, [$user_id],$limit,null,'id');
+        $orderBy = "status = 1 DESC, id";
+        return Database::select("YN_bank_cards", ["*"], $where, [$user_id],$limit,null,$orderBy);
     }
 }
 
@@ -334,7 +335,7 @@ if(!function_exists('getbankcard')) {
 if (!function_exists('getUserBankCardsActive')) {
     function getUserBankCardsActive($id)
     {
-        return Database::select("YN_bank_cards", ["*"], "id =? AND status = '1'", [$id])[0];
+        return Database::select("YN_bank_cards", ["*"], "user_id =? AND status = '1'", [$id]);
     }
 }
 
