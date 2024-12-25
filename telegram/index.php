@@ -1009,11 +1009,12 @@ $link
             $cardnumber = $tmp['add_cardBank_number'];
             
             $cardId = Database::create('YN_bank_cards',
-            ['user_id','card_number','status','created_at', 'updated_at'],
+            ['user_id','card_number','status','card_image_file_id','created_at', 'updated_at'],
                 [
                     $userid,
                     $cardnumber,
                     App\Enum\BankCardStatus::WAITING_CONFIRMATION->value,
+                    $update->photo_file_id
                     date("Y-m-d H:i:s"), 
                     date("Y-m-d H:i:s")]
             );
