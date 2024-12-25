@@ -326,3 +326,8 @@ if (!function_exists('getUserBankCards')) {
     }
 }
 
+if(!function_exists('getInvoice')) {
+    function getbankcard($id) {
+        return Database::select("YN_bank_cards", ["*"], "id =?", [$id])[0];
+    }
+}

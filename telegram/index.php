@@ -389,9 +389,8 @@ try {
         ];
         foreach($BankCardList as $bankkcard) {
             $bankkcardId = $bankkcard['id'];
-            $bankcardname = getBankName($bankkcard['bank']);
+            $bankcardname = getBankName($bankkcard['bank'] ?? "UNKNOWN");
             $bankcardStatus = App\Enum\BankCardStatus::from($bankkcard['status'])->text();
-
             $inline_keyboard[] = [
                 ['text' => '🔎', 'callback_data' => 'bankcard_data_'.$bankkcardId],
                 ['text' => $bankcardStatus, 'callback_data' => 'bankcard_data_'.$bankkcardId],
@@ -411,6 +410,46 @@ try {
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
+    } elseif (preg_match("/bankcard_data_(.*)/",$data,$result)) {
+        setBackTo($update->cb_data_chatid,'bankCards','data');
+
+        $BankCard = getbankcard($result[1]);
+
+        $bankcardname = getBankName($BankCard['bank'] ?? "UNKNOWN");
+        $cardnumber = splitCardNumber($BankCard['card_number']);
+        $bankcardStatus = App\Enum\BankCardStatus::from($BankCard['status'])->text();
+
+        $bankcardReason = $BankCard['reason_id'];
+        $bankcardReasonText = "";
+        if (($bankcardReason != null && $BankCard['status'] == 2) ) {
+            $db = Database::select("YN_bank_card_reasons", ["*"], "id =?", [$invoiceReason])[0];
+            $bankcardReasonText = "🔴 دلیل رد: ".$db['content'];
+        }
+
+        $$bankcardDate = date('Y-m-d H:i:s', strtotime($BankCard['created_at']));
+
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "📊 جزئیات کارت بانکی
+
+🏦 نام بانک: $bankcardname
+💳 شماره کارت: $invoiceYcAmount
+✅ وضعیت کارت: $invoiceStatus 
+$bankcardReasonText
+
+📅 تاریخ ایجاد: $bankcardDate
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+
     } elseif (preg_match("/invoice_data_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'Invoices','data');
 
