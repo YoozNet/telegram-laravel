@@ -301,6 +301,111 @@ try {
                 ],
             ]
         ]);
+    } elseif ($data == "web_service") {
+        setUserStep($update->cb_data_chatid,'none');
+        setBackTo($update->cb_data_chatid,'Profile','data');
+        $userData = getUser($update->cb_data_chatid);
+        $ip = $userData['ip_address'] ?? "تنظیم نشده";
+        $api_token = $userData['api_token'] ?? "تنظیم نشده";
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "در این بخش، ارتباطی بین کسب و کار شما و توسعه‌دهندگانی که می‌خواهند از API ما استفاده کنند، برقرار می‌کنید. با ارائه توکن اختصاصی و تعریف آی‌پی سرور خود، آنها می‌توانند به API ما متصل شوند. ما به توسعه‌دهندگان اجازه می‌دهیم با داده‌های ما کار کنند و از قابلیت‌های API استفاده کنند.
+
+در این بخش، شما می‌توانید کسب و کار خود را با توسعه‌دهندگانی که می‌خواهند روند اتصال و اتصال به سیستم‌های خود را مشاهده کنند، با کلیک بر روی دکمه مشاهده داکیومنت ارتباط برقرار کنید.
+
+آی پی متصل به توکن شما : $ip
+",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'کپی کردن توکن', 'copy_text' => ['text' => $api_token]],
+                        ['text' => 'مشاهده داکیومنت', 'url' => 'https://documenter.getpostman.com/view/19387923/2sA3sAfmZ6'],
+                    ],
+                    [
+                        ['text' => 'تنظیم آی پی سرور', 'callback_data'=>'set_ip_address'],['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($data == "set_ip_address") {
+        setUserStep($update->cb_data_chatid,'set_ip_address_1');
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "
+لطف کنید IP مورد نظر را ارسال کنید
+            ",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($data == "invite_friends") {
+        setBackTo($update->cb_data_chatid,'Profile','data');
+        $userData = getUser($update->cb_data_chatid);
+        $referral = $userData['referral_id'];
+        $referral_count = count(Database::select("YN_users", ["id"], "referred_by = ?", [$referral]));
+        $link = "https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral";
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "میتوانید از طریق ارسال و به اشتراک گذاری لینک، دعوت دیگران به این سایت را داشته باشید. با هر خریدی که از لینک شما انجام شود، شما می‌توانید 0.1 درصد پورسانت دریافت کنید. همچنین، با جذب افراد جدید و دعوت آن‌ها برای استفاده از این سایت می‌توانید درآمد رفرال نیز کسب کنید.
+
+تعداد رفرال های دریافتی : `$referral_count`
+لینک دعوت شما : 
+```
+$link
+```
+",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
+                    ]
+                ],
+            ]
+        ]);
+
+    } elseif ($data == "set_default_cardnumber") {
+        setBackTo($update->cb_data_chatid,'Profile','data');
+        $activeBanks = getAdminCards();
+        if ($activeBanks == []) {
+            Telegram::api('editMessageText',[
+                'chat_id' => $chat_id,
+                'text' => "
+کارت بانکی فعالی وجود ندارد
+                ",
+            ]);
+        } else {
+            $activeCardNumber = adminCardNumber($update->cb_data_chatid);
+            $inline_keyboard = [];
+            foreach ($activeBanks as $cardData) {
+                $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "✅" : "تنظیم";
+                $inline_keyboard[] = [
+                    ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
+                    ['text' => getBankName($cardData['bank']), 'callback_data'=>'set_default_card_'. $cardData['id']],
+                    ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
+                ];
+            }
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
+            ];
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                "message_id" => $update->cb_data_message_id,
+                'text' => "در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود",
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard,
+                ]
+            ]);
+        }
     } elseif ($data == "wallet") {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'/start','text');
@@ -352,37 +457,6 @@ try {
                         ['text' => '💳 کارت بانکی', 'callback_data'=>'bankCards'],
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                     ]
-                ],
-            ]
-        ]);
-    } elseif ($data == "support") {
-        setUserStep($update->cb_data_chatid,'none');
-        setBackTo($update->cb_data_chatid,'/start','text');
-
-        Telegram::api('deleteMessage',[
-            'message_id' => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid
-        ]);
-
-        Telegram::api('sendMessage',[
-            'chat_id' => $update->cb_data_chatid ?? $chat_id,
-            'text' => "خوش آمدید به بخش پشتیبانی! 👋 
-
-📩 برای مشکلات و سوالات خود، تیکت ارسال کنید.
-
-❓ سوالات رایج را بررسی کنید تا سریع‌تر به پاسخ‌ها برسید.
-
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'تیکت 📬', 'callback_data'=>'Tickets'],
-                        ['text' => 'سوالات رایج ❓', 'callback_data'=>'faqs'],
-                    ],
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                    ],
                 ],
             ]
         ]);
@@ -513,111 +587,6 @@ try {
                 ]
             ]);
         }
-    } elseif ($data == "web_service") {
-        setUserStep($update->cb_data_chatid,'none');
-        setBackTo($update->cb_data_chatid,'Profile','data');
-        $userData = getUser($update->cb_data_chatid);
-        $ip = $userData['ip_address'] ?? "تنظیم نشده";
-        $api_token = $userData['api_token'] ?? "تنظیم نشده";
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            "message_id" => $update->cb_data_message_id,
-            'text' => "در این بخش، ارتباطی بین کسب و کار شما و توسعه‌دهندگانی که می‌خواهند از API ما استفاده کنند، برقرار می‌کنید. با ارائه توکن اختصاصی و تعریف آی‌پی سرور خود، آنها می‌توانند به API ما متصل شوند. ما به توسعه‌دهندگان اجازه می‌دهیم با داده‌های ما کار کنند و از قابلیت‌های API استفاده کنند.
-
-در این بخش، شما می‌توانید کسب و کار خود را با توسعه‌دهندگانی که می‌خواهند روند اتصال و اتصال به سیستم‌های خود را مشاهده کنند، با کلیک بر روی دکمه مشاهده داکیومنت ارتباط برقرار کنید.
-
-آی پی متصل به توکن شما : $ip
-",
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'کپی کردن توکن', 'copy_text' => ['text' => $api_token]],
-                        ['text' => 'مشاهده داکیومنت', 'url' => 'https://documenter.getpostman.com/view/19387923/2sA3sAfmZ6'],
-                    ],
-                    [
-                        ['text' => 'تنظیم آی پی سرور', 'callback_data'=>'set_ip_address'],['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
-                    ]
-                ],
-            ]
-        ]);
-    } elseif ($data == "set_ip_address") {
-        setUserStep($update->cb_data_chatid,'set_ip_address_1');
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            "message_id" => $update->cb_data_message_id,
-            'text' => "
-لطف کنید IP مورد نظر را ارسال کنید
-            ",
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
-                    ]
-                ],
-            ]
-        ]);
-    } elseif ($data == "invite_friends") {
-        setBackTo($update->cb_data_chatid,'Profile','data');
-        $userData = getUser($update->cb_data_chatid);
-        $referral = $userData['referral_id'];
-        $referral_count = count(Database::select("YN_users", ["id"], "referred_by = ?", [$referral]));
-        $link = "https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral";
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            "message_id" => $update->cb_data_message_id,
-            'text' => "میتوانید از طریق ارسال و به اشتراک گذاری لینک، دعوت دیگران به این سایت را داشته باشید. با هر خریدی که از لینک شما انجام شود، شما می‌توانید 0.1 درصد پورسانت دریافت کنید. همچنین، با جذب افراد جدید و دعوت آن‌ها برای استفاده از این سایت می‌توانید درآمد رفرال نیز کسب کنید.
-
-تعداد رفرال های دریافتی : `$referral_count`
-لینک دعوت شما : 
-```
-$link
-```
-",
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
-                    ]
-                ],
-            ]
-        ]);
-
-    } elseif ($data == "set_default_cardnumber") {
-        setBackTo($update->cb_data_chatid,'Profile','data');
-        $activeBanks = getAdminCards();
-        if ($activeBanks == []) {
-            Telegram::api('editMessageText',[
-                'chat_id' => $chat_id,
-                'text' => "
-کارت بانکی فعالی وجود ندارد
-                ",
-            ]);
-        } else {
-            $activeCardNumber = adminCardNumber($update->cb_data_chatid);
-            $inline_keyboard = [];
-            foreach ($activeBanks as $cardData) {
-                $is_setted = ($cardData['card_number'] == $activeCardNumber['card_number']) ? "✅" : "تنظیم";
-                $inline_keyboard[] = [
-                    ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
-                    ['text' => getBankName($cardData['bank']), 'callback_data'=>'set_default_card_'. $cardData['id']],
-                    ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
-                ];
-            }
-            $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
-            ];
-            Telegram::api('editMessageText',[
-                'chat_id' => $update->cb_data_chatid,
-                "message_id" => $update->cb_data_message_id,
-                'text' => "در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود",
-                'reply_markup' => [
-                    'inline_keyboard' => $inline_keyboard,
-                ]
-            ]);
-        }
     } elseif ($data == "AddBalance") {
         setBackTo($update->cb_data_chatid,'👝 کیف پول','text');
         $userData = getUser($update->cb_data_chatid);
@@ -650,6 +619,37 @@ $link
                     [
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                     ]
+                ],
+            ]
+        ]);
+    } elseif ($data == "support") {
+        setUserStep($update->cb_data_chatid,'none');
+        setBackTo($update->cb_data_chatid,'/start','text');
+
+        Telegram::api('deleteMessage',[
+            'message_id' => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid
+        ]);
+
+        Telegram::api('sendMessage',[
+            'chat_id' => $update->cb_data_chatid ?? $chat_id,
+            'text' => "خوش آمدید به بخش پشتیبانی! 👋 
+
+📩 برای مشکلات و سوالات خود، تیکت ارسال کنید.
+
+❓ سوالات رایج را بررسی کنید تا سریع‌تر به پاسخ‌ها برسید.
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'تیکت 📬', 'callback_data'=>'Tickets'],
+                        ['text' => 'سوالات رایج ❓', 'callback_data'=>'faqs'],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ],
                 ],
             ]
         ]);
@@ -686,6 +686,43 @@ $link
                     ],
                 ]
             ]);
+    } elseif ($data == "Tickets") {
+        setBackTo($update->cb_data_chatid,'support','data');
+        $userData = getUser($update->cb_data_chatid);
+        $TicketList = getUserTickets($userData['id']);
+
+        $inline_keybaord = [];
+        $inline_keyboard[] = [
+            ['text' => 'جزییات', 'callback_data'=>'ticket_details'],
+            ['text' => 'وضعیت', 'callback_data'=>'ticket_status'],
+            ['text' => 'دپارتمان', 'callback_data'=>'ticket_department'],
+            ['text' => 'موضوع', 'callback_data'=>'ticket_title'],
+            ['text' => 'شناسه', 'callback_data'=>'ticket_id'],
+        ];
+        foreach($TicketList as $ticket) {
+            $ticketId = $ticket['id'];
+            $status = App\Enum\TicketStatus::from($ticket['status'])->text();
+            $inline_keyboard[] = [
+                ['text' => '🔎', 'callback_data' => 'ticket_data_'.$ticketId],
+                ['text' => $status, 'callback_data' => 'ticket_data_'.$ticketId],
+                ['text' => GetDepartments($ticket['department']), 'callback_data' => 'ticket_data_'.$ticketId],
+                ['text' => $ticket['title'], 'callback_data' => 'ticket_data_'.$ticketId],
+                ['text' => $ticketId, 'callback_data' => 'ticket_data_'.$ticketId],
+            ];
+        }
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
+        ];
+
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "در این بخش شما لیست کارت های بانکی خود را مشاهده می‌کنید و می‌توانید آنها را مدیریت کنید.",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];

@@ -159,7 +159,15 @@ if(!function_exists('GetConfig')) {
         return $value;
     }
 }
-
+if(!function_exists('GetDepartments')) {
+    function GetDepartments(string $key) {
+        $value = require '../../config/ticket.php';
+        if (isset($value['departments']) && isset($value['departments'][$key])) {
+            return $value['departments'][$key];
+        }
+        return "ناشناخته";
+    }
+}
 if (!function_exists('displayNumber')) {
     function displayNumber($number, $withDecimals = false){
         if (strpos((string)$number, '.') !== false) {
@@ -357,5 +365,14 @@ if(!function_exists('getUserCardBankByNumber')) {
 if(!function_exists('checkUserCardBankExists')) {
     function checkUserCardBankExists($cardNumber) {
         return Database::select("YN_bank_cards", ["*"], "card_number = ? AND (status = 0 OR status = 1)", [$cardNumber])[0];
+    }
+}
+
+if (!function_exists('getUserTickets')) {
+    function getUserTickets($user_id,$limit=10)
+    {
+        $where = "user_id = ?";
+        $orderBy = "CASE WHEN status = 3 THEN 0 WHEN status = 1 THEN 1 WHEN status = 2 THEN 2 ELSE 3 END, id";
+        return Database::select("YN_tickets", ["*"], $where, [$user_id],$limit,null,$orderBy);
     }
 }
