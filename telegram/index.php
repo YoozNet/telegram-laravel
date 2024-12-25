@@ -799,7 +799,22 @@ $link
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-
+    } elseif (isset($data) && preg_match("/ticket_reply_to_(.*)/",$data,$result)) {
+        $ticketId = $result[1];
+        setUserStep($update->cb_data_chatid,'reply_to_ticket');
+        setUserTmp($update->cb_data_chatid,'reply_ticket_id',$ticketId);
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => 'بده متنو میخوای پیوست کنی عکس بده کپشنش کن',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
     } elseif (isset($data) && preg_match("/ticket_attachment_(.*)_(.*)/",$data,$result)) {
         # ticket_attachment_'.$ticketId.'_'.$ticketMessageId
         $getTicketMessages = getTicketMessage($result[1]);
@@ -1325,6 +1340,36 @@ $invoiceReasonText
                 ]
             ]);
         }
+    } elseif ($step == 'reply_to_ticket') {
+        $ticketId = getUserTmp($update->cb_data_chatid,'reply_ticket_id');
+        $attachment = null;
+        if(isset($update->photo_file_id)) {
+            $attachment = $update->photo_file_id;
+            $reply_text = $update->caption;
+        } elseif (isset($text)) {
+            $reply_text = $text;
+        } else {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "یا متن بفرستید یا عکس",
+                'parse_mode' => 'Markdown',
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'add_bank_card'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+            متن: $reply_text
+            پیوست: $attachment
+            ",
+        ]);
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
