@@ -379,7 +379,7 @@ try {
         setBackTo($update->cb_data_chatid,'Invoices','data');
 
         $invoices = getInvoice($result[1]);
-        if ($invoices['status'] && $$invoices['status'] == 0) {
+        if ($invoices['status'] && $invoices['status'] == 0) {
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
                 'text' => "لطفا از طریق سایت اقدام به پرداخت نمایید . ⛔️",
