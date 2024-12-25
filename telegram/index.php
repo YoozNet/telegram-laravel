@@ -242,18 +242,18 @@ try {
         $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
         $discount = $userData['discount'];
         $cardNumber = adminCardNumber($update->cb_data_chatid);
-        $cardInfo = $cardNumber['card_number'] ?? "تنظیم نشده";
+        $cardInfo = isset($cardNumber['card_number']) && $cardNumber['card_number'] != null ? splitCardNumber($cardNumber['card_number'])  : "تنظیم نشده";
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
             'text' => "
-ℹ️ اطلاعات حساب کاربری:
+ℹ️ اطلاعات حساب کاربری: 
+شناسه مشتری : ".$userData['id']."
 ایمیل: ".$email."
-شماره کارت پیشفرض برای پرداخت: ".splitCardNumber($cardInfo)."
+شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
             ",
-            'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -281,16 +281,22 @@ try {
         $config = GetConfig();
         $YC_Price = $config['yc_price'];
 
+        $addBalance = "AddBalance";
+        if ($group_id < 1 or count($cardBanks) < 1) {
+            $addBalance = "bankCards";
+        }
+
         $formattedWallet = formatWallet($wallet);
         $walletInToman = $formattedWallet * $YC_Price;
         $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
+
         Telegram::api('deleteMessage',[
             'message_id' => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid
         ]);
 
         Telegram::api('sendMessage',[
-            'chat_id' => $update->cb_data_chatid,
+            'chat_id' => $update->cb_data_chatid ?? $chat_id,
             'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
 
 💰 **افزایش اعتبار:** می‌توانید اعتبار خود را از 10,000 تا 2,000,000 تومان افزایش دهید!🥹
@@ -319,7 +325,22 @@ try {
         ]);
     } elseif ($data == "Invoices") {
         $userData = getUser($update->cb_data_chatid);
-        $invoiceList = getUserInvoices($userData['id'],2);
+        $invoiceList = getUserInvoices($userData['id'],10);
+        if (empty($invoiceList)) {
+            Telegram::api('editMessageText', [
+                'chat_id' => $update->cb_data_chatid,
+                'message_id' => $update->cb_data_message_id,
+                'text' => "فاکتوری برای شما تولید نشده است! برای ادامه، لطفاً بر روی ( بازگشت ◀️ ) کلیک کنید و سپس  ( افزایش اعتبار ) را انتخاب کنید تا بتوانید یک فاکتور جدید ایجاد کنید.",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                        ]
+                    ],
+                ]
+            ]);
+            return; 
+        }
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
@@ -338,13 +359,8 @@ try {
 
 در این بخش، شما می‌توانید کسب و کار خود را با توسعه‌دهندگانی که می‌خواهند روند اتصال و اتصال به سیستم‌های خود را مشاهده کنند، با کلیک بر روی دکمه مشاهده داکیومنت ارتباط برقرار کنید.
 
-آی پی متصل به توکن شما : `$ip`
-توکن شما : 
-`
-$api_token
-`
+آی پی متصل به توکن شما : $ip
 ",
-            'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -442,7 +458,19 @@ $link
         $group_id = $userData['group_id'];
         $addBalance = "AddBalance";
         if ($group_id < 1 or count($cardBanks) < 1) {
-            die();
+            Telegram::api('editMessageText', [
+                'chat_id' => $update->cb_data_chatid,
+                'message_id' => $update->cb_data_message_id,
+                'text' => "برای افزایش اعتبار ، لازم هست به منوی کارت بانکی مراجعه کرده و کارت بانکی خود را ثبت کنید!",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                        ]
+                    ],
+                ]
+            ]);
+            return; 
         }
         setUserStep($update->cb_data_chatid,'addBalance_1');
         Telegram::api('editMessageText',[
@@ -606,7 +634,10 @@ $link
 
             $YC_COIN = displayNumber($total / $YC_Price,true);
             setUserTmp($update->cb_data_chatid,'YC_value',$YC_COIN);
-
+            Telegram::api('deleteMessage',[
+                'message_id' => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid
+            ]);
             Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
                 'photo' => "https://maindns.space/file/" . $cardBankImage,
