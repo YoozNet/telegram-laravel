@@ -703,16 +703,16 @@ $link
             $ticketId = $ticket['id'];
             $status = App\Enum\TicketStatus::from($ticket['status'])->text();
             $inline_keyboard[] = [
-                ['text' => '🔎', 'callback_data' => 'ticket_data_'.$ticketId],
-                ['text' => $status, 'callback_data' => 'ticket_data_'.$ticketId],
-                ['text' => GetDepartments($ticket['department']), 'callback_data' => 'ticket_data_'.$ticketId],
-                ['text' => $ticket['title'], 'callback_data' => 'ticket_data_'.$ticketId],
-                ['text' => $ticketId, 'callback_data' => 'ticket_data_'.$ticketId],
+                ['text' => '🔎', 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                ['text' => $status, 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                ['text' => GetDepartments($ticket['department']), 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                ['text' => $ticket['title'], 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                ['text' => $ticketId, 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
             ];
         }
         $inline_keyboard[] = [
-            ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ['text' => 'بعدی', 'callback_data'=>'new_ticket'],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
         ];
 
         Telegram::api('editMessageText',[
@@ -723,6 +723,26 @@ $link
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
+    } elseif (isset($data) && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
+        $ticketId = $result[1];
+        $ticketMessageId = $result[2];
+        $ticketData = getTicket($ticketId)[$ticketMessageId];
+        // setUserTmp($update->cb_data_chatid,'ticket_message_page',0); <----- debug
+        $inline_keyboard[] = [
+            ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+        ];
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => " ticket data: 
+".json_encode($ticketData,128|256)."
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
+
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];

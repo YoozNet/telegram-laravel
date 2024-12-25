@@ -376,3 +376,10 @@ if (!function_exists('getUserTickets')) {
         return Database::select("YN_tickets", ["*"], $where, [$user_id],$limit,null,$orderBy);
     }
 }
+
+if(!function_exists('getTicket')) {
+    function getTicket ($ticketId) 
+    {
+        return Database::select("YN_ticket_messages", ["*"], 'ticket_id = ?', [$ticketId],null,null,'ORDER BY id');
+    }
+}
