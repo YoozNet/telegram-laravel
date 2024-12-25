@@ -379,7 +379,14 @@ try {
         setBackTo($update->cb_data_chatid,'Invoices','data');
 
         $invoices = getInvoice($result[1]);
-
+        if ($invoices['status'] && $$invoices['status'] == 0) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "لطفا از طریق سایت اقدام به پرداخت نمایید . ⛔️",
+                'show_alert' => true,
+            ]);
+            return;
+        }
         $invoiceYcAmount = formatWallet($invoices['yc_amount']);
         $invoiceStatus = App\Enum\InvoiceStatus::from($invoices['status'])->text();
         $invoiceAmount = number_format($invoices['amount'], 0, '', ',');
