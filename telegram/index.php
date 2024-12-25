@@ -536,8 +536,8 @@ $link
             ];
         }
         $inline_keyboard[] = [
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
             ['text' => '➕ افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
         ];
 
         Telegram::api('editMessageText',[
