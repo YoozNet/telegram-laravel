@@ -13,11 +13,14 @@ class Database
             die("Connection failed: " . $e->getMessage());
         }
     }
-    public static function create(string $table,array $columns,array $values): bool
+    public static function create(string $table,array $columns,array $values)
     {
         $sql = "INSERT INTO ".$table." (".implode(",",$columns).") VALUES (".implode(",",array_fill(0,count($columns),"?")).")";
         $prepare = self::$db->prepare($sql);
-        return $prepare->execute($values);
+        if ($prepare->execute($values)) {
+            return self::$db->lastInsertId();
+        }
+        return false;
     }
     public static function query(string $query)
     {

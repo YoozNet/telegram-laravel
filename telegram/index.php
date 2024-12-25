@@ -137,12 +137,13 @@ try {
         $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
         $discount = $userData['discount'];
         $cardNumber = adminCardNumber($chat_id);
-        $cardInfo = splitCardNumber($cardNumber['card_number']) ?? "تنظیم نشده";
+        $cardInfo = isset($cardNumber['card_number']) && $cardNumber['card_number'] != null ? splitCardNumber($cardNumber['card_number'])  : "تنظیم نشده";
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
-ℹ️ اطلاعات حساب کاربری:
-جی میل: ".$email."
+ℹ️ اطلاعات حساب کاربری: 
+شناسه مشتری : ".$userData['id']."
+ایمیل: ".$email."
 شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
@@ -241,14 +242,15 @@ try {
         $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
         $discount = $userData['discount'];
         $cardNumber = adminCardNumber($update->cb_data_chatid);
-        $cardInfo = $cardNumber['card_number'] ?? "تنظیم نشده";
+        $cardInfo = isset($cardNumber['card_number']) && $cardNumber['card_number'] != null ? splitCardNumber($cardNumber['card_number'])  : "تنظیم نشده";
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
             'text' => "
-ℹ️ اطلاعات حساب کاربری:
+ℹ️ اطلاعات حساب کاربری: 
+شناسه مشتری : ".$userData['id']."
 ایمیل: ".$email."
-شماره کارت پیشفرض برای پرداخت: ".splitCardNumber($cardInfo)."
+شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
 گروه کاربری: ".$group_id."
 تخفیف: ".$discount."%
             ",
@@ -279,16 +281,22 @@ try {
         $config = GetConfig();
         $YC_Price = $config['yc_price'];
 
+        $addBalance = "AddBalance";
+        if ($group_id < 1 or count($cardBanks) < 1) {
+            $addBalance = "bankCards";
+        }
+
         $formattedWallet = formatWallet($wallet);
         $walletInToman = $formattedWallet * $YC_Price;
         $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
+
         Telegram::api('deleteMessage',[
             'message_id' => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid
         ]);
 
         Telegram::api('sendMessage',[
-            'chat_id' => $update->cb_data_chatid,
+            'chat_id' => $update->cb_data_chatid ?? $chat_id,
             'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
 
 💰 **افزایش اعتبار:** می‌توانید اعتبار خود را از 10,000 تا 2,000,000 تومان افزایش دهید!🥹
@@ -407,16 +415,12 @@ $reason_text
 
 در این بخش، شما می‌توانید کسب و کار خود را با توسعه‌دهندگانی که می‌خواهند روند اتصال و اتصال به سیستم‌های خود را مشاهده کنند، با کلیک بر روی دکمه مشاهده داکیومنت ارتباط برقرار کنید.
 
-آی پی متصل به توکن شما : `$ip`
-توکن شما : 
-```
-$api_token
-```
+آی پی متصل به توکن شما : $ip
 ",
-            'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
+                        ['text' => 'کپی کردن توکن', 'copy_text' => ['text' => $api_token]],
                         ['text' => 'مشاهده داکیومنت', 'url' => 'https://documenter.getpostman.com/view/19387923/2sA3sAfmZ6'],
                     ],
                     [
@@ -447,6 +451,7 @@ $api_token
         $userData = getUser($update->cb_data_chatid);
         $referral = $userData['referral_id'];
         $referral_count = count(Database::select("YN_users", ["id"], "referred_by = ?", [$referral]));
+        $link = "https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral";
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
@@ -455,13 +460,14 @@ $api_token
 تعداد رفرال های دریافتی : `$referral_count`
 لینک دعوت شما : 
 ```
-https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
+$link
 ```
 ",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
+                        ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
                     ]
                 ],
@@ -508,7 +514,19 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
         $group_id = $userData['group_id'];
         $addBalance = "AddBalance";
         if ($group_id < 1 or count($cardBanks) < 1) {
-            die();
+            Telegram::api('editMessageText', [
+                'chat_id' => $update->cb_data_chatid,
+                'message_id' => $update->cb_data_message_id,
+                'text' => "برای افزایش اعتبار ، لازم هست به منوی کارت بانکی مراجعه کرده و کارت بانکی خود را ثبت کنید!",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                        ]
+                    ],
+                ]
+            ]);
+            return; 
         }
         setUserStep($update->cb_data_chatid,'addBalance_1');
         Telegram::api('editMessageText',[
@@ -672,7 +690,10 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
 
             $YC_COIN = displayNumber($total / $YC_Price,true);
             setUserTmp($update->cb_data_chatid,'YC_value',$YC_COIN);
-
+            Telegram::api('deleteMessage',[
+                'message_id' => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid
+            ]);
             Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
                 'photo' => "https://maindns.space/file/" . $cardBankImage,
@@ -709,7 +730,7 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
             $yc_amount = $tmp['YC_value'];
             $userid = $tmp['user_id'];
 
-            $invoice = Database::create('YN_invoices',
+            $invoiceId = Database::create('YN_invoices',
             ['user_id','admin_bank_card_id','bank_card_id','amount','tax_avoidance','yc_amount','currency','status','file_id','paid_at','created_at', 'updated_at'],
                 [
                     $userid,
@@ -725,32 +746,34 @@ https://t.me/". $_ENV['TELEGRAM_BOT_USERNAME'] ."?start=$referral
                     date("Y-m-d H:i:s"), 
                     date("Y-m-d H:i:s")]
             );
-
-            Telegram::api('sendMessage',[
-                'chat_id' => $chat_id,
-                'text' => "
-                لیست داده های tmp
-
-                کارت بانکی که باید واریز کرده باشه:
-                $adminCardNumber
-                $adminCardId
-                کارت بانکی که باید با اون واریز کرده باشه:
-                $clientCardId
-                مبلغی که باید واریز کرده باشه:
-                $amount
-                مقدار مالیات :
-                $tax
-                جمع : 
-                ".$amount + $tax."
-                فایل آیدی عکسی که ارسال کرده:
-                ".$update->photo_file_id."
-                ",
-            ]);
+            $webservice = API::sendInvoice(["user_id" => $userid,"invoice_id" => $invoiceId]);
+            if ($webservice['status'] == true) {
+                Telegram::api('sendMessage',[
+                    'chat_id' => $chat_id,
+                    'text' => "پرداخت شما با موفقیت به واحد مالی ارسال شد ، بعد از بررسی نتیجه را به شما اطلاع می‌دهیم.
+        با تشکر از شما",
+                    'parse_mode' => 'Markdown',
+                    'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                            ]
+                        ],
+                    ]
+                ]);
+            } 
         } else {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
-                'text' => "تنها مجاز به ارسال عکس هستید",
+                'text' => "لطفا در قالب عکس ارسال کنید",
                 'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                        ]
+                    ],
+                ]
             ]);
         }
     }
