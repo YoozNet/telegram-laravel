@@ -340,14 +340,15 @@ try {
 
 آی پی متصل به توکن شما : `$ip`
 توکن شما : 
-```
+`
 $api_token
-```
+`
 ",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
+                        ['text' => 'کپی کردن توکن', 'copy_text' => ['text' => $api_token]],
                         ['text' => 'مشاهده داکیومنت', 'url' => 'https://documenter.getpostman.com/view/19387923/2sA3sAfmZ6'],
                     ],
                     [
