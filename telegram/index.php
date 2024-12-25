@@ -1341,7 +1341,7 @@ $invoiceReasonText
             ]);
         }
     } elseif ($step == 'reply_to_ticket') {
-        $ticketId = getUserTmp($update->cb_data_chatid,'reply_ticket_id');
+        $ticketId = getUserTmp($chat_id,'reply_ticket_id');
         $attachment = null;
         if(isset($update->photo_file_id)) {
             $attachment = $update->photo_file_id;
@@ -1366,6 +1366,7 @@ $invoiceReasonText
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
+            ایدی تیکت: $ticketId
             متن: $reply_text
             پیوست: $attachment
             ",
