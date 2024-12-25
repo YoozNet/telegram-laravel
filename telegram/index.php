@@ -355,6 +355,37 @@ try {
                 ],
             ]
         ]);
+    } elseif ($data == "support") {
+        setUserStep($update->cb_data_chatid,'none');
+        setBackTo($update->cb_data_chatid,'/start','text');
+
+        Telegram::api('deleteMessage',[
+            'message_id' => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid
+        ]);
+
+        Telegram::api('sendMessage',[
+            'chat_id' => $update->cb_data_chatid ?? $chat_id,
+            'text' => "خوش آمدید به بخش پشتیبانی! 👋 
+
+📩 برای مشکلات و سوالات خود، تیکت ارسال کنید.
+
+❓ سوالات رایج را بررسی کنید تا سریع‌تر به پاسخ‌ها برسید.
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'تیکت 📬', 'callback_data'=>'Tickets'],
+                        ['text' => 'سوالات رایج ❓', 'callback_data'=>'faqs'],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ],
+                ],
+            ]
+        ]);
     } elseif ($data == "Invoices") {
         setBackTo($update->cb_data_chatid,'wallet','data');
         $userData = getUser($update->cb_data_chatid);
@@ -622,6 +653,39 @@ $link
                 ],
             ]
         ]);
+    } elseif ($data == "faqs") {
+        setBackTo($update->cb_data_chatid,'support','data');
+        Telegram::api('editMessageText', [
+                'chat_id' => $update->cb_data_chatid,
+                'message_id' => $update->cb_data_message_id,
+                'text' => "سوالات خود را از لیست زیر انتخاب کنید یا سوال جدیدی بپرسید !",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'سابسکریپشن v2ray چیست؟', 'callback_data'=>'faq_1'],
+                        ],
+                        [
+                            ['text' => 'سرویس های من چند کاربره است؟', 'callback_data'=>'faq_2'],
+                        ],
+                        [
+                            ['text' => 'چرا در آپدیت تعداد لینک های اضافه شده، کم و زیاد میشود؟', 'callback_data'=>'faq_3'],
+                        ],
+                        [
+                            ['text' => 'چرا سرویس ها محدودیت زمانی دارند ؟ ', 'callback_data'=>'faq_4'],
+                        ],
+                        [
+                            ['text' => 'مدت زمان اشتراک من چگونه محاسبه می شود ؟ ', 'callback_data'=>'faq_5'],
+                        ],
+                        [
+                            ['text' => 'امکان لغو کردن سرویس و عودت وجه وجود دارد ؟ ', 'callback_data'=>'faq_6'],
+                        ],
+                        [
+                            ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                        ]
+                    ],
+                ]
+            ]);
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];
