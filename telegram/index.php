@@ -973,17 +973,22 @@ $link
             ]);
         }
         $checkExists = getUserCardBankByNumber($text);
-        if (is_null($checkExists)) {
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => 'response : '.json_encode($checkExists,128|256),
+        ]);
+
+        if ($checkExists == []) {
             setUserStep($chat_id,'addBankCard_2');
             setUserTmp($chat_id,'add_cardBank_number',$text);
-            $response = "لطفا تصویر کارت بانکی را ارسال کنید";
+            $response = "لطفا تصویر کارت بانکی را ارسال کنید : []";
         } else {
             if($checkExists['status'] == 0 or $checkExists['status'] == 1) {
                 $response = "این شماره کارت از قبل درحال بررسی است";  
             } else {
                 setUserStep($chat_id,'addBankCard_2');
                 setUserTmp($chat_id,'add_cardBank_number',$text);
-                $response = "لطفا تصویر کارت بانکی را ارسال کنید";
+                $response = "لطفا تصویر کارت بانکی را ارسال کنید : status error";
             }
         }
         Telegram::api('sendMessage',[
