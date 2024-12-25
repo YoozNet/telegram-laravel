@@ -972,7 +972,7 @@ $link
                 ]
             ]);
         }
-        $checkExists = getUserCardBankByNumber($text);
+        $checkExists = checkUserCardBankExists($text);
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => 'response : '.json_encode($checkExists,128|256),

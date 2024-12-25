@@ -353,3 +353,9 @@ if(!function_exists('getUserCardBankByNumber')) {
         return Database::select("YN_bank_cards", ["*"], "card_number =?", [$cardNumber])[0];
     }
 }
+
+if(!function_exists('checkUserCardBankExists')) {
+    function checkUserCardBankExists($cardNumber) {
+        return Database::select("YN_bank_cards", ["*"], "card_number = ? AND status = 0 OR status = 1", [$cardNumber])[0];
+    }
+}
