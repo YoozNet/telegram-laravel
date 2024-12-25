@@ -745,6 +745,11 @@ $link
                 ]
             ]);
         }
+        if(!is_null($getTicketMessage[$ticketMessageId]['file_id'])) {
+            $inline_keyboard[] = [
+                ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_attachment_'.$ticketId.'_'.$ticketMessageId],
+            ];
+        }
         if(isset($getTicketMessage[$ticketMessageId + 1]) && isset($getTicketMessage[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
                 ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
