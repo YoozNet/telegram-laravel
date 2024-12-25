@@ -802,15 +802,21 @@ $link
     } elseif (isset($data) && preg_match("/ticket_reply_to_(.*)/",$data,$result)) {
         $ticketId = $result[1];
         setUserStep($update->cb_data_chatid,'reply_to_ticket');
+        $userData = getUser($update->cb_data_chatid);
+        setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
         setUserTmp($update->cb_data_chatid,'reply_ticket_id',$ticketId);
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => 'بده متنو میخوای پیوست کنی عکس بده کپشنش کن',
+            'text' => 'می‌توانید به دو شکل پاسخ خود را ارسال کنید: 
+1️⃣ ارسال یک عکس به همراه توضیحات  📸✍️
+2️⃣ ارسال توضیحات خالی 📝
+
+لطفاً یکی از این دو حالت را برای ما ارسال فرمایید یا بر روی دکمه بازگشت ◀️ کلیک نمایید.',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'Tickets'],
                     ]
                 ],
             ]
@@ -1341,8 +1347,12 @@ $invoiceReasonText
             ]);
         }
     } elseif ($step == 'reply_to_ticket') {
-        $ticketId = getUserTmp($chat_id,'reply_ticket_id');
+        $tmp = getAllUserTmp($chat_id);
+        $ticket_id = $tmp['reply_ticket_id'];
+        $user_id =  $tmp['user_id'];
         $attachment = null;
+        $reply_text = "";
+
         if(isset($update->photo_file_id)) {
             $attachment = $update->photo_file_id;
             $reply_text = $update->caption;
@@ -1351,22 +1361,28 @@ $invoiceReasonText
         } else {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
-                'text' => "یا متن بفرستید یا عکس",
-                'parse_mode' => 'Markdown',
+                'text' => "حضرتعالی می‌توانید یکی از دو گزینه زیر را انتخاب نمایید: 
+
+1️⃣ ارسال عکس به همراه توضیحات 📸✍️  
+2️⃣ ارسال توضیحات خالی 📝  
+
+لطفاً یکی از این دو حالت را برای ما ارسال فرمایید یا بر روی دکمه بازگشت کلیک نمایید.",
                 'reply_to_message_id' => $update->message_id,
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'add_bank_card'],
+                            ['text' => 'بازگشت ◀️', 'callback_data' => 'Tickets'],
                         ]
                     ],
                 ]
             ]);
+            return;
         }
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
-            ایدی تیکت: $ticketId
+            ایدی تیکت: $ticket_id 
+            $user_id
             متن: $reply_text
             پیوست: $attachment
             ",
