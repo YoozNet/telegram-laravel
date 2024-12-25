@@ -141,8 +141,8 @@ try {
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
-ℹ️ اطلاعات حساب کاربری: ".$userData['id']."
-شناسه مشتری : 
+ℹ️ اطلاعات حساب کاربری: 
+شناسه مشتری : ".$userData['id']."
 ایمیل: ".$email."
 شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
 گروه کاربری: ".$group_id."
