@@ -422,11 +422,11 @@ try {
         $bankcardReason = $BankCard['reason_id'];
         $bankcardReasonText = "";
         if (($bankcardReason != null && $BankCard['status'] == 2) ) {
-            $db = Database::select("YN_bank_card_reasons", ["*"], "id =?", [$invoiceReason])[0];
+            $db = Database::select("YN_bank_card_reasons", ["*"], "id =?", [$bankcardReason])[0];
             $bankcardReasonText = "🔴 دلیل رد: ".$db['content'];
         }
 
-        $$bankcardDate = date('Y-m-d H:i:s', strtotime($BankCard['created_at']));
+        $bankcardDate = date('Y-m-d H:i:s', strtotime($BankCard['created_at']));
 
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
@@ -434,8 +434,8 @@ try {
             'text' => "📊 جزئیات کارت بانکی
 
 🏦 نام بانک: $bankcardname
-💳 شماره کارت: $invoiceYcAmount
-✅ وضعیت کارت: $invoiceStatus 
+💳 شماره کارت: $cardnumber
+✅ وضعیت کارت: $bankcardStatus 
 $bankcardReasonText
 
 📅 تاریخ ایجاد: $bankcardDate
@@ -471,7 +471,7 @@ $bankcardReasonText
         $invoiceReasonText = "";
         if (($invoiceReason != null && $invoices['status'] == 3) ) {
             $db = Database::select("YN_invoices_reasons", ["*"], "id =?", [$invoiceReason])[0];
-            $invoiceReasonText = "🔴 در صورتی که رد شده، دلیل رد: ".$db['content'];
+            $invoiceReasonText = "🔴 دلیل رد: ".$db['content'];
         }
 
         $invoiceDate = date('Y-m-d H:i:s', strtotime($invoices['created_at']));
