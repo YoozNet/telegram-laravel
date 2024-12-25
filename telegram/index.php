@@ -711,14 +711,14 @@ $link
             ];
         }
         $inline_keyboard[] = [
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
             ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
         ];
 
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => "در این بخش شما لیست کارت های بانکی خود را مشاهده می‌کنید و می‌توانید آنها را مدیریت کنید.",
+            'text' => "در این بخش شما لیست تیکت های خود را مشاهده می‌کنید و می‌توانید آنها را مدیریت کنید.",
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
             ]
