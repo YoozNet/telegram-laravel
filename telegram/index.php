@@ -1014,7 +1014,7 @@ $link
                     $userid,
                     $cardnumber,
                     App\Enum\BankCardStatus::WAITING_CONFIRMATION->value,
-                    $update->photo_file_id
+                    $update->photo_file_id,
                     date("Y-m-d H:i:s"), 
                     date("Y-m-d H:i:s")]
             );
