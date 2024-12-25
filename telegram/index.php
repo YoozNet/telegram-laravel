@@ -734,17 +734,17 @@ $link
                 ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
             ];
             $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
             ];
         } elseif (isset($ticketData[$ticketMessageId + 1]) && !isset($ticketData[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
                 ['text' => 'صفحه بعدی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId + 1],
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
             ];
         } elseif (!isset($ticketData[$ticketMessageId + 1]) && isset($ticketData[$ticketMessageId - 1])) {
             $inline_keyboard[] = [
                 ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_data_'.$ticketId.'_'.$ticketMessageId - 1],
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
             ];
         }
         Telegram::api('editMessageText',[
