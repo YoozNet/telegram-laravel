@@ -747,7 +747,7 @@ $link
         }
         if(!is_null($getTicketMessage[$ticketMessageId]['file_id'])) {
             $inline_keyboard[] = [
-                ['text' => 'صفحه قبلی', 'callback_data'=>'ticket_attachment_'.$ticketId.'_'.$ticketMessageId],
+                ['text' => 'دانلود پیوست', 'callback_data'=>'ticket_attachment_'.$ticketId.'_'.$ticketMessageId],
             ];
         }
         if(isset($getTicketMessage[$ticketMessageId + 1]) && isset($getTicketMessage[$ticketMessageId - 1])) {
