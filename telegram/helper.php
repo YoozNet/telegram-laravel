@@ -331,3 +331,9 @@ if(!function_exists('getbankcard')) {
         return Database::select("YN_bank_cards", ["*"], "id =?", [$id])[0];
     }
 }
+if (!function_exists('getUserBankCardsActive')) {
+    function getUserBankCardsActive($id)
+    {
+        return Database::select("YN_bank_cards", ["*"], "id =? AND status = '1'", [$id])[0];
+    }
+}

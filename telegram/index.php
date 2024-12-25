@@ -427,7 +427,17 @@ try {
         }
 
         $bankcardDate = date('Y-m-d H:i:s', strtotime($BankCard['created_at']));
-
+        $inline_keybaord = [];
+        if ($BankCard['status'] == App\Enum\BankCardStatus::APPROVED->value){
+            $inline_keyboard[] = [
+                ['text' => 'حذف 🗑', 'callback_data'=>'delete_bankcard_'.$BankCard['id']],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
+        } else {
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
+        }
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
@@ -441,6 +451,39 @@ $bankcardReasonText
 📅 تاریخ ایجاد: $bankcardDate
 
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
+
+    } elseif (preg_match("/delete_bankcard_(.*)/",$data,$result)) {
+        setBackTo($update->cb_data_chatid,'bankCards','data');
+
+        $BankCard = getbankcard($result[1]);
+        $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
+
+        if ($BankCard['status'] != 1) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "❌ کارت مورد نظر فعال نیست و امکان حذف آن وجود ندارد.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        if ($BankcardactiveCount <= 1) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "❌ امکان حذف کارت وجود ندارد، زیرا حداقل یک کارت فعال باید وجود داشته باشد.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        Database::update('YN_bank_cards',['status'],[3],'id = ?',[$BankCard['id']]);
+        Telegram::api('editMessageText', [
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => "کارت بانکی شما با موفقیت حذف شد ✅
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎 ",
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
