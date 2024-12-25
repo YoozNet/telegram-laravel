@@ -375,6 +375,42 @@ try {
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
+    } elseif ($data == "bankCards") {
+        setBackTo($update->cb_data_chatid,'wallet','data');
+        $userData = getUser($update->cb_data_chatid);
+        $BankCardList = getUserBankCards($userData['id'],10);
+
+        $inline_keybaord = [];
+        $inline_keyboard[] = [
+            ['text' => 'جزییات', 'callback_data'=>'bankcard_status'],
+            ['text' => 'وضعیت', 'callback_data'=>'bankcard_status'],
+            ['text' => 'نام بانک', 'callback_data'=>'bankcard_amount'],
+            ['text' => 'شناسه', 'callback_data'=>'bankcard_title'],
+        ];
+        foreach($BankCardList as $bankkcard) {
+            $bankkcardId = $bankkcard['id'];
+            $bankcardname = getBankName($bankkcard['bank']);
+            $bankcardStatus = App\Enum\BankCardStatus::from($bankkcard['status'])->text();
+
+            $inline_keyboard[] = [
+                ['text' => '🔎', 'callback_data' => 'bankcard_data_'.$bankkcardId],
+                ['text' => $bankcardStatus, 'callback_data' => 'bankcard_data_'.$bankkcardId],
+                ['text' => $bankcardname, 'callback_data' => 'bankcard_data_'.$bankkcardId],
+                ['text' => $bankkcardId, 'callback_data' => 'bankcard_data_'.$bankkcardId],
+            ];
+        }
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+        ];
+
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "در این بخش شما لیست کارت های بانکی خود را مشاهده می‌کنید و می‌توانید آنها را مدیریت کنید.",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
     } elseif (preg_match("/invoice_data_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'Invoices','data');
 

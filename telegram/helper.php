@@ -305,16 +305,24 @@ if (!function_exists('GenerateTaxPrice')) {
     }
 }
 
-if (!function_exists('getFactors')) {
+if (!function_exists('getUserInvoices')) {
     function getUserInvoices($user_id,$limit=10)
     {
         $where = "user_id = ? AND currency = 'IRT'";
         return Database::select("YN_invoices", ["*"], $where, [$user_id],$limit,null,'id');
     }
 }
-
 if(!function_exists('getInvoice')) {
     function getInvoice($invoiceID) {
         return Database::select("YN_invoices", ["*"], "id =?", [$invoiceID])[0];
     }
 }
+
+if (!function_exists('getUserBankCards')) {
+    function getUserBankCards($user_id,$limit=10)
+    {
+        $where = "user_id = ?";
+        return Database::select("YN_bank_cards", ["*"], $where, [$user_id],$limit,null,'id');
+    }
+}
+
