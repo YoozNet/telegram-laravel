@@ -311,5 +311,10 @@ if (!function_exists('getFactors')) {
         $where = "user_id = ?";
         return Database::select("YN_invoices", ["*"], $where, [$user_id],$limit,null,'id');
     }
+}
 
+if(!function_exists('getInvoice')) {
+    function getInvoice($invoiceID) {
+        return Database::select("YN_invoices", ["*"], "id =?", [$invoiceID])[0];
+    }
 }
