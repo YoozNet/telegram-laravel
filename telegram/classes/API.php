@@ -28,4 +28,8 @@ class API
     {
         return self::request('tg/invoice', $invoiceData); 
     }
+    public static function sendCard($data)
+    {
+        return self::request('tg/card', $data); 
+    }
 }

@@ -414,7 +414,8 @@ try {
     } elseif ($data == "add_bank_card") {
         $userData = getUser($update->cb_data_chatid);
         $group_id = App\Enum\UserGroupEnum::from($userData['group_id'])->bankCardLimit();
-        $getCountBankCardActive = count(getUserBankCardsActive($userId));
+        $getCountBankCardActive = count(getUserBankCardsActive($userData['id']));
+
         if($getCountBankCardActive >= $group_id) {
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
@@ -448,9 +449,6 @@ try {
                 ]
             ]);
         }
-
-    
-
     } elseif (preg_match("/bankcard_data_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'bankCards','data');
 
@@ -501,10 +499,8 @@ $bankcardReasonText
         setBackTo($update->cb_data_chatid,'bankCards','data');
 
         $BankCard = getbankcard($result[1]);
-        error_log("getUserBankCardsActive: " . json_encode(getUserBankCardsActive($BankCard['user_id'])));
         $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
-        error_log("BankcardactiveCount: " . $BankcardactiveCount);
-        if ($BankCard['status'] != 1) {
+        if ($BankCard['status'] != App\Enum\BankCardStatus::APPROVED->value) {
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
                 'text' => "❌ کارت مورد نظر فعال نیست و امکان حذف آن وجود ندارد.",
@@ -937,6 +933,7 @@ $link
                     'text' => "پرداخت شما با موفقیت به واحد مالی ارسال شد ، بعد از بررسی نتیجه را به شما اطلاع می‌دهیم.
         با تشکر از شما",
                     'parse_mode' => 'Markdown',
+                    'reply_to_message_id' => $update->message_id,
                     'reply_markup' => [
                         'inline_keyboard' => [
                             [
@@ -949,8 +946,9 @@ $link
         } else {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
-                'text' => "لطفا در قالب عکس ارسال کنید",
+                'text' => "لطفا یک عکس برای ما ارسال کنید.",
                 'parse_mode' => 'Markdown',
+                'reply_to_message_id' => $update->message_id,
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
@@ -966,6 +964,7 @@ $link
                 'chat_id' => $chat_id,
                 'text' => "لطفا با استفاده از اعداد انگلیسی و حداکثر 16 رقم ، شماره کارت خود را مجدد برای ما ارسال کنید.",
                 'parse_mode' => 'Markdown',
+                'reply_to_message_id' => $update->message_id,
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
@@ -974,6 +973,7 @@ $link
                     ],
                 ]
             ]);
+            return;
         }
         $checkExists = checkUserCardBankExists($text);
         
@@ -1005,29 +1005,44 @@ $link
         
     } elseif ($step == "addBankCard_2") {
         if(isset($update->photo_file_id)) {
-            setUserTmp($chat_id,'add_cardBank_fileid',$update->photo_file_id);
-            Telegram::api('sendMessage',[
-                'chat_id' => $chat_id,
-                'text' => "
-                داده های جمع اوری شده:
-
-                فایل آیدی: ".$update->photo_file_id."
-                شماره کارت: ".getUserTmp($chat_id,'add_cardBank_number')."
-                ",
-                'parse_mode' => 'Markdown',
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'add_bank_card'],
-                        ]
-                    ],
-                ]
-            ]);
+            $tmp = getAllUserTmp($chat_id);
+            $cardnumber = $tmp['add_cardBank_number'];
+            
+            $cardId = Database::create('YN_bank_cards',
+            ['user_id','card_number','status','created_at', 'updated_at'],
+                [
+                    $userid,
+                    $cardnumber,
+                    App\Enum\BankCardStatus::WAITING_CONFIRMATION->value,
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s")]
+            );
+            $webservice = API::sendCard(["user_id" => $userid,"card_id" => $cardId]);
+            if ($webservice['status'] == true) {
+                Telegram::api('sendMessage',[
+                    'chat_id' => $chat_id,
+                    'text' => "کارت شما برای بررسی به واحد فروش ارسال شد.  👥
+    
+    حداکثر زمان بررسی 2 ساعت کاری می باشد.  🕙 
+    
+    بعد از تاییدیه، شما میتوانید افزایش اعتبار داشته باشید! ♨️",
+                    'parse_mode' => 'Markdown',
+                    'reply_to_message_id' => $update->message_id,
+                    'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'bankCards'],
+                            ]
+                        ],
+                    ]
+                ]);
+            }
         } else {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
-                'text' => "لطفا در قالب عکس ارسال کنید",
+                'text' => "لطفا یک عکس برای ما ارسال کنید.",
                 'parse_mode' => 'Markdown',
+                'reply_to_message_id' => $update->message_id,
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
