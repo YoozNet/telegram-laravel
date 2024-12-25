@@ -3,6 +3,7 @@
 include_once("vendor/autoload.php");
 include_once("../../app/Enum/UserGroupEnum.php");
 include_once("../../app/Enum/InvoiceStatus.php");
+include_once("../../app/Enum/BankCardStatus.php");
 include_once("classes/banks.php");
 use Dotenv\Dotenv;
 $env = Dotenv::createImmutable("../../");
