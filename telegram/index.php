@@ -460,8 +460,9 @@ $bankcardReasonText
         setBackTo($update->cb_data_chatid,'bankCards','data');
 
         $BankCard = getbankcard($result[1]);
+        error_log("getUserBankCardsActive: " . json_encode(getUserBankCardsActive($BankCard['user_id'])));
         $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
-
+        error_log("BankcardactiveCount: " . $BankcardactiveCount);
         if ($BankCard['status'] != 1) {
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
