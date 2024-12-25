@@ -736,9 +736,6 @@ $link
                 'text' => " ticket data: 
     ".json_encode($ticketData,128|256)."
                 ",
-                'reply_markup' => [
-                    'inline_keyboard' => $inline_keyboard,
-                ]
             ]);
         }
         if(isset($getTicketMessage[$ticketMessageId + 1]) && isset($getTicketMessage[$ticketMessageId - 1])) {
