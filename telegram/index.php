@@ -736,6 +736,13 @@ $link
                 'text' => " ticket data: 
     ".json_encode($ticketData,128|256)."
                 ",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'ثبت پاسخ', 'callback_data'=>'ticket_reply_to_'.$ticketId],
+                        ]
+                    ],
+                ]
             ]);
         }
         if(isset($getTicketMessage[$ticketMessageId + 1]) && isset($getTicketMessage[$ticketMessageId - 1])) {
