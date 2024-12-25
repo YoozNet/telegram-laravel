@@ -308,7 +308,7 @@ if (!function_exists('GenerateTaxPrice')) {
 if (!function_exists('getFactors')) {
     function getUserInvoices($user_id,$limit=10)
     {
-        $where = "user_id = ?";
+        $where = "user_id = ? AND currency = 'IRT'";
         return Database::select("YN_invoices", ["*"], $where, [$user_id],$limit,null,'id');
     }
 }
