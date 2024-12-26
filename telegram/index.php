@@ -654,7 +654,7 @@ $link
             ]
         ]);
     } elseif ($data == "faqs") {
-        # setBackTo($update->cb_data_chatid,'support','data');
+        setBackTo($update->cb_data_chatid,'faqs','data');
         Telegram::api('editMessageText', [
                 'chat_id' => $update->cb_data_chatid,
                 'message_id' => $update->cb_data_message_id,
@@ -686,8 +686,24 @@ $link
                     ],
                 ]
             ]);
+    } elseif ($data == 'new_ticket') {
+        setUserStep($update->cb_data_chatid,'new_ticket_1');
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "موضوع تیکت را وارد کنید",
+            'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ]
+                    ],
+                ]
+        ]);
+
     } elseif ($data == "Tickets") {
-        setBackTo($update->cb_data_chatid,'support','data');
+        setBackTo($update->cb_data_chatid,'Tickets','data');
+        # setBackTo($update->cb_data_chatid,'support','data');
         $userData = getUser($update->cb_data_chatid);
         $TicketList = getUserTickets($userData['id']);
         setUserTmp($update->cb_data_chatid,'show_ticket',0);
@@ -1429,6 +1445,78 @@ $invoiceReasonText
                     ]
                 ]);
             }
+    } elseif ($step == "new_ticket_1") {
+        setUserStep($chat_id,'new_ticket_2');
+        setUserTmp($chat_id,'new_ticket_title',$text);
+        $inline_keyboard = [];
+        foreach($ticketConfig['departments'] as $key_name => $key_fa) {
+            $inline_keyboard[] = [
+                ['text' => $key_fa, 'callback_data' => 'new_ticket_2_'. $key_name]
+            ];
+        }
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data' => 'new_ticket']
+        ];
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "دپارتمان را مشخص کنید",
+            'parse_mode' => 'Markdown',
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
+    } elseif ($step == 'new_ticket_2' && preg_match("/new_ticket_2_'.(.*)/",$data,$result)) {
+        $department = $result[1];
+        setUserTmp($chat_id,'new_ticket_department',$department);
+        setUserStep($chat_id,'new_ticket_3');
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "حضرتعالی می‌توانید یکی از دو گزینه زیر را انتخاب نمایید: 
+
+1️⃣ ارسال عکس به همراه توضیحات 📸✍️  
+2️⃣ ارسال توضیحات خالی 📝  
+
+لطفاً یکی از این دو حالت را برای ما ارسال فرمایید یا بر روی دکمه بازگشت کلیک نمایید.",
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'new_ticket'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($step == 'new_ticket_3') {
+        $tmp = getAllUserTmp($chat_id);
+        $attachment = null;
+        if(isset($update->photo_file_id)) {
+            $attachment = $update->photo_file_id;
+            $reply_text = $update->caption;
+        } elseif (isset($text)) {
+            $reply_text = $text;
+        } else {
+            // error
+        }
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+داده های وارد شده:
+موضوع: ".$tmp['new_ticket_title']."
+دپارتمان: ".$tmp['new_ticket_department']."
+متن: ".$reply_text."
+تصویر: ".$attachment."
+
+            ",
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'new_ticket'],
+                    ]
+                ],
+            ]
+        ]);
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
