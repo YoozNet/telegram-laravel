@@ -143,13 +143,9 @@ try {
 قیمت نهایی برای شما: ".getServicePrice($chat_id,$service['type'])." YC
 -------
             ";
-            $inline_keyboard[] = [
-                ['text' => $service['name'], 'callback_data'=> 'order_service_'.$service['type']]
-            ];
+            $inline_keyboard[] = ['text' => $service['name'], 'callback_data'=> 'order_service_'.$service['type']];
         }
-        $inline_keyboard[] = [
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-        ];
+        $inline_keyboard[] = ['text' => 'بازگشت ◀️', 'callback_data'=>'back'];
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
@@ -157,7 +153,7 @@ try {
             $serviceDetail
             ",
             'reply_markup' => [
-                'inline_keyboard' => $inline_keyboard,
+                'inline_keyboard' => array_chunk($inline_keyboard,2),
             ]
         ]);
     } elseif (preg_match("/order_service_(.*)/",$data,$result)) {
@@ -173,6 +169,9 @@ try {
                     ['text' => $plan['name'], 'callback_data'=> 'order_service2_plan_'.$serviceType.'_'.$plan['id']]
                 ];
             }
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
         } else {
             $inline_keyboard[] = [
                 ['text' => '10 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_10']
@@ -186,10 +185,12 @@ try {
             $inline_keyboard[] = [
                 ['text' => '100 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_100']
             ];
+            $inline_keyboard[] = [
+                ['text' => 'حجم دلخواه', 'callback_data'=>'order_service2_bygig_'.$serviceType.'_custom'],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ];
         }
-        $inline_keyboard[] = [
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-        ];
+        
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
