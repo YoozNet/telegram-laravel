@@ -1441,6 +1441,7 @@ $invoiceReasonText
     } elseif ($step == 'addBalance_2') {
         $id = preg_match("/addBalance_select_(.*)/",$data,$result);
         error_log('step is ok');
+        error_log(json_encode($result,128|256));
         if(isset($result[1])) {
         error_log('step 2 is ok');
             $data = getCardById($result[1]);
@@ -1532,6 +1533,7 @@ $invoiceReasonText
             setUserTmp($update->cb_data_chatid,'addBalance_message_id',$messageId);
             setUserTmp($update->cb_data_chatid,'addBalance_created_at',time());
         } else {
+            error_log('regex error');
             setUserStep($update->cb_data_chatid,'none');
         }
     } elseif ($step == 'addBalance_3') {
