@@ -746,6 +746,8 @@ $link
                     $timeRemaining = 60 - ($currentTime - $lastMessageTime);
                     $ticketKeyboard[] = [
                         ['text' => "⏳ امکان پاسخ جدید در $timeRemaining ثانیه", 'callback_data' => 'limitreply'],
+                    ];
+                    $ticketKeyboard[] = [
                         ['text' => 'بازگشت ◀️', 'callback_data' => 'Tickets'],
                     ];
                 }
