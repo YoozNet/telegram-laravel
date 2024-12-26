@@ -688,19 +688,27 @@ $link
             ]);
     } elseif ($data == 'new_ticket') {
         setUserStep($update->cb_data_chatid,'new_ticket_1');
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            "message_id" => $update->cb_data_message_id,
-            'text' => "موضوع تیکت را وارد کنید",
-            'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                        ]
-                    ],
-                ]
+        Telegram::api('deleteMessage',[
+            'message_id' => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid
         ]);
-
+        Telegram::api('forwardMessage', [
+            'chat_id' => $update->cb_data_chatid,
+            'from_chat_id' => '@YozNet',
+            'message_id' => 30,  
+        ]);
+        Telegram::api('sendMessage',[
+            'chat_id' => $update->cb_data_chatid,
+            'text' => "ممنون که مشکل خود را با ما به اشتراک گذاشتید! 😊 لطفاً برای ایجاد یک تیکت جدید، یک موضوع مرتبط با مشکل‌تان را ارسال فرمایید. 🙏✨",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'support'],
+                    ],
+                ],
+            ]
+        ]);
     } elseif ($data == "Tickets") {
         setBackTo($update->cb_data_chatid,'Tickets','data');
         # setBackTo($update->cb_data_chatid,'support','data');
@@ -1449,7 +1457,10 @@ $invoiceReasonText
         setUserStep($chat_id,'new_ticket_2');
         setUserTmp($chat_id,'new_ticket_title',$text);
         $inline_keyboard = [];
-        foreach($ticketConfig['departments'] as $key_name => $key_fa) {
+        foreach(GetAllDepartments() as $key_name => $key_fa) {
+            if ($key_name == "UnableToConnect") {
+                continue;
+            }
             $inline_keyboard[] = [
                 ['text' => $key_fa, 'callback_data' => 'new_ticket_2_'. $key_name]
             ];
@@ -1459,25 +1470,31 @@ $invoiceReasonText
         ];
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
-            'text' => "دپارتمان را مشخص کنید",
+            'text' => "تیکت جدید شما با عنوان ( ".$text." ) انتخاب شد! 😍
+شما می‌توانید انتخاب کنید که با کدام واحد ارتباط برقرار کنید.  
+🔹 این تیکت مربوط به کدام واحد زیر می‌باشد؟
+لطفاً واحد مورد نظر خود را انتخاب کنید! 🚀",
             'parse_mode' => 'Markdown',
             'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($step == 'new_ticket_2' && preg_match("/new_ticket_2_'.(.*)/",$data,$result)) {
+    } elseif ($step == 'new_ticket_2' && preg_match("/new_ticket_2_(.*)/", $data, $result)) {
         $department = $result[1];
-        setUserTmp($chat_id,'new_ticket_department',$department);
-        setUserStep($chat_id,'new_ticket_3');
+        setUserTmp($update->cb_data_chatid,'new_ticket_department',$department);
+        setUserStep($update->cb_data_chatid,'new_ticket_3');
         Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "حضرتعالی می‌توانید یکی از دو گزینه زیر را انتخاب نمایید: 
+            'chat_id' => $update->cb_data_chatid,
+            'text' => "🎉 تبریک! واحد شما برای پیگیری انتخاب شد.
+لطفاً مشکل خود را از طریق یکی از روش‌های زیر با ما در میان بگذارید:
 
-1️⃣ ارسال عکس به همراه توضیحات 📸✍️  
-2️⃣ ارسال توضیحات خالی 📝  
+1️⃣ ارسال عکس به همراه توضیحات 📸✍️
+2️⃣ ارسال توضیحات بدون عکس 📝
 
-لطفاً یکی از این دو حالت را برای ما ارسال فرمایید یا بر روی دکمه بازگشت کلیک نمایید.",
+در صورت نیاز به بازگشت، دکمه بازگشت را انتخاب نمایید.
+
+منتظر توضیحات شما هستیم تا بتوانیم بهترین راه‌حل را ارائه دهیم! 🌟",
             'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => [
@@ -1496,27 +1513,70 @@ $invoiceReasonText
         } elseif (isset($text)) {
             $reply_text = $text;
         } else {
-            // error
-        }
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "
-داده های وارد شده:
-موضوع: ".$tmp['new_ticket_title']."
-دپارتمان: ".$tmp['new_ticket_department']."
-متن: ".$reply_text."
-تصویر: ".$attachment."
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "حضرتعالی می‌توانید یکی از دو گزینه زیر را انتخاب نمایید: 
 
-            ",
-            'reply_to_message_id' => $update->message_id,
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data' => 'new_ticket'],
+1️⃣ ارسال عکس به همراه توضیحات 📸✍️  
+2️⃣ ارسال توضیحات خالی 📝  
+
+لطفاً یکی از این دو حالت را برای ما ارسال فرمایید یا بر روی دکمه بازگشت کلیک نمایید.",
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data' => 'Tickets'],
+                        ]
+                    ],
+                ]
+            ]);
+            return;
+        }
+        $userData = getUser($chat_id);
+        $ticket_id = Database::create('YN_tickets',
+            ['user_id','title','department','status','ip_address','created_at', 'updated_at'],
+                [
+                    $userData['id'],
+                    $tmp['new_ticket_title'],
+                    $tmp['new_ticket_department'],
+                    App\Enum\TicketStatus::PENDING->value,
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s")
+                ]
+        );
+        $ticket_message_id = Database::create('YN_ticket_messages',
+            ['user_id','ticket_id','message','file_id','ip_address','created_at', 'updated_at'],
+                [
+                    $userData['id'],
+                    $ticket_id,
+                    $reply_text,
+                    $attachment,
+                    '127.0.0.1',
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s")
+                ]
+        );
+        $webservice = API::sendTicket(["user_id" => $userData['id'],"ticket_id" => $ticket_id,'type' => 'Ticket']);
+            if ($webservice['status'] == true) {
+                $name = GetDepartments($tmp['new_ticket_department']);
+                Telegram::api('sendMessage',[
+                    'chat_id' => $chat_id,
+                    'text' => "درخواست شما برای بررسی به واحد $name ارسال شد.  👥
+
+حداکثر زمان بررسی 3 ساعت کاری می باشد ( ساعت کاری همه روزه از ساعت 8 صبح الی 12 بامداد ). 🕙
+
+بعد از بررسی ، جواب برای شما ارسال می شود! ♨️",
+                    'parse_mode' => 'Markdown',
+                    'reply_to_message_id' => $update->message_id,
+                    'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'new_ticket'],
+                            ]
+                        ],
                     ]
-                ],
-            ]
-        ]);
+                ]);
+            }
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());

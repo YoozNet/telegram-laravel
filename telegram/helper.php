@@ -168,6 +168,11 @@ if(!function_exists('GetDepartments')) {
         return "ناشناخته";
     }
 }
+if(!function_exists('GetAllDepartments')) {
+    function GetAllDepartments() {
+        return require '../../config/ticket.php';
+    }
+}
 if (!function_exists('displayNumber')) {
     function displayNumber($number, $withDecimals = false){
         if (strpos((string)$number, '.') !== false) {
