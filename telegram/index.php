@@ -173,7 +173,7 @@ try {
         
         if(!is_null($serviceData)) {
             foreach($serviceData as $planId => $plan) {
-                $p = $price['irt'] * $plan['data_total'];
+                $p = number_format($price['irt'] * $plan['data_total'], 0, '', ',');
                 $inline_keyboard[] = [
                     ['text' => $plan['name'] . " ( $p ت ) " , 'callback_data'=> 'order_service2_plan_'.$serviceType.'_'. $planId]
                 ];
