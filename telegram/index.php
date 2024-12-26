@@ -737,6 +737,16 @@ $link
                 $lastMessageTime = strtotime($lastMessage['created_at']);
                 $currentTime = time();
 
+                #debug <--------------------
+                Telegram::api('sendMessage',[
+                    'chat_id' => $update->cb_data_chatid,
+                    'text' => "Json: ".json_encode($lastMessage,128|256)
+                ]);
+                Telegram::api('sendMessage',[
+                    'chat_id' => $update->cb_data_chatid,
+                    'text' => "$currentTime - $lastMessageTime "
+                ]);
+                #debug <--------------------
                 if (($currentTime - $lastMessageTime) >= 60) {
                     $ticketKeyboard[] = [
                         ['text' => '🔸 ثبت پاسخ جدید', 'callback_data' => 'ticket_reply_to_' . $ticketId],
