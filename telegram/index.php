@@ -159,6 +159,30 @@ try {
                 'inline_keyboard' => array_chunk($inline_keyboard,2),
             ]
         ]);
+        $userTmp = getAllUserTmp($chat_id);
+        if($userTmp['waitpay_for_service'] == 1) {
+            setUserTmp($chat_id,'waitpay_for_service',0);
+            // order_service2_bygig_'.$serviceType.'_'.$volume
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "
+                شما درحال خرید این سرویس بودید، آیا برای پرداخت ادامه میدهید
+                Type: ".$userTmp['order_service_type']."
+                Size: ".$userTmp['service_size']."
+                Order: ".$userTmp['service_orderby']."
+
+                ",
+                'reply_to_message_id' => $update->message_id,
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'نهایی کردن پرداخت', 'callback_data'=>'order_service2_'.$userTmp['service_orderby'].'_'.$userTmp['order_service_type'].'_'.$userTmp['service_size']],
+                        ],
+                    ],
+                ]
+            ]);
+        }
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
@@ -356,6 +380,7 @@ try {
         $userData = getUser($update->cb_data_chatid);
         setBackTo($update->cb_data_chatid,'order_service_'.$service_type,'data');
         setUserStep($update->cb_data_chatid,'none');
+        setUserTmp($update->cb_data_chatid,'service_orderby',$order_service_by);
 
         $serviceData = GetAllServices()[$service_type];
 
@@ -431,38 +456,59 @@ try {
         $price = getServicePrice($update->cb_data_chatid,$service_type);
         $price_irt = $price['irt'] * $size;
         $price_yc = $price['yc'] * $size;
+        setUserTmp($chat_id,'service_size',$size);
 
 
         if($userData['irr_wallet'] < ($price_irt * 10)) {
-            $inline_keyboard = [
-                [
-                    ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
-                    ['text' => 'ادامه خرید', 'callback_data'=>'AddBalance'],
-                ]
+            setUserStep($chat_id,'addBalance_2');
+            $diff = ($price_irt * 10) - $userData['irr_wallet'];
+            setUserTmp($chat_id,'addBalance_amount',$diff);
+            setUserTmp($chat_id,'waitpay_for_service',1);
+            $userID = getUser($chat_id)['id'];
+            setUserTmp($chat_id,'user_id',$userID);
+            $cardBanks = getCardsBank($userID);
+            foreach ($cardBanks as $cardData) {
+                $inline_keyboard[] = [
+                    ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
+                ];
+            }
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
             ];
+
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "
+                موجودی شما کافی نیست، لازم است مبلغ  ".$diff." ریال واریز کنید، شماره کارت را انتخاب کنید.
+                ",
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard
+                ]
+            ]);
         } else {
             setUserTmp($update->cb_data_chatid,'service_size',$size);
-            $inline_keyboard = [
-                [
-                    ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
-                    ['text' => 'ادامه خرید', 'callback_data'=>'complate_order_service'],
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
+    
+    💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
+    
+    ✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                            ['text' => 'ادامه خرید', 'callback_data'=>'complate_order_service'],
+                        ]
+                    ]
                 ]
-            ];
+            ]);
         }
 
-        Telegram::api('editMessageText',[
-            "message_id" => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid,
-            'parse_mode' => 'Markdown',
-            'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
-
-💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
-
-✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
-            'reply_markup' => [
-                'inline_keyboard' => $inline_keyboard
-            ]
-        ]);
 
     } elseif ($data == 'complate_order_service') {
         $userTmp = getAllUserTmp($update->cb_data_chatid);
