@@ -1521,7 +1521,7 @@ $invoiceReasonText
                 ]
             ]);
             error_log('-1');
-            $messageId = $sendPhoto->getContents()['result']['message_id'];
+            $messageId = json_decode($sendPhoto->getContents(),1)['result']['message_id'];
             error_log('0');
             setUserTmp($update->cb_data_chatid,'addBalance_message_id',$messageId);
             setUserTmp($update->cb_data_chatid,'addBalance_created_at',time());
