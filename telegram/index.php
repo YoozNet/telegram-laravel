@@ -733,10 +733,22 @@ $link
             setUserTmp($update->cb_data_chatid,'show_ticket',1);
             $ticketKeyboard = [];
             if (in_array($ticketData['status'],[1,2,3])) {
-                $ticketKeyboard[] = [
-                    ['text' => '🔸 ثبت پاسخ جدید', 'callback_data'=>'ticket_reply_to_'.$ticketId],
-                    ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
-                ];
+                $lastMessage = end($getTicketMessage);
+                $lastMessageTime = strtotime($lastMessage['created_at']);
+                $currentTime = time();
+
+                if (($currentTime - $lastMessageTime) >= 60) {
+                    $ticketKeyboard[] = [
+                        ['text' => '🔸 ثبت پاسخ جدید', 'callback_data' => 'ticket_reply_to_' . $ticketId],
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'Tickets'],
+                    ];
+                } else {
+                    $timeRemaining = 60 - ($currentTime - $lastMessageTime);
+                    $ticketKeyboard[] = [
+                        ['text' => "⏳ امکان پاسخ جدید در $timeRemaining ثانیه", 'callback_data' => 'limitreply'],
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'Tickets'],
+                    ];
+                }
             } else {
                 $ticketKeyboard[] = [
                     ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
