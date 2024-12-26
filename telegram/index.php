@@ -206,15 +206,26 @@ try {
     } elseif (preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
         $order_service_by = $result[1]; // bygig | plan
         $service_type = $result[2];
-        $plan_id = $result[3];
+        $serviceData = GetAllServices()[$service_type];
+        if($order_service_by == "bygig") {
+            $size = $result[3];
+            if($size == "custom") {
+                // get size by client
+                // generate callback_data -> order_service2_bygig_$service_type_VALUE
+            }
+        } else {
+            $plan_id = $result[3];
+            $size = $serviceData = $serviceData['plans'][$plan_id]['traffic'];
+        }
         $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $price_irt = $price['irt'] * $plan_id;
-        $price_yc = $price['yc'] * $plan_id;
+        $price_irt = $price['irt'] * $size;
+        $price_yc = $price['yc'] * $size;
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
             'text' => "
-صورتحسابی که برای شما صادر میشود، با حجم ".$plan_id." گیگابایت میباشد. هزینه این سرویس ".$price_irt." میباشد.
+نام سرویس : ".$serviceData['name']."
+صورتحسابی که برای شما صادر میشود، با حجم ".$size." گیگابایت میباشد. هزینه این سرویس ".$price_irt." میباشد.
             ",
         ]);
 
