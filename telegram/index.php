@@ -687,7 +687,6 @@ $link
                 ]
             ]);
     } elseif ($data == 'new_ticket') {
-        setUserStep($update->cb_data_chatid,'new_ticket_1');
         Telegram::api('deleteMessage',[
             'message_id' => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid
@@ -697,18 +696,40 @@ $link
             'from_chat_id' => '@YozNet',
             'message_id' => 30,  
         ]);
-        Telegram::api('sendMessage',[
-            'chat_id' => $update->cb_data_chatid,
-            'text' => "ممنون که مشکل خود را با ما به اشتراک گذاشتید! 😊 لطفاً برای ایجاد یک تیکت جدید، یک موضوع مرتبط با مشکل‌تان را ارسال فرمایید. 🙏✨",
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'support'],
+        $userData = getUser($update->cb_data_chatid);
+        $TicketList = getUserTickets($userData['id']);
+        $last_key = array_key_last($TicketList);
+        $lastTicketTime = strtotime($TicketList[$last_key]['created_at']);
+        if((time() - $lastTicketTime) < 60) {
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "محدودیت ثبت تیکت",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'support'],
+                        ],
                     ],
-                ],
-            ]
-        ]);
+                ]
+            ]);
+        } else {
+            setUserStep($update->cb_data_chatid,'new_ticket_1');
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "ممنون که مشکل خود را با ما به اشتراک گذاشتید! 😊 لطفاً برای ایجاد یک تیکت جدید، یک موضوع مرتبط با مشکل‌تان را ارسال فرمایید. 🙏✨",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'support'],
+                        ],
+                    ],
+                ]
+            ]);
+        }
+        //
+        
     } elseif ($data == "Tickets") {
         setBackTo($update->cb_data_chatid,'Tickets','data');
         # setBackTo($update->cb_data_chatid,'support','data');
