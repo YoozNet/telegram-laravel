@@ -1520,7 +1520,7 @@ $invoiceReasonText
                     ],
                 ]
             ]);
-            file_put_contents('sendPhoto.json',json_encode($sendPhoto->getContents(),128|256));
+            file_put_contents('sendPhoto.json',$sendPhoto->getContents()['result']['message_id']);
         } else {
             setUserStep($update->cb_data_chatid,'none');
         }
