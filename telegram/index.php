@@ -134,14 +134,15 @@ try {
         $serviceDetail = "";
         $inline_keyboard = [];
         foreach($serviceList as $service) {
+            $servicePrice = getServicePrice($chat_id,$service['type']);
             $serviceDetail .= "
 
 نوع سرویس: ".$service['name']."
 مزایا: ".implode("\n",$service['pros'])."
 معایب: ".implode("\n",$service['cons'])."
 قیمت: ".$service['price_per_gig']." YC
-قیمت نهایی برای شما: ".getServicePrice($chat_id,$service['type'])['yc']." YC 
-معادل: ".getServicePrice($chat_id,$service['type'])['irr']." ریال 
+قیمت نهایی برای شما: ".$servicePrice['yc']." YC 
+معادل: ".$servicePrice['irr']." ریال 
 -------
             ";
             $inline_keyboard[] = ['text' => $service['name'], 'callback_data'=> 'order_service_'.$service['type']];
