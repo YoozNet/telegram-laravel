@@ -208,17 +208,14 @@ try {
         $service_type = $result[2];
         $plan_id = $result[3];
         $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $price_irr = $price['irr'];
-        $price_yc = $price['yc'];
+        $price_irr = $price['irr'] * $plan_id;
+        $price_yc = $price['yc'] * $plan_id;
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
             'text' => "
 صورتحسابی که برای شما صادر میشود، با حجم ".$plan_id." گیگابایت میباشد. هزینه این سرویس ".$price_irr." میباشد.
             ",
-            'reply_markup' => [
-                'inline_keyboard' => $inline_keyboard
-            ]
         ]);
 
     } elseif ($text == '👤 حساب کاربری') {
