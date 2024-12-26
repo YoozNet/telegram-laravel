@@ -463,10 +463,25 @@ try {
                 'inline_keyboard' => $inline_keyboard
             ]
         ]);
-        
-    } 
 
-    if ($data == "Profile") {
+    } elseif ($data == 'complate_order_service') {
+        $userTmp = getAllUserTmp($update->cb_data_chatid);
+        $service_type = $userTmp['service_type'];
+        $service_size = $userTmp['service_size'];
+        Telegram::api('editMessageText',[
+            "message_id" => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid,
+            'parse_mode' => 'Markdown',
+            'text' => "
+    سرویس تایپ: ".$service_type."
+    سرویس سایز: ".$service_size."
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard
+            ]
+        ]);
+
+    } elseif ($data == "Profile") {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'/start','text');
         $userData = getUser($update->cb_data_chatid);
