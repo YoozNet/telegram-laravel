@@ -1442,6 +1442,7 @@ $invoiceReasonText
         $id = preg_match("/addBalance_select_(.*)/",$data,$result);
         error_log('step is ok');
         if(isset($result[1])) {
+        error_log('step 2 is ok');
             $data = getCardById($result[1]);
             setUserTmp($update->cb_data_chatid,'addBalance_userCardId',$result[1]);
             $cardNumber = adminCardNumber($update->cb_data_chatid);
@@ -1450,6 +1451,7 @@ $invoiceReasonText
             $bank = null;
             $fullname = null;
             if(!is_null($cardInfo)) {
+                error_log('cardinfo is not null');
                 $cardBankNumber = $cardInfo;
                 $cardBankImage = $cardNumber['card_image_file_id'];
                 $cardBankId = $cardNumber['id'];
@@ -1457,6 +1459,7 @@ $invoiceReasonText
                 $bank = getBankName($cardNumber['bank']);
                 $fullname = $cardNumber['first_name'] . " " . $cardNumber['last_name'];
             } else {
+                error_log('cardinfo is null');
                 $findAsName = getBankByName($data['bank']);
                 if(count($findAsName) > 0) {
                     $randKey = array_rand($findAsName);
@@ -1477,10 +1480,11 @@ $invoiceReasonText
                     $fullname = $adminCards[$randKey]['first_name'] . " " . $adminCards[$randKey]['last_name'];
                 }
             }
+            error_log('ready for tmp');
             setUserTmp($update->cb_data_chatid,'addBalance_cardBankNumber',$cardBankNumber);
             setUserTmp($update->cb_data_chatid,'addBalance_cardBankId',$cardBankId);
             setUserStep($update->cb_data_chatid,'addBalance_3');
-
+            error_log('tmp good');
             $amount = getUserTmp($update->cb_data_chatid,'addBalance_amount');
 
             $tax = GenerateTaxPrice($amount);
@@ -1495,6 +1499,7 @@ $invoiceReasonText
 
             $YC_COIN = displayNumber($total / $YC_Price,true);
             setUserTmp($update->cb_data_chatid,'YC_value',$YC_COIN);
+            error_log('data ok');
             Telegram::api('deleteMessage',[
                 'message_id' => $update->cb_data_message_id,
                 'chat_id' => $update->cb_data_chatid
@@ -1521,6 +1526,8 @@ $invoiceReasonText
                     ],
                 ]
             ]);
+
+            error_log('sendmesssage ok');
             $messageId = json_decode($sendPhoto->getContents(),1)['result']['message_id'];
             setUserTmp($update->cb_data_chatid,'addBalance_message_id',$messageId);
             setUserTmp($update->cb_data_chatid,'addBalance_created_at',time());
