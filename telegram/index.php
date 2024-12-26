@@ -1520,7 +1520,9 @@ $invoiceReasonText
                     ],
                 ]
             ]);
-            file_put_contents('sendPhoto.json',$sendPhoto->getContents()['result']['message_id']);
+            $messageId = $sendPhoto->getContents()['result']['message_id'];
+            setUserTmp($update->cb_data_chatid,'addBalance_message_id',$messageId);
+            setUserTmp($update->cb_data_chatid,'addBalance_created_at',time());
         } else {
             setUserStep($update->cb_data_chatid,'none');
         }
