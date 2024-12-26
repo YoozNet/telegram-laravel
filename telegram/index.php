@@ -381,6 +381,7 @@ try {
         setBackTo($update->cb_data_chatid,'order_service_'.$service_type,'data');
         setUserStep($update->cb_data_chatid,'none');
         setUserTmp($update->cb_data_chatid,'service_orderby',$order_service_by);
+        setUserTmp($update->cb_data_chatid,'service_type',$service_type);
 
         $serviceData = GetAllServices()[$service_type];
 
@@ -411,7 +412,6 @@ try {
 
                 $limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
 
-                setUserTmp($update->cb_data_chatid,'service_type',$service_type);
                 setUserTmp($update->cb_data_chatid,'service_limit',$limit);
                 Telegram::api('editMessageText',[
                     "message_id" => $update->cb_data_message_id,
