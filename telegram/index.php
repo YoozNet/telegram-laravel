@@ -129,20 +129,10 @@ try {
             }
         }
     } elseif($text == '⚜️ ثبت سرویس جدید') {
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "
-            1
-            ",
-        ]);
+        setBackTo($chat_id,'/start','text');
         $serviceList = GetAllServices();
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "
-            2
-            ",
-        ]);
         $serviceDetail = "";
+        $inline_keyboard = [];
         foreach($serviceList as $service) {
             $serviceDetail .= "
 
@@ -153,13 +143,61 @@ try {
 قیمت نهایی برای شما: ".getServicePrice($chat_id,$service['type'])." YC
 -------
             ";
+            $inline_keyboard[] = [
+                ['text' => $service['name'], 'callback_data'=> 'order_service_'.$service['type']]
+            ];
         }
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+        ];
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => "
             services: 
             $serviceDetail
             ",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
+    } elseif (preg_match("/order_service_(.*)/",$data,$result)) {
+        $serviceType = $result[1];
+        setBackTo($chat_id,'⚜️ ثبت سرویس جدید','text');
+        setUserStep($update->cb_data_chatid,'order_service');
+        setUserTmp($update->cb_data_chatid,'order_service_type',$serviceType);
+        $serviceData = GetAllServices()[$serviceType]['plans'] ?? null;
+        $inline_keybaord = [];
+        if(!is_null($serviceData)) {
+            foreach($serviceData as $plan) {
+                $inline_keybaord[] = [
+                    ['text' => $plan['name'], 'callback_data'=> 'order_service2_plan_'.$serviceType.'_'.$plan['id']]
+                ];
+            }
+        } else {
+            $inline_keybaord[] = [
+                ['text' => '10 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_10']
+            ];
+            $inline_keybaord[] = [
+                ['text' => '20 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_20']
+            ];
+            $inline_keybaord[] = [
+                ['text' => '50 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_50']
+            ];
+            $inline_keybaord[] = [
+                ['text' => '100 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_100']
+            ];
+        }
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+        ];
+        Telegram::api('sendMessage',[
+            'chat_id' => $update->cb_data_chatid,
+            'text' => "
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keybaord
+            ]
         ]);
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
