@@ -228,6 +228,24 @@ try {
         $t = "";
         if($order_service_by == "bygig") {
             $size = $result[3];
+            if($userData['group_id'] == 0 && $size > 10) {
+                Telegram::api('editMessageText',[
+                    "message_id" => $update->cb_data_message_id,
+                    'chat_id' => $update->cb_data_chatid,
+                    'parse_mode' => 'Markdown',
+                    'text' => "در لول فعلی شما، تنها مجاز به ثبت حداکثر 10 گیگ حجم هستید! 
+    
+    برای خرید حجم بیشتر، لطفاً با مراجعه به بخش کیف پول و احراز هویت با کارت بانکی، به لول بعدی ارتقا یابید! 🔝💳✨",
+                        'reply_markup' => [
+                            'inline_keyboard' => [
+                                [
+                                    ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                                ]
+                            ],
+                        ]
+                ]);
+                return ;
+            } 
             $t = "$size گیگ حجم";
             if($size == "custom") {
                 setUserStep($update->cb_data_chatid,'custom_value');
@@ -253,6 +271,7 @@ try {
             }
         } else {
             $plan_id = $result[3];
+            error_log("plan id : ".$plan_id);
             if($userData['group_id'] == 0 && $plan_id != 1) {
                 Telegram::api('editMessageText',[
                     "message_id" => $update->cb_data_message_id,
@@ -269,44 +288,27 @@ try {
                             ],
                         ]
                 ]);
-                return ;
+                return;
             }
             $size = $serviceData['plans'][$plan_id]['data_total'];
             $t = "پلن ".$serviceData['plans'][$plan_id]['name'];
         }
-        if($userData['group_id'] == 0 && $size > 10) {
-            Telegram::api('editMessageText',[
-                "message_id" => $update->cb_data_message_id,
-                'chat_id' => $update->cb_data_chatid,
-                'parse_mode' => 'Markdown',
-                'text' => "در لول فعلی شما، تنها مجاز به ثبت حداکثر 10 گیگ حجم هستید! 
-
-برای خرید حجم بیشتر، لطفاً با مراجعه به بخش کیف پول و احراز هویت با کارت بانکی، به لول بعدی ارتقا یابید! 🔝💳✨",
-                    'reply_markup' => [
-                        'inline_keyboard' => [
-                            [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
-                            ]
-                        ],
-                    ]
-            ]);
-            return ;
-        } 
+        
         $price = getServicePrice($update->cb_data_chatid,$service_type);
-            $price_irt = $price['irt'] * $size;
-            $price_yc = $price['yc'] * $size;
+        $price_irt = $price['irt'] * $size;
+        $price_yc = $price['yc'] * $size;
 
 
-            Telegram::api('editMessageText',[
-                "message_id" => $update->cb_data_message_id,
-                'chat_id' => $update->cb_data_chatid,
-                'parse_mode' => 'Markdown',
-                'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
+        Telegram::api('editMessageText',[
+            "message_id" => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid,
+            'parse_mode' => 'Markdown',
+            'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
 
-    💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
+💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
 
-    ✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
-            ]);
+✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
+        ]);
 
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
