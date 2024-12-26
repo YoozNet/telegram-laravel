@@ -433,6 +433,23 @@ try {
         $price_yc = $price['yc'] * $size;
 
 
+        if($userData['irr_wallet'] < ($price_irt * 10)) {
+            $inline_keyboard = [
+                [
+                    ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                    ['text' => 'ادامه خرید', 'callback_data'=>'AddBalance'],
+                ]
+            ];
+        } else {
+            setUserTmp($update->cb_data_chatid,'service_size',$size);
+            $inline_keyboard = [
+                [
+                    ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                    ['text' => 'ادامه خرید', 'callback_data'=>'complate_order_service'],
+                ]
+            ];
+        }
+
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
@@ -442,8 +459,11 @@ try {
 💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
 
 ✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard
+            ]
         ]);
-
+        
     } 
 
     if ($data == "Profile") {
