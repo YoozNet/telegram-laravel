@@ -812,6 +812,7 @@ $link
         $userData = getUser($update->cb_data_chatid);
         setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
         setUserTmp($update->cb_data_chatid,'reply_ticket_id',$ticketId);
+        setUserTmp($update->cb_data_chatid,'show_ticket',0);
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
@@ -1359,7 +1360,7 @@ $invoiceReasonText
         $user_id =  $tmp['user_id'];
         $attachment = null;
         $reply_text = "";
-
+        setUserTmp($update->cb_data_chatid,'show_ticket',0);
         if(isset($update->photo_file_id)) {
             $attachment = $update->photo_file_id;
             $reply_text = $update->caption;
