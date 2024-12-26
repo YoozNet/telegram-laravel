@@ -131,34 +131,29 @@ try {
     } elseif($text == '⚜️ ثبت سرویس جدید') {
         setBackTo($chat_id,'/start','text');
         $serviceList = GetAllServices();
-        $serviceDetail = "";
+        $serviceDetail = "در این بخش می‌توانید نوع سرویسی که قصد دارید تهیه کنید را مشخص کنید ! 😊 \n\n";
         $inline_keyboard = [];
         foreach($serviceList as $service) {
             $servicePrice = getServicePrice($chat_id,$service['type']);
-            $serviceDetail .= "
 
-نوع سرویس: ".$service['name']."
-مزایا: ".implode("\n",$service['pros'])."
-معایب: ".implode("\n",$service['cons'])."
-قیمت: ".$service['price_per_gig']." YC
-قیمت نهایی برای شما: ".$servicePrice['yc']." YC 
-معادل: ".$servicePrice['irt']." ریال 
--------
-            ";
+            $serviceDetail .= "🔹 ". $service['name'] ."
+- قیمت هر گیگ : ". $servicePrice['yc'] ." یوزکوین معادل ( ". $servicePrice['irt'] ." ) تومان
+- مزایا : 
+". implode("\n",$service['pros']). "
+- معایب : 
+". implode("\n",$service['cons']) ."
+➖➖➖➖➖
+";
             $inline_keyboard[] = ['text' => $service['name'], 'callback_data'=> 'order_service_'.$service['type']];
         }
         $inline_keyboard[] = ['text' => 'بازگشت ◀️', 'callback_data'=>'back'];
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
-            'text' => "
-            services: 
-            $serviceDetail
-            ",
+            'text' => $serviceDetail . "\n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'reply_markup' => [
                 'inline_keyboard' => array_chunk($inline_keyboard,2),
             ]
         ]);
-        file_put_contents("keyboards.json",json_encode(array_chunk($inline_keyboard,2),128|256));
     } elseif (preg_match("/order_service_(.*)/",$data,$result)) {
         $serviceType = $result[1];
         setBackTo($update->cb_data_chatid,'⚜️ ثبت سرویس جدید','text');
