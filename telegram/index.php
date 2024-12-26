@@ -166,24 +166,24 @@ try {
         setUserStep($update->cb_data_chatid,'order_service');
         setUserTmp($update->cb_data_chatid,'order_service_type',$serviceType);
         $serviceData = GetAllServices()[$serviceType]['plans'] ?? null;
-        $inline_keybaord = [];
+        $inline_keyboard = [];
         if(!is_null($serviceData)) {
             foreach($serviceData as $plan) {
-                $inline_keybaord[] = [
+                $inline_keyboard[] = [
                     ['text' => $plan['name'], 'callback_data'=> 'order_service2_plan_'.$serviceType.'_'.$plan['id']]
                 ];
             }
         } else {
-            $inline_keybaord[] = [
+            $inline_keyboard[] = [
                 ['text' => '10 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_10']
             ];
-            $inline_keybaord[] = [
+            $inline_keyboard[] = [
                 ['text' => '20 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_20']
             ];
-            $inline_keybaord[] = [
+            $inline_keyboard[] = [
                 ['text' => '50 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_50']
             ];
-            $inline_keybaord[] = [
+            $inline_keyboard[] = [
                 ['text' => '100 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_100']
             ];
         }
@@ -196,7 +196,7 @@ try {
             'text' => "
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'reply_markup' => [
-                'inline_keyboard' => $inline_keybaord
+                'inline_keyboard' => $inline_keyboard
             ]
         ]);
     } elseif ($text == '👤 حساب کاربری') {
