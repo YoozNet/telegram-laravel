@@ -128,6 +128,27 @@ try {
                 ]);
             }
         }
+    } elseif($text == '⚜️ ثبت سرویس جدید ') {
+        $serviceList = GetAllServices();
+        $serviceDetail = "";
+        foreach($serviceList as $service) {
+            $serviceDetail .= "
+
+نوع سرویس: ".$service['name']."
+مزایا: ".implode("\n",$service['pros'])."
+معایب: ".implode("\n",$service['cons'])."
+قیمت: ".$service['price_per_gig']." YC
+قیمت نهایی برای شما: ".getServicePrice($chat_id,$service['type'])." YC
+-------
+            ";
+        }
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+            services: 
+            $serviceDetail
+            ",
+        ]);
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');

@@ -395,3 +395,24 @@ if(!function_exists('getTicketData')) {
         return Database::select("YN_tickets", ["*"], 'id = ?', [$ticketId])[0];
     }
 }
+
+if(!function_exists('GetAllServices')) {
+    function GetAllServices() {
+        $config = GetConfig();
+        return $config['services'];
+    }
+}
+
+if(!function_exists('getServicePrice')) {
+    function getServicePrice($userId,$serviceType) {
+        $userData = getUser($userId);
+        $config = GetConfig();
+        $PriceWithoutProfit = $config['PriceWithoutProfit'][$serviceType];
+        $PricePerGB = $config['services'][$serviceType]['price_per_gig'];
+        $price = $PricePerGB - $PriceWithoutProfit;
+        $discount = $userData['discount'];
+        $price = $price - ($price * $discount / 100);
+        $price = $price + $PriceWithoutProfit;
+        return $price;
+    }
+}
