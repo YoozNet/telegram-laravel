@@ -140,7 +140,8 @@ try {
 مزایا: ".implode("\n",$service['pros'])."
 معایب: ".implode("\n",$service['cons'])."
 قیمت: ".$service['price_per_gig']." YC
-قیمت نهایی برای شما: ".getServicePrice($chat_id,$service['type'])." YC
+قیمت نهایی برای شما: ".getServicePrice($chat_id,$service['type'])['yc']." YC 
+معادل: ".getServicePrice($chat_id,$service['type'])['irr']." ریال 
 -------
             ";
             $inline_keyboard[] = ['text' => $service['name'], 'callback_data'=> 'order_service_'.$service['type']];
@@ -201,6 +202,24 @@ try {
                 'inline_keyboard' => $inline_keyboard
             ]
         ]);
+    } elseif (preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
+        $order_service_by = $result[1]; // bygig | plan
+        $service_type = $result[2];
+        $plan_id = $result[3];
+        $price = getServicePrice($update->cb_data_chatid,$service_type);
+        $price_irr = $price['irr'];
+        $price_yc = $price['yc'];
+        Telegram::api('editMessageText',[
+            "message_id" => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid,
+            'text' => "
+صورتحسابی که برای شما صادر میشود، با حجم ".$plan_id." گیگابایت میباشد. هزینه این سرویس ".$price_irr." میباشد.
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard
+            ]
+        ]);
+
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
