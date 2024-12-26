@@ -1398,7 +1398,7 @@ $invoiceReasonText
                     date("Y-m-d H:i:s")
                 ]
         );
-        $webservice = API::sendTicket(["user_id" => $userid,"ticket_id" => $ticket_id,'type' => 'TicketMessage']);
+        $webservice = API::sendTicket(["user_id" => $user_id,"ticket_id" => $ticket_id,'type' => 'TicketMessage']);
             if ($webservice['status'] == true) {
                 Telegram::api('sendMessage',[
                     'chat_id' => $chat_id,
