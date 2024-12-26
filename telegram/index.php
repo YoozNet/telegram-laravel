@@ -1360,7 +1360,7 @@ $invoiceReasonText
         $user_id =  $tmp['user_id'];
         $attachment = null;
         $reply_text = "";
-        setUserTmp($update->cb_data_chatid,'show_ticket',0);
+        setUserTmp($chat_id,'show_ticket',0);
         if(isset($update->photo_file_id)) {
             $attachment = $update->photo_file_id;
             $reply_text = $update->caption;
@@ -1398,7 +1398,7 @@ $invoiceReasonText
                     date("Y-m-d H:i:s")
                 ]
         );
-        $webservice = API::sendTicket(["user_id" => $userid,"ticket_id" => $cardId,'type' => 'TicketMessage']);
+        $webservice = API::sendTicket(["user_id" => $userid,"ticket_id" => $ticket_id,'type' => 'TicketMessage']);
             if ($webservice['status'] == true) {
                 Telegram::api('sendMessage',[
                     'chat_id' => $chat_id,
