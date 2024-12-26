@@ -32,4 +32,8 @@ class API
     {
         return self::request('tg/card', $data); 
     }
+    public static function sendTicket($data)
+    {
+        return self::request('tg/ticket', $data); 
+    }
 }

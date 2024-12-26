@@ -731,6 +731,17 @@ $link
         if($show_ticket == 0)  {
             $ticketData = getTicketData ($ticketId);
             setUserTmp($update->cb_data_chatid,'show_ticket',1);
+            $ticketKeyboard = [];
+            if (in_array($ticketData['status'],[1,2,3])) {
+                $ticketKeyboard[] = [
+                    ['text' => '🔸 ثبت پاسخ جدید', 'callback_data'=>'ticket_reply_to_'.$ticketId],
+                    ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                ];
+            } else {
+                $ticketKeyboard[] = [
+                    ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                ];
+            }
             Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
                 'text' => "🛠 جزئیات تیکت 🛠 
@@ -743,15 +754,11 @@ $link
 
                 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
                 'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => '🔸 ثبت پاسخ جدید', 'callback_data'=>'ticket_reply_to_'.$ticketId],
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
-                        ]
-                    ],
+                    'inline_keyboard' => $ticketKeyboard,
                 ]
             ]);
         }
+        $inline_keyboard = [];
         if(!is_null($getTicketMessage[$ticketMessageId]['file_id'])) {
             $inline_keyboard[] = [
                 ['text' => '◾️ دانلود پیوست', 'callback_data'=>'ticket_attachment_'.$ticketId.'_'.$ticketMessageId],
@@ -816,7 +823,7 @@ $link
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'بازگشت ◀️', 'callback_data' => 'Tickets'],
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
                     ]
                 ],
             ]
@@ -1378,15 +1385,35 @@ $invoiceReasonText
             ]);
             return;
         }
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "
-            ایدی تیکت: $ticket_id 
-            $user_id
-            متن: $reply_text
-            پیوست: $attachment
-            ",
-        ]);
+        $ticket_message_id = Database::create('YN_ticket_messages',
+            ['user_id','ticket_id','message','file_id','ip_address','created_at', 'updated_at'],
+                [
+                    $user_id,
+                    $ticket_id,
+                    $reply_text,
+                    $attachment,
+                    '127.0.0.1',
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s")
+                ]
+        );
+        $webservice = API::sendTicket(["user_id" => $userid,"ticket_id" => $cardId,'type' => 'TicketMessage']);
+            if ($webservice['status'] == true) {
+                Telegram::api('sendMessage',[
+                    'chat_id' => $chat_id,
+                    'text' => "خبر خوب! تیکت ( $ticket_id ) شما به روز شد.
+مشترک گرامی ، پاسخ شما رو دریافت کردیم و به زودی به آن پاسخ می دهیم.",
+                    'parse_mode' => 'Markdown',
+                    'reply_to_message_id' => $update->message_id,
+                    'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'ticket_data_'.$ticket_id.'_0'],
+                            ]
+                        ],
+                    ]
+                ]);
+            }
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
