@@ -156,6 +156,7 @@ try {
                 'inline_keyboard' => array_chunk($inline_keyboard,2),
             ]
         ]);
+        file_put_contents("keyboards.json",json_encode($inline_keyboard,128|256));
     } elseif (preg_match("/order_service_(.*)/",$data,$result)) {
         $serviceType = $result[1];
         setBackTo($update->cb_data_chatid,'⚜️ ثبت سرویس جدید','text');
