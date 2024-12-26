@@ -142,7 +142,7 @@ try {
 معایب: ".implode("\n",$service['cons'])."
 قیمت: ".$service['price_per_gig']." YC
 قیمت نهایی برای شما: ".$servicePrice['yc']." YC 
-معادل: ".$servicePrice['irr']." ریال 
+معادل: ".$servicePrice['irt']." ریال 
 -------
             ";
             $inline_keyboard[] = ['text' => $service['name'], 'callback_data'=> 'order_service_'.$service['type']];
@@ -208,13 +208,13 @@ try {
         $service_type = $result[2];
         $plan_id = $result[3];
         $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $price_irr = $price['irr'] * $plan_id;
+        $price_irt = $price['irt'] * $plan_id;
         $price_yc = $price['yc'] * $plan_id;
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
             'text' => "
-صورتحسابی که برای شما صادر میشود، با حجم ".$plan_id." گیگابایت میباشد. هزینه این سرویس ".$price_irr." میباشد.
+صورتحسابی که برای شما صادر میشود، با حجم ".$plan_id." گیگابایت میباشد. هزینه این سرویس ".$price_irt." میباشد.
             ",
         ]);
 

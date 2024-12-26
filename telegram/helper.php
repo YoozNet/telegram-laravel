@@ -413,6 +413,6 @@ if(!function_exists('getServicePrice')) {
         $discount = $userData['discount'];
         $price = $price - ($price * $discount / 100);
         $price = $price + $PriceWithoutProfit;
-        return ['yc'=>$price,'irr'=>$config['yc_price'] * $price];
+        return ['yc'=>$price,'irt'=>$config['yc_price'] * $price];
     }
 }
