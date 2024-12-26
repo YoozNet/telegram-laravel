@@ -490,7 +490,7 @@ try {
         if($userData['irr_wallet'] < ($price_irt * 10)) {
             $diff = ($price_irt * 10) - $userData['irr_wallet'];
             setUserStep($update->cb_data_chatid,'addBalance_2');
-            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff);
+            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff / 10);
             setUserTmp($update->cb_data_chatid,'waitpay_for_service',1);
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
