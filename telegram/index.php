@@ -698,8 +698,8 @@ $link
         ]);
         $userData = getUser($update->cb_data_chatid);
         $TicketList = getUserTickets($userData['id']);
-        $last_key = array_key_last($TicketList);
-        $lastTicketTime = strtotime($TicketList[$last_key]['created_at']);
+        # $last_key = array_key_last($TicketList);
+        $lastTicketTime = strtotime($TicketList[0]['created_at']);
         if((time() - $lastTicketTime) < 60) {
             Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
