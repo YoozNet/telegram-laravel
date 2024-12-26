@@ -483,8 +483,8 @@ try {
         $service_type = $userTmp['service_type'];
         $service_size = $userTmp['service_size'];
         $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $price_irt = $price['irt'] * $size;
-        $price_yc = $price['yc'] * $size;
+        $price_irt = $price['irt'] * $service_size;
+        $price_yc = $price['yc'] * $service_size;
 
 
         if($userData['irr_wallet'] < ($price_irt * 10)) {
