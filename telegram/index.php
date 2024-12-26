@@ -256,7 +256,6 @@ try {
             $size = $serviceData['plans'][$plan_id]['data_total'];
             $t = "پلن ".$serviceData['plans'][$plan_id]['name'];
         }
-
         if($userData['group_id'] == 0 && $size > 10) {
             Telegram::api('editMessageText',[
                 "message_id" => $update->cb_data_message_id,
@@ -1766,23 +1765,32 @@ $invoiceReasonText
             ]);
             return;
         }
-        setUserStep($chat_id,'none');
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "مقدار $text گیگابایت برای خرید انتخاب شد 🎗
+        $userData = getUser($chat_id);
+        if($userData['group_id'] == 0 && $size > 10) {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "شما اجازه خرید حجم بالای 10 گیگ را ندارید",
+            ]);
+        } else {
 
-✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
-            'parse_mode' => 'Markdown',
-            'reply_to_message_id' => $update->message_id,
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => '📯 ادامه ', 'callback_data'=>'order_service2_bygig_'.$service_type.'_'.$text],
-                        ['text' => 'بازگشت ◀️ ', 'callback_data'=>'order_service2_bygig_'.$service_type.'_custom'],
-                    ]
-                ],
-            ]
-        ]);
+            setUserStep($chat_id,'none');
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "مقدار $text گیگابایت برای خرید انتخاب شد 🎗
+
+    ✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
+                'parse_mode' => 'Markdown',
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => '📯 ادامه ', 'callback_data'=>'order_service2_bygig_'.$service_type.'_'.$text],
+                            ['text' => 'بازگشت ◀️ ', 'callback_data'=>'order_service2_bygig_'.$service_type.'_custom'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
