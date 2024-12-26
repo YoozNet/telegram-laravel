@@ -456,16 +456,16 @@ try {
         $price = getServicePrice($update->cb_data_chatid,$service_type);
         $price_irt = $price['irt'] * $size;
         $price_yc = $price['yc'] * $size;
-        setUserTmp($chat_id,'service_size',$size);
+        setUserTmp($update->cb_data_chatid,'service_size',$size);
 
 
         if($userData['irr_wallet'] < ($price_irt * 10)) {
-            setUserStep($chat_id,'addBalance_2');
+            setUserStep($update->cb_data_chatid,'addBalance_2');
             $diff = ($price_irt * 10) - $userData['irr_wallet'];
-            setUserTmp($chat_id,'addBalance_amount',$diff);
-            setUserTmp($chat_id,'waitpay_for_service',1);
-            $userID = getUser($chat_id)['id'];
-            setUserTmp($chat_id,'user_id',$userID);
+            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff);
+            setUserTmp($update->cb_data_chatid,'waitpay_for_service',1);
+            $userID = getUser($update->cb_data_chatid)['id'];
+            setUserTmp($update->cb_data_chatid,'user_id',$userID);
             $cardBanks = getCardsBank($userID);
             foreach ($cardBanks as $cardData) {
                 $inline_keyboard[] = [
