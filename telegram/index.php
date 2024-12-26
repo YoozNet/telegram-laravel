@@ -1440,6 +1440,7 @@ $invoiceReasonText
         ]);
     } elseif ($step == 'addBalance_2') {
         $id = preg_match("/addBalance_select_(.*)/",$data,$result);
+        error_log('step is ok');
         if(isset($result[1])) {
             $data = getCardById($result[1]);
             setUserTmp($update->cb_data_chatid,'addBalance_userCardId',$result[1]);
@@ -1520,12 +1521,9 @@ $invoiceReasonText
                     ],
                 ]
             ]);
-            error_log('-1');
             $messageId = json_decode($sendPhoto->getContents(),1)['result']['message_id'];
-            error_log('0');
             setUserTmp($update->cb_data_chatid,'addBalance_message_id',$messageId);
             setUserTmp($update->cb_data_chatid,'addBalance_created_at',time());
-            error_log('1');
         } else {
             setUserStep($update->cb_data_chatid,'none');
         }
