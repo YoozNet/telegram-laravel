@@ -457,15 +457,43 @@ try {
         $price_irt = $price['irt'] * $size;
         $price_yc = $price['yc'] * $size;
         setUserTmp($update->cb_data_chatid,'service_size',$size);
+        Telegram::api('editMessageText',[
+            "message_id" => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid,
+            'parse_mode' => 'Markdown',
+            'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
+
+💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
+
+✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                        ['text' => 'ادامه خرید', 'callback_data'=>'complate_order_service'],
+                    ]
+                ]
+            ]
+        ]);
+        
+
+
+    } elseif ($data == 'complate_order_service') {
+        $userTmp = getAllUserTmp($update->cb_data_chatid);
+        $service_type = $userTmp['service_type'];
+        $service_size = $userTmp['service_size'];
+        $price = getServicePrice($update->cb_data_chatid,$service_type);
+        $price_irt = $price['irt'] * $size;
+        $price_yc = $price['yc'] * $size;
 
 
         if($userData['irr_wallet'] < ($price_irt * 10)) {
-            setUserStep($update->cb_data_chatid,'addBalance_2');
             $diff = ($price_irt * 10) - $userData['irr_wallet'];
+            setUserStep($update->cb_data_chatid,'addBalance_2');
             setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff);
             setUserTmp($update->cb_data_chatid,'waitpay_for_service',1);
-            $userID = getUser($update->cb_data_chatid)['id'];
             setUserTmp($update->cb_data_chatid,'user_id',$userID);
+            $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
             foreach ($cardBanks as $cardData) {
                 $inline_keyboard[] = [
@@ -475,7 +503,6 @@ try {
             $inline_keyboard[] = [
                 ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
             ];
-
             Telegram::api('editMessageText',[
                 "message_id" => $update->cb_data_message_id,
                 'chat_id' => $update->cb_data_chatid,
@@ -488,44 +515,22 @@ try {
                 ]
             ]);
         } else {
-            setUserTmp($update->cb_data_chatid,'service_size',$size);
             Telegram::api('editMessageText',[
                 "message_id" => $update->cb_data_message_id,
                 'chat_id' => $update->cb_data_chatid,
                 'parse_mode' => 'Markdown',
-                'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
-    
-    💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
-    
-    ✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
+                'text' => "
+        سرویس تایپ: ".$service_type."
+        سرویس سایز: ".$service_size."
+                ",
+                /*
                 'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
-                            ['text' => 'ادامه خرید', 'callback_data'=>'complate_order_service'],
-                        ]
-                    ]
+                    'inline_keyboard' => $inline_keyboard
                 ]
+                */
             ]);
         }
 
-
-    } elseif ($data == 'complate_order_service') {
-        $userTmp = getAllUserTmp($update->cb_data_chatid);
-        $service_type = $userTmp['service_type'];
-        $service_size = $userTmp['service_size'];
-        Telegram::api('editMessageText',[
-            "message_id" => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid,
-            'parse_mode' => 'Markdown',
-            'text' => "
-    سرویس تایپ: ".$service_type."
-    سرویس سایز: ".$service_size."
-            ",
-            'reply_markup' => [
-                'inline_keyboard' => $inline_keyboard
-            ]
-        ]);
 
     } elseif ($data == "Profile") {
         setUserStep($update->cb_data_chatid,'none');
