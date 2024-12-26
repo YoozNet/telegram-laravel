@@ -159,6 +159,140 @@ try {
                 'inline_keyboard' => array_chunk($inline_keyboard,2),
             ]
         ]);
+    } elseif ($text == '👤 حساب کاربری') {
+        setUserStep($chat_id,'none');
+        setBackTo($chat_id,'/start','text');
+        $userData = getUser($chat_id);
+        $email = $userData['email'] ?? "تنظیم نشده";
+        $group_id = $userData['group_id'];
+        $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
+        $discount = $userData['discount'];
+        $cardNumber = adminCardNumber($chat_id);
+        $cardInfo = isset($cardNumber['card_number']) && $cardNumber['card_number'] != null ? splitCardNumber($cardNumber['card_number'])  : "تنظیم نشده";
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+ℹ️ اطلاعات حساب کاربری: 
+شناسه مشتری : ".$userData['id']."
+ایمیل: ".$email."
+شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
+گروه کاربری: ".$group_id."
+تخفیف: ".$discount."%
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '🔹 تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
+                    ],
+                    [
+                        ['text' => '📨 وب سرویس', 'callback_data'=>'web_service'],
+                        ['text' => '➕ دعوت از دوستان', 'callback_data'=>'invite_friends'],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($text == "👝 کیف پول") {
+        setBackTo($chat_id,'/start','text');
+        setUserStep($chat_id,'none');
+        $userData = getUser($chat_id);
+
+        $cardBanks = getCardsBank($userData['id']);
+        $wallet = $userData['irr_wallet'] ?? 0.00;
+        $group_id = $userData['group_id'];
+        $config = GetConfig();
+        $YC_Price = $config['yc_price'];
+
+        $addBalance = "AddBalance";
+        if ($group_id < 1 or count($cardBanks) < 1) {
+            $addBalance = "bankCards";
+        }
+
+        $formattedWallet = formatWallet($wallet);
+        $walletInToman = $formattedWallet * $YC_Price;
+        $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
+
+
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
+
+💰 **افزایش اعتبار:** می‌توانید اعتبار خود را از 10,000 تا 2,000,000 تومان افزایش دهید!🥹
+
+📊 **صورتحساب‌ها:** مشاهده صورتحساب های شما.
+
+💳 ** کارت بانکی  ** : شما برای اینکه بتوانید کیف پول خود را شارژ کنید نیاز هست ابتدا کارت بانکی خود را تایید کنید و بعد از تایید میتوانید کارت تایید شده خود را مشاهده کنید و در صورت نیاز حذفش کنید!
+
+اعتبار اکانت شما: `". $formattedWallet ."` یوزکوین  (هر یوزکوین معادل **".$YC_Price." تومان** است.)
+👉 بنابراین موجودی شما معادل " . $formattedWalletInToman . " تومان می‌باشد! 💸
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_to_message_id' => $update->message_id,
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '📊 صورتحساب ها', 'callback_data'=>'Invoices'],
+                        ['text' => '💰 افزایش اعتبار', 'callback_data'=>$addBalance],
+                    ],
+                    [
+                        ['text' => '💳 کارت بانکی', 'callback_data'=>'bankCards'],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($text == "🌐 ورود به سایت 🌐"){
+        $link = LoginToken($chat_id);
+        setUserStep($chat_id,'none');
+        setBackTo($chat_id,'/start','text');
+        Telegram::api('sendMessage',[
+            'reply_to_message_id' => $update->message_id,
+            'chat_id' => $chat_id,
+            'text' => "یک لینک ورود به سایت برای شما ایجاد شد! 😍
+              لطفا توجه داشته باشید که این لینک تنها برای 15 دقیقه فعال خواهد بود. پس از ورود، لینک منقضی خواهد شد و شما برای ورود بعدی خود نیاز به دریافت مجدد لینک از ربات خواهید داشت. همچنین هر لینک تنها یکبار قابل استفاده است!🤗
+              
+              برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '🔹 ورود به سایت ', 'url' => $link],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ],
+                ],
+            ]
+        ]);
+    } elseif ($text == "📞 پشتیبانی"){
+        setUserStep($chat_id,'none');
+        setBackTo($chat_id,'/start','text');
+        Telegram::api('sendMessage',[
+            'reply_to_message_id' => $update->message_id,
+            'chat_id' => $chat_id,
+            'text' => "خوش آمدید به بخش پشتیبانی! 👋 
+
+📩 برای مشکلات و سوالات خود، تیکت ارسال کنید.
+
+❓ سوالات رایج را بررسی کنید تا سریع‌تر به پاسخ‌ها برسید.
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'تیکت 📬', 'callback_data'=>'Tickets'],
+                        ['text' => 'سوالات رایج ❓', 'callback_data'=>'faqs'],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ],
+                ],
+            ]
+        ]);
     } elseif (preg_match("/order_service_(.*)/",$data,$result)) {
         $serviceType = $result[1];
         
@@ -310,141 +444,7 @@ try {
 ✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
         ]);
 
-    } elseif ($text == '👤 حساب کاربری') {
-        setUserStep($chat_id,'none');
-        setBackTo($chat_id,'/start','text');
-        $userData = getUser($chat_id);
-        $email = $userData['email'] ?? "تنظیم نشده";
-        $group_id = $userData['group_id'];
-        $group_id = App\Enum\UserGroupEnum::from($group_id)->getLabel();
-        $discount = $userData['discount'];
-        $cardNumber = adminCardNumber($chat_id);
-        $cardInfo = isset($cardNumber['card_number']) && $cardNumber['card_number'] != null ? splitCardNumber($cardNumber['card_number'])  : "تنظیم نشده";
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "
-ℹ️ اطلاعات حساب کاربری: 
-شناسه مشتری : ".$userData['id']."
-ایمیل: ".$email."
-شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
-گروه کاربری: ".$group_id."
-تخفیف: ".$discount."%
-
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
-            'reply_to_message_id' => $update->message_id,
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => '🔹 تعیین شماره کارت پیشفرض', 'callback_data'=>'set_default_cardnumber'],
-                    ],
-                    [
-                        ['text' => '📨 وب سرویس', 'callback_data'=>'web_service'],
-                        ['text' => '➕ دعوت از دوستان', 'callback_data'=>'invite_friends'],
-                    ],
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                    ]
-                ],
-            ]
-        ]);
-    } elseif ($text == "👝 کیف پول") {
-        setBackTo($chat_id,'/start','text');
-        setUserStep($chat_id,'none');
-        $userData = getUser($chat_id);
-
-        $cardBanks = getCardsBank($userData['id']);
-        $wallet = $userData['irr_wallet'] ?? 0.00;
-        $group_id = $userData['group_id'];
-        $config = GetConfig();
-        $YC_Price = $config['yc_price'];
-
-        $addBalance = "AddBalance";
-        if ($group_id < 1 or count($cardBanks) < 1) {
-            $addBalance = "bankCards";
-        }
-
-        $formattedWallet = formatWallet($wallet);
-        $walletInToman = $formattedWallet * $YC_Price;
-        $formattedWalletInToman = number_format($walletInToman, 0, '', ',');
-
-
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "🧳 کیف پول شما شامل سه بخش اصلی است:
-
-💰 **افزایش اعتبار:** می‌توانید اعتبار خود را از 10,000 تا 2,000,000 تومان افزایش دهید!🥹
-
-📊 **صورتحساب‌ها:** مشاهده صورتحساب های شما.
-
-💳 ** کارت بانکی  ** : شما برای اینکه بتوانید کیف پول خود را شارژ کنید نیاز هست ابتدا کارت بانکی خود را تایید کنید و بعد از تایید میتوانید کارت تایید شده خود را مشاهده کنید و در صورت نیاز حذفش کنید!
-
-اعتبار اکانت شما: `". $formattedWallet ."` یوزکوین  (هر یوزکوین معادل **".$YC_Price." تومان** است.)
-👉 بنابراین موجودی شما معادل " . $formattedWalletInToman . " تومان می‌باشد! 💸
-
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
-            'reply_to_message_id' => $update->message_id,
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => '📊 صورتحساب ها', 'callback_data'=>'Invoices'],
-                        ['text' => '💰 افزایش اعتبار', 'callback_data'=>$addBalance],
-                    ],
-                    [
-                        ['text' => '💳 کارت بانکی', 'callback_data'=>'bankCards'],
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                    ]
-                ],
-            ]
-        ]);
-    } elseif ($text == "🌐 ورود به سایت 🌐"){
-        $link = LoginToken($chat_id);
-        setUserStep($chat_id,'none');
-        setBackTo($chat_id,'/start','text');
-        Telegram::api('sendMessage',[
-            'reply_to_message_id' => $update->message_id,
-            'chat_id' => $chat_id,
-            'text' => "یک لینک ورود به سایت برای شما ایجاد شد! 😍
-              لطفا توجه داشته باشید که این لینک تنها برای 15 دقیقه فعال خواهد بود. پس از ورود، لینک منقضی خواهد شد و شما برای ورود بعدی خود نیاز به دریافت مجدد لینک از ربات خواهید داشت. همچنین هر لینک تنها یکبار قابل استفاده است!🤗
-              
-              برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => '🔹 ورود به سایت ', 'url' => $link],
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                    ],
-                ],
-            ]
-        ]);
-    } elseif ($text == "📞 پشتیبانی"){
-        setUserStep($chat_id,'none');
-        setBackTo($chat_id,'/start','text');
-        Telegram::api('sendMessage',[
-            'reply_to_message_id' => $update->message_id,
-            'chat_id' => $chat_id,
-            'text' => "خوش آمدید به بخش پشتیبانی! 👋 
-
-📩 برای مشکلات و سوالات خود، تیکت ارسال کنید.
-
-❓ سوالات رایج را بررسی کنید تا سریع‌تر به پاسخ‌ها برسید.
-
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'تیکت 📬', 'callback_data'=>'Tickets'],
-                        ['text' => 'سوالات رایج ❓', 'callback_data'=>'faqs'],
-                    ],
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                    ],
-                ],
-            ]
-        ]);
-    }
+    } 
 
     if ($data == "Profile") {
         setUserStep($update->cb_data_chatid,'none');
@@ -643,7 +643,6 @@ $link
             ]
         ]);
     } elseif ($data == "Invoices") {
-        # setBackTo($update->cb_data_chatid,'wallet','data');
         $userData = getUser($update->cb_data_chatid);
         $invoiceList = getUserInvoices($userData['id'],10);
         if (empty($invoiceList)) {
@@ -662,12 +661,14 @@ $link
             return; 
         }
         $inline_keybaord = [];
-        $inline_keyboard[] = [
-            ['text' => 'جزییات', 'callback_data'=>'invoice_status'],
-            ['text' => 'وضعیت', 'callback_data'=>'invoice_status'],
-            ['text' => 'مبلغ', 'callback_data'=>'invoice_amount'],
-            ['text' => 'شناسه', 'callback_data'=>'invoice_title'],
-        ];
+        if (!empty($invoiceList)) {
+            $inline_keyboard[] = [
+                ['text' => 'جزییات', 'callback_data'=>'invoice_status'],
+                ['text' => 'وضعیت', 'callback_data'=>'invoice_status'],
+                ['text' => 'مبلغ', 'callback_data'=>'invoice_amount'],
+                ['text' => 'شناسه', 'callback_data'=>'invoice_title'],
+            ];
+        }
         foreach($invoiceList as $invoices) {
             $invoiceId = $invoices['id'] ?? 'error';
             $invoiceAmount = $invoices['amount'] ?? 'error';
@@ -700,12 +701,14 @@ $link
         $BankCardList = getUserBankCards($userData['id'],10);
 
         $inline_keybaord = [];
-        $inline_keyboard[] = [
-            ['text' => 'جزییات', 'callback_data'=>'bankcard_status'],
-            ['text' => 'وضعیت', 'callback_data'=>'bankcard_status'],
-            ['text' => 'نام بانک', 'callback_data'=>'bankcard_amount'],
-            ['text' => 'شناسه', 'callback_data'=>'bankcard_title'],
-        ];
+        if (!empty($BankCardList)){
+            $inline_keyboard[] = [
+                ['text' => 'جزییات', 'callback_data'=>'bankcard_status'],
+                ['text' => 'وضعیت', 'callback_data'=>'bankcard_status'],
+                ['text' => 'نام بانک', 'callback_data'=>'bankcard_amount'],
+                ['text' => 'شناسه', 'callback_data'=>'bankcard_title'],
+            ];
+        }
         foreach($BankCardList as $bankkcard) {
             $bankkcardId = $bankkcard['id'];
             $bankcardname = getBankName($bankkcard['bank'] ?? "UNKNOWN");
