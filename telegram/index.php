@@ -1440,9 +1440,8 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($step == 'addBalance_2') {
+    } elseif ($step == 'addBalance_2' && preg_match("/addBalance_select_(.*)/",$data,$result)) {
         error_log('data: '.$data);
-        $id = preg_match("/addBalance_select_(.*)/",$data,$result);
         error_log('step is ok');
         error_log(json_encode($result,128|256));
         if(isset($result[1])) {
