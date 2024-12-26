@@ -162,7 +162,6 @@ try {
         $userTmp = getAllUserTmp($chat_id);
         if($userTmp['waitpay_for_service'] == 1) {
             setUserTmp($chat_id,'waitpay_for_service',0);
-            // order_service2_bygig_'.$serviceType.'_'.$volume
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "
@@ -523,6 +522,8 @@ try {
                 'text' => "
         سرویس تایپ: ".$service_type."
         سرویس سایز: ".$service_size."
+        irr wallet: ".$userData['irr_wallet']."
+        price irt: ".$price_irt."
                 ",
                 /*
                 'reply_markup' => [
