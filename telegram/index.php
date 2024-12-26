@@ -1498,7 +1498,7 @@ $invoiceReasonText
                 'message_id' => $update->cb_data_message_id,
                 'chat_id' => $update->cb_data_chatid
             ]);
-            $data = Telegram::api('sendPhoto',[
+            $sendPhoto = Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
                 'photo' => "https://maindns.space/file/" . $cardBankImage,
                 'caption' => "💰 لطفا مبلغ : ` $amount_format ` تومان معادل ( ".$YC_COIN." ) یوزکوین
@@ -1520,7 +1520,7 @@ $invoiceReasonText
                     ],
                 ]
             ]);
-            file_put_contents('sendPhoto.json',json_encode($data,128|256));
+            file_put_contents('sendPhoto.json',json_encode($sendPhoto->getContents(),128|256));
         } else {
             setUserStep($update->cb_data_chatid,'none');
         }
