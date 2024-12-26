@@ -712,7 +712,7 @@ $link
         }
         $inline_keyboard[] = [
             ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'support'],
         ];
 
         Telegram::api('editMessageText',[
