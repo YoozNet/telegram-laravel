@@ -133,38 +133,49 @@ try {
         $serviceList = GetAllServices();
         $serviceDetail = "در این بخش می‌توانید نوع سرویسی که قصد دارید تهیه کنید را مشخص کنید ! 😊 \n\n";
         $inline_keyboard = [];
+        $emojiList = ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'];
         foreach($serviceList as $service) {
+            $randomEmojiIndex = array_rand($emojiList);
+            $randomEmoji = $emojiList[$randomEmojiIndex];
             $servicePrice = getServicePrice($chat_id,$service['type']);
-
-            $serviceDetail .= "🔹 ". $service['name'] ."
+            $vip = $service['special'] == true ? "** ( پیشنهادی یوزنت ) **" : '';
+            $serviceDetail .= $randomEmoji." ". $service['name'] ." $vip
 - قیمت هر گیگ : ". $servicePrice['yc'] ." یوزکوین معادل ( ". $servicePrice['irt'] ." ) تومان
-- مزایا : 
+    - مزایا : 
 ". implode("\n",$service['pros']). "
-- معایب : 
+    - معایب : 
 ". implode("\n",$service['cons']) ."
 ➖➖➖➖➖
 ";
-            $inline_keyboard[] = ['text' => $service['name'], 'callback_data'=> 'order_service_'.$service['type']];
+            $inline_keyboard[] = ['text' => $randomEmoji." ". $service['name'], 'callback_data'=> 'order_service_'.$service['type']];
         }
         $inline_keyboard[] = ['text' => 'بازگشت ◀️', 'callback_data'=>'back'];
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => $serviceDetail . "\n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_to_message_id' => $update->message_id,
+            'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => array_chunk($inline_keyboard,2),
             ]
         ]);
     } elseif (preg_match("/order_service_(.*)/",$data,$result)) {
         $serviceType = $result[1];
+        
         setBackTo($update->cb_data_chatid,'⚜️ ثبت سرویس جدید','text');
         setUserStep($update->cb_data_chatid,'order_service');
         setUserTmp($update->cb_data_chatid,'order_service_type',$serviceType);
-        $serviceData = GetAllServices()[$serviceType]['plans'] ?? null;
+        $services = GetAllServices()[$serviceType];
+        $serviceData = $services['plans'] ?? null;
+        $price = $servicePrice = getServicePrice($update->cb_data_chatid,$serviceType);
+        
         $inline_keyboard = [];
+        
         if(!is_null($serviceData)) {
-            foreach($serviceData as $plan) {
+            foreach($serviceData as $planId => $plan) {
+                $p = $price['irt'] * $plan['data_total'];
                 $inline_keyboard[] = [
-                    ['text' => $plan['name'], 'callback_data'=> 'order_service2_plan_'.$serviceType.'_'.$plan['id']]
+                    ['text' => $plan['name'] . " ( $p ت ) " , 'callback_data'=> 'order_service2_plan_'.$serviceType.'_'. $planId]
                 ];
             }
             $inline_keyboard[] = [
@@ -172,17 +183,21 @@ try {
             ];
         } else {
             $inline_keyboard[] = [
-                ['text' => '10 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_10']
+                ['text' => '-', 'callback_data' => 'header_select'],
+                ['text' => 'قیمت', 'callback_data' => 'header_price'],
+                ['text' => 'نوع', 'callback_data' => 'header_price'],
+                ['text' => 'حجم', 'callback_data' => 'header_volume'],
             ];
-            $inline_keyboard[] = [
-                ['text' => '20 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_20']
-            ];
-            $inline_keyboard[] = [
-                ['text' => '50 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_50']
-            ];
-            $inline_keyboard[] = [
-                ['text' => '100 گیگابایت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_100']
-            ];
+            $baseVolumes = [10, 20, 50, 100];
+            foreach ($baseVolumes as $volume) {
+                $totalPrice = $volume * $price['irt'];
+                $inline_keyboard[] = [
+                    ['text' => 'انتخاب', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_'.$volume],
+                    ['text' => number_format($totalPrice, 0, '', ',') . ' ت', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_'.$volume],
+                    ['text' => $services['name'], 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_'.$volume],
+                    ['text' => $volume . ' GB', 'callback_data'=> 'order_service2_bygig_'.$serviceType.'_'.$volume],
+                ];
+            }
             $inline_keyboard[] = [
                 ['text' => 'حجم دلخواه', 'callback_data'=>'order_service2_bygig_'.$serviceType.'_custom'],
                 ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
@@ -192,36 +207,70 @@ try {
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
-            'text' => "
-برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'text' => "شما چقدر در ماه مصرف ( اینترنت بدون اختلال ) دارید ؟📊 🤔
+
+به همون مقدار حجم سفارش بدید!
+
+اگر حجم مورد نظر رو پیدا نکردید، روی گزینه ( حجم دلخواه ) کلیک کنید. ✨",
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard
             ]
         ]);
     } elseif (preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
-        $order_service_by = $result[1]; // bygig | plan
+        $order_service_by = $result[1]; 
         $service_type = $result[2];
+        
+        setBackTo($update->cb_data_chatid,'order_service_'.$service_type,'data');
+        setUserStep($update->cb_data_chatid,'none');
+
         $serviceData = GetAllServices()[$service_type];
+
+        $t = "";
         if($order_service_by == "bygig") {
             $size = $result[3];
+            $t = "$size گیگ حجم";
             if($size == "custom") {
-                // get size by client
-                // generate callback_data -> order_service2_bygig_$service_type_VALUE
+                setUserStep($update->cb_data_chatid,'custom_value');
+
+                $userData = getUser($update->cb_data_chatid);
+                $limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
+
+                setUserTmp($update->cb_data_chatid,'service_type',$service_type);
+                setUserTmp($update->cb_data_chatid,'service_limit',$limit);
+                Telegram::api('editMessageText',[
+                    "message_id" => $update->cb_data_message_id,
+                    'chat_id' => $update->cb_data_chatid,
+                    'parse_mode' => 'Markdown',
+                    'text' => "لطفاً حجم مورد نیاز خود را از بین 5 گیگابایت تا $limit گیگابایت وارد کنید! ✨",
+                    'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                            ]
+                        ],
+                    ]
+                ]);
+                return;
             }
         } else {
             $plan_id = $result[3];
-            $size = $serviceData = $serviceData['plans'][$plan_id]['traffic'];
+            $size = $serviceData['plans'][$plan_id]['data_total'];
+            $t = "پلن ".$serviceData['plans'][$plan_id]['name'];
         }
+
         $price = getServicePrice($update->cb_data_chatid,$service_type);
         $price_irt = $price['irt'] * $size;
         $price_yc = $price['yc'] * $size;
+
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
-            'text' => "
-نام سرویس : ".$serviceData['name']."
-صورتحسابی که برای شما صادر میشود، با حجم ".$size." گیگابایت میباشد. هزینه این سرویس ".$price_irt." میباشد.
-            ",
+            'parse_mode' => 'Markdown',
+            'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
+
+💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
+
+✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
         ]);
 
     } elseif ($text == '👤 حساب کاربری') {
@@ -1689,6 +1738,42 @@ $invoiceReasonText
                     ]
                 ]);
             }
+    } elseif ($step == 'custom_value') {
+        $tmp = getAllUserTmp($chat_id);
+        $service_limit = $tmp['service_limit'];
+        $service_type = $tmp['service_type'];
+        if (!is_numeric($text) || $text < 5 || $text > $service_limit) {
+            Telegram::api('sendMessage', [
+                'chat_id' => $chat_id,
+                'text' => "⚠️ مقدار وارد شده نامعتبر است! لطفاً عددی بین 5 گیگ و $service_limit گیگ وارد کنید.",
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                        ]
+                    ],
+                ]
+            ]);
+            return;
+        }
+        setUserStep($chat_id,'none');
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "مقدار $text گیگابایت برای خرید انتخاب شد 🎗
+
+✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
+            'parse_mode' => 'Markdown',
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '📯 ادامه ', 'callback_data'=>'order_service2_bygig_'.$service_type.'_'.$text],
+                        ['text' => 'بازگشت ◀️ ', 'callback_data'=>'order_service2_bygig_'.$service_type.'_custom'],
+                    ]
+                ],
+            ]
+        ]);
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
