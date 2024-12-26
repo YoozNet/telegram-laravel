@@ -253,6 +253,24 @@ try {
             }
         } else {
             $plan_id = $result[3];
+            if($userData['group_id'] == 0 && $plan_id != 1) {
+                Telegram::api('editMessageText',[
+                    "message_id" => $update->cb_data_message_id,
+                    'chat_id' => $update->cb_data_chatid,
+                    'parse_mode' => 'Markdown',
+                    'text' => "در لول فعلی شما، تنها مجاز به ثبت پلن مصرف منصفانه روزانه 10 گیگ هستید! 
+    
+    برای خرید پلن بیشتر، لطفاً با مراجعه به بخش کیف پول و احراز هویت با کارت بانکی، به لول بعدی ارتقا یابید! 🔝💳✨",
+                        'reply_markup' => [
+                            'inline_keyboard' => [
+                                [
+                                    ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                                ]
+                            ],
+                        ]
+                ]);
+                return ;
+            }
             $size = $serviceData['plans'][$plan_id]['data_total'];
             $t = "پلن ".$serviceData['plans'][$plan_id]['name'];
         }
@@ -261,10 +279,20 @@ try {
                 "message_id" => $update->cb_data_message_id,
                 'chat_id' => $update->cb_data_chatid,
                 'parse_mode' => 'Markdown',
-                'text' => "شما اجازه خرید حجم بالای 10 گیگ را ندارید",
+                'text' => "در لول فعلی شما، تنها مجاز به ثبت حداکثر 10 گیگ حجم هستید! 
+
+برای خرید حجم بیشتر، لطفاً با مراجعه به بخش کیف پول و احراز هویت با کارت بانکی، به لول بعدی ارتقا یابید! 🔝💳✨",
+                    'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                            ]
+                        ],
+                    ]
             ]);
-        } else {
-            $price = getServicePrice($update->cb_data_chatid,$service_type);
+            return ;
+        } 
+        $price = getServicePrice($update->cb_data_chatid,$service_type);
             $price_irt = $price['irt'] * $size;
             $price_yc = $price['yc'] * $size;
 
@@ -279,7 +307,6 @@ try {
 
     ✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
             ]);
-        }
 
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
