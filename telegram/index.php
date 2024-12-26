@@ -687,34 +687,27 @@ $link
                 ]
             ]);
     } elseif ($data == 'new_ticket') {
-        Telegram::api('deleteMessage',[
-            'message_id' => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid
-        ]);
-        Telegram::api('forwardMessage', [
-            'chat_id' => $update->cb_data_chatid,
-            'from_chat_id' => '@YozNet',
-            'message_id' => 30,  
-        ]);
         $userData = getUser($update->cb_data_chatid);
         $TicketList = getUserTickets($userData['id']);
-        # $last_key = array_key_last($TicketList);
         $lastTicketTime = strtotime($TicketList[0]['created_at']);
         if((time() - $lastTicketTime) < 60) {
-            Telegram::api('sendMessage',[
-                'chat_id' => $update->cb_data_chatid,
-                'text' => "محدودیت ثبت تیکت",
-                'parse_mode' => 'Markdown',
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'support'],
-                        ],
-                    ],
-                ]
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "در هر دقیقه تنها مجاز به ثبت یک تیکت می باشید. ⛔️",
+                'show_alert' => true,
             ]);
+            return;
         } else {
             setUserStep($update->cb_data_chatid,'new_ticket_1');
+            Telegram::api('deleteMessage',[
+                'message_id' => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid
+            ]);
+            Telegram::api('forwardMessage', [
+                'chat_id' => $update->cb_data_chatid,
+                'from_chat_id' => '@YozNet',
+                'message_id' => 30,  
+            ]);
             Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
                 'text' => "ممنون که مشکل خود را با ما به اشتراک گذاشتید! 😊 لطفاً برای ایجاد یک تیکت جدید، یک موضوع مرتبط با مشکل‌تان را ارسال فرمایید. 🙏✨",
@@ -732,7 +725,6 @@ $link
         
     } elseif ($data == "Tickets") {
         setBackTo($update->cb_data_chatid,'Tickets','data');
-        # setBackTo($update->cb_data_chatid,'support','data');
         $userData = getUser($update->cb_data_chatid);
         $TicketList = getUserTickets($userData['id']);
         setUserTmp($update->cb_data_chatid,'show_ticket',0);
