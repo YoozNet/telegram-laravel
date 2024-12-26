@@ -166,7 +166,7 @@ try {
             ]
         ]);
     } elseif ($text == "👝 کیف پول") {
-
+        setBackTo($chat_id,'/start','text');
         setUserStep($chat_id,'none');
         $userData = getUser($chat_id);
 
@@ -461,7 +461,7 @@ $link
             ]
         ]);
     } elseif ($data == "Invoices") {
-        setBackTo($update->cb_data_chatid,'wallet','data');
+        # setBackTo($update->cb_data_chatid,'wallet','data');
         $userData = getUser($update->cb_data_chatid);
         $invoiceList = getUserInvoices($userData['id'],10);
         if (empty($invoiceList)) {
@@ -501,7 +501,7 @@ $link
             ];
         }
         $inline_keyboard[] = [
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
         ];
 
         Telegram::api('editMessageText',[
@@ -537,7 +537,7 @@ $link
         }
         $inline_keyboard[] = [
             ['text' => '➕ افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
         ];
 
         Telegram::api('editMessageText',[
@@ -561,7 +561,7 @@ $link
             ]);
             return;
         } else {
-            setBackTo($update->cb_data_chatid,'bankCards','data');
+            # setBackTo($update->cb_data_chatid,'bankCards','data');
             setUserStep($update->cb_data_chatid,'addBankCard');
             setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
             Telegram::api('editMessageText',[
@@ -581,7 +581,7 @@ $link
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'bankCards'],
                         ]
                     ],
                 ]
@@ -654,7 +654,7 @@ $link
             ]
         ]);
     } elseif ($data == "faqs") {
-        setBackTo($update->cb_data_chatid,'support','data');
+        # setBackTo($update->cb_data_chatid,'support','data');
         Telegram::api('editMessageText', [
                 'chat_id' => $update->cb_data_chatid,
                 'message_id' => $update->cb_data_message_id,
@@ -681,7 +681,7 @@ $link
                         ],
                         [
                             ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'support'],
                         ]
                     ],
                 ]
@@ -887,7 +887,7 @@ $link
             ]
         ]);
     } elseif (preg_match("/bankcard_data_(.*)/",$data,$result)) {
-        setBackTo($update->cb_data_chatid,'bankCards','data');
+        # setBackTo($update->cb_data_chatid,'bankCards','data');
 
         $BankCard = getbankcard($result[1]);
         if ($BankCard['status'] == App\Enum\BankCardStatus::PENDING->value || $BankCard['status'] == App\Enum\BankCardStatus::WAITING_CONFIRMATION->value) {
@@ -914,11 +914,11 @@ $link
         if ($BankCard['status'] == App\Enum\BankCardStatus::APPROVED->value){
             $inline_keyboard[] = [
                 ['text' => 'حذف 🗑', 'callback_data'=>'delete_bankcard_'.$BankCard['id']],
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'bankCards'],
             ];
         } else {
             $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'bankCards'],
             ];
         }
         Telegram::api('editMessageText',[
@@ -940,7 +940,7 @@ $bankcardReasonText
         ]);
 
     } elseif (preg_match("/delete_bankcard_(.*)/",$data,$result)) {
-        setBackTo($update->cb_data_chatid,'bankCards','data');
+        # setBackTo($update->cb_data_chatid,'bankCards','data');
 
         $BankCard = getbankcard($result[1]);
         $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
@@ -969,7 +969,7 @@ $bankcardReasonText
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'bankCards'],
                     ]
                 ],
             ]
