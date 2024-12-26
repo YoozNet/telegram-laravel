@@ -219,7 +219,7 @@ try {
     } elseif (preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
         $order_service_by = $result[1]; 
         $service_type = $result[2];
-        
+        $userData = getUser($update->cb_data_chatid);
         setBackTo($update->cb_data_chatid,'order_service_'.$service_type,'data');
         setUserStep($update->cb_data_chatid,'none');
 
@@ -232,7 +232,6 @@ try {
             if($size == "custom") {
                 setUserStep($update->cb_data_chatid,'custom_value');
 
-                $userData = getUser($update->cb_data_chatid);
                 $limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
 
                 setUserTmp($update->cb_data_chatid,'service_type',$service_type);
@@ -258,20 +257,30 @@ try {
             $t = "پلن ".$serviceData['plans'][$plan_id]['name'];
         }
 
-        $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $price_irt = $price['irt'] * $size;
-        $price_yc = $price['yc'] * $size;
+        if($userData['group_id'] == 0 && $size > 10) {
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "شما اجازه خرید حجم بالای 10 گیگ را ندارید",
+            ]);
+        } else {
+            $price = getServicePrice($update->cb_data_chatid,$service_type);
+            $price_irt = $price['irt'] * $size;
+            $price_yc = $price['yc'] * $size;
 
-        Telegram::api('editMessageText',[
-            "message_id" => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid,
-            'parse_mode' => 'Markdown',
-            'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
 
-💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "🔔 شما در حال خرید **$t** از سرویس ". $serviceData['name'] ." هستید.
 
-✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
-        ]);
+    💰 هزینه این سرویس: $price_yc یوزکوین معادل ".number_format($price_irt, 0, '', ',')." تومان می شود. 
+
+    ✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
+            ]);
+        }
 
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
