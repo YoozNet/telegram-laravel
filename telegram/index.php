@@ -492,7 +492,6 @@ try {
             setUserStep($update->cb_data_chatid,'addBalance_2');
             setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff);
             setUserTmp($update->cb_data_chatid,'waitpay_for_service',1);
-            setUserTmp($update->cb_data_chatid,'user_id',$userID);
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
             foreach ($cardBanks as $cardData) {
