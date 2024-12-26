@@ -1496,6 +1496,10 @@ $invoiceReasonText
         $department = $result[1];
         setUserTmp($update->cb_data_chatid,'new_ticket_department',$department);
         setUserStep($update->cb_data_chatid,'new_ticket_3');
+        Telegram::api('deleteMessage',[
+            'message_id' => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid
+        ]);
         Telegram::api('sendMessage',[
             'chat_id' => $update->cb_data_chatid,
             'text' => "🎉 تبریک! واحد شما برای پیگیری انتخاب شد.
