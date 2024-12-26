@@ -1457,7 +1457,7 @@ $invoiceReasonText
         setUserStep($chat_id,'new_ticket_2');
         setUserTmp($chat_id,'new_ticket_title',$text);
         $inline_keyboard = [];
-        foreach(GetAllDepartments() as $key_name => $key_fa) {
+        foreach(GetAllDepartments()['departments'] as $key_name => $key_fa) {
             if ($key_name == "UnableToConnect") {
                 continue;
             }
@@ -1474,7 +1474,6 @@ $invoiceReasonText
 شما می‌توانید انتخاب کنید که با کدام واحد ارتباط برقرار کنید.  
 🔹 این تیکت مربوط به کدام واحد زیر می‌باشد؟
 لطفاً واحد مورد نظر خود را انتخاب کنید! 🚀",
-            'parse_mode' => 'Markdown',
             'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
@@ -1534,7 +1533,7 @@ $invoiceReasonText
         }
         $userData = getUser($chat_id);
         $ticket_id = Database::create('YN_tickets',
-            ['user_id','title','department','status','ip_address','created_at', 'updated_at'],
+            ['user_id','title','department','status','created_at', 'updated_at'],
                 [
                     $userData['id'],
                     $tmp['new_ticket_title'],
@@ -1556,7 +1555,7 @@ $invoiceReasonText
                     date("Y-m-d H:i:s")
                 ]
         );
-        $webservice = API::sendTicket(["user_id" => $userData['id'],"ticket_id" => $ticket_id,'type' => 'Ticket']);
+        $webservice = API::sendTicket(["user_id" => $userData['id'],"ticket_id" => $ticket_id,'type' => 'Ticket','message' => $reply_text]);
             if ($webservice['status'] == true) {
                 $name = GetDepartments($tmp['new_ticket_department']);
                 Telegram::api('sendMessage',[
@@ -1571,7 +1570,7 @@ $invoiceReasonText
                     'reply_markup' => [
                         'inline_keyboard' => [
                             [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'new_ticket'],
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
                             ]
                         ],
                     ]
