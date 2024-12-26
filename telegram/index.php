@@ -190,7 +190,8 @@ try {
         $inline_keyboard[] = [
             ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
         ];
-        Telegram::api('sendMessage',[
+        Telegram::api('editMessageText',[
+            "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
             'text' => "
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
