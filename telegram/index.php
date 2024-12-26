@@ -129,7 +129,19 @@ try {
             }
         }
     } elseif($text == '⚜️ ثبت سرویس جدید ') {
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+            1
+            ",
+        ]);
         $serviceList = GetAllServices();
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+            2
+            ",
+        ]);
         $serviceDetail = "";
         foreach($serviceList as $service) {
             $serviceDetail .= "
