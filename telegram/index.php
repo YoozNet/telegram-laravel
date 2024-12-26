@@ -195,7 +195,6 @@ try {
             'chat_id' => $update->cb_data_chatid,
             'text' => "
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
-            'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => $inline_keybaord
             ]
