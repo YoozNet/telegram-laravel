@@ -495,6 +495,8 @@ try {
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
             foreach ($cardBanks as $cardData) {
+                error_log(json_encode($cardData,128|256));
+                error_log('addBalance_select_'. $cardData['id']);
                 $inline_keyboard[] = [
                     ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
                 ];
