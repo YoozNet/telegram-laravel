@@ -1441,6 +1441,7 @@ $invoiceReasonText
             ]
         ]);
     } elseif ($step == 'addBalance_2') {
+        error_log('data: '.$data);
         $id = preg_match("/addBalance_select_(.*)/",$data,$result);
         error_log('step is ok');
         error_log(json_encode($result,128|256));
