@@ -298,7 +298,7 @@ if(!function_exists('deleteUserTmp')) {
     function deleteUserTmp($userId,array $keys) {
         $allTmps = getAllUserTmp($userId);
         foreach ($keys as $key) {
-            $allTmps[$key] = null;
+            unset($allTmps[$key]);
         }
         return Database::update('YN_users', ['data'],[json_encode($allTmps)], 'user_id =?', [$userId]);
     }   
