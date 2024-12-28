@@ -1679,8 +1679,8 @@ $invoiceReasonText
             if ($webservice['status'] == true) {
                 deleteUserTmp($chat_id,[
                     'addBalance_cardBankNumber','addBalance_cardBankId','addBalance_userCardId',
-                    'addBalance_amount','Tax_value','YC_value','order_service_type','service_orderby',
-                    'service_type','service_size','addBalance_message_id','addBalance_created_at'
+                    'addBalance_amount','Tax_value','YC_value',
+                    'addBalance_message_id','addBalance_created_at'
                 ]);
                 $backData = getBack($chat_id);
                 if($backData['to'] != 'complate_order_service') {
