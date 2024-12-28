@@ -18,10 +18,9 @@ try {
         $backData = getBack($update->cb_data_chatid);
         Telegram::api('sendMessage',[
             'chat_id' => $update->cb_data_chatid,
-            'text' => " Back Data: 
-            ".json_encode($backData,128|256)."
-            "
+            'text' => " JSON ENCODE: ".json_encode($backData,128|256)
         ]);
+
         if($backData['as'] == 'text') {
             $text = $backData['to'];
             $chat_id = $update->cb_data_chatid;
@@ -33,6 +32,18 @@ try {
             }
         } elseif($backData['as'] == 'data') {
             $data = $backData['to'];
+            if($backData['new_message'] == true) {
+                Telegram::api('deleteMessage',[
+                    'message_id' => $update->cb_data_message_id,
+                    'chat_id' => $chat_id
+                ]);
+                $sendMessage = Telegram::api('sendMessage',[
+                    'chat_id' => $update->cb_data_chatid,
+                    'text' => "لطفا چند لحظه صبر کنید..."
+                ]);
+                $update->cb_data_message_id = json_decode($sendMessage->getContents(),1)['result']['message_id'];
+            }
+
         }
 
     }
@@ -881,7 +892,7 @@ $link
             #  setUserTmp($update->cb_data_chatid,'service_orderby
             # order_service2_'.$service_orderby.'_'.$service_type.'_'.$service_size
             # order_service2_bygig_'.$serviceType.'_'.$volume
-            setBackTo($update->cb_data_chatid,'complate_order_service','data');
+            setBackTo($update->cb_data_chatid,'complate_order_service','data',false,true);
             $inline_keyboard[] = [
                 ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service2_'.$service_orderby.'_'.$service_type.'_'.$service_size],
             ];

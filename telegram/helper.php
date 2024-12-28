@@ -131,10 +131,10 @@ if(!function_exists('getUserStep')) {
 }
 
 if(!function_exists('setBack')) {
-    function setBackTo($userId, $back_to,$as="text",$delete_message=true) {
+    function setBackTo($userId, $back_to,$as="text",$delete_message=true,$new_message=false) {
         $getData = getUser($userId);
         $getData = json_decode($getData['data'],1);
-        $getData['back'] = ['to'=>$back_to, 'as'=>$as, 'delete_message'=>$delete_message];
+        $getData['back'] = ['to'=>$back_to, 'as'=>$as, 'delete_message'=>$delete_message,'new_message'=>$new_message];
         return Database::update('YN_users', ['data'],[json_encode($getData)], 'user_id =?', [$userId]);
     }
 }
