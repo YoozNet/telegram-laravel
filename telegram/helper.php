@@ -294,6 +294,21 @@ if(!function_exists('getUserTmp')) {
     }
 }
 
+if(!function_exists('deleteUserTmp')) {
+    function deleteUserTmp($userId,array $keys) {
+        $allTmps = getAllUserTmp($userId);
+        foreach ($keys as $key) {
+            $allTmps[$key] = null;
+        }
+        return Database::update('YN_users', ['data'],[json_encode($allTmps)], 'user_id =?', [$userId]);
+    }   
+}
+
+if(!function_exists('clearUserTmp')) {
+    function clearUserTmp($userId) {
+        return Database::update('YN_users', ['data'],[json_encode([])], 'user_id =?', [$userId]);
+    }   
+}
 
 if(!function_exists('getAllUserTmp')) {
     function getAllUserTmp($userId) {

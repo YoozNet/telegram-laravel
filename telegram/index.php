@@ -47,6 +47,7 @@ try {
     if($text == "/start" || isset($text) && explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
         if ($existing_user) {
+            clearUserTmp($chat_id);
             setUserStep($chat_id,'none');
             Telegram::api('sendMessage',[
                 'reply_to_message_id' => $update->message_id,
@@ -276,6 +277,7 @@ try {
             ]
         ]);
     } elseif($text == '⚜️ ثبت سرویس جدید') {
+        setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
         $serviceList = GetAllServices();
         $serviceDetail = "در این بخش می‌توانید نوع سرویسی که قصد دارید تهیه کنید را مشخص کنید ! 😊 \n\n";
@@ -437,6 +439,7 @@ try {
             ]
         ]);
     } elseif ($data == "invite_friends") {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');
         $userData = getUser($update->cb_data_chatid);
         $referral = $userData['referral_id'];
@@ -465,6 +468,7 @@ $link
         ]);
 
     } elseif ($data == "set_default_cardnumber") {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');
         $activeBanks = getAdminCards();
         if ($activeBanks == []) {
@@ -552,6 +556,7 @@ $link
             ]
         ]);
     } elseif ($data == "Invoices") {
+        setUserStep($update->cb_data_chatid,'none');
         $userData = getUser($update->cb_data_chatid);
         $invoiceList = getUserInvoices($userData['id'],10);
         if (empty($invoiceList)) {
@@ -605,6 +610,7 @@ $link
             ]
         ]);
     } elseif ($data == "bankCards") {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'wallet','data');
         $userData = getUser($update->cb_data_chatid);
         $BankCardList = getUserBankCards($userData['id'],10);
@@ -643,6 +649,7 @@ $link
             ]
         ]);
     } elseif ($data == "add_bank_card") {
+        setUserStep($update->cb_data_chatid,'none');
         $userData = getUser($update->cb_data_chatid);
         $group_id = App\Enum\UserGroupEnum::from($userData['group_id'])->bankCardLimit();
         $getCountBankCardActive = count(getUserBankCardsActive($userData['id']));
@@ -682,6 +689,7 @@ $link
             ]);
         }
     } elseif ($data == "AddBalance") {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'👝 کیف پول','text');
         $userData = getUser($update->cb_data_chatid);
         $cardBanks = getCardsBank($userData['id']);
@@ -748,6 +756,7 @@ $link
             ]
         ]);
     } elseif ($data == "faqs") {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'faqs','data');
         Telegram::api('editMessageText', [
                 'chat_id' => $update->cb_data_chatid,
@@ -781,6 +790,7 @@ $link
                 ]
             ]);
     } elseif ($data == 'new_ticket') {
+        setUserStep($update->cb_data_chatid,'none');
         $userData = getUser($update->cb_data_chatid);
         $TicketList = getUserTickets($userData['id']);
         $lastTicketTime = strtotime($TicketList[0]['created_at']);
@@ -818,6 +828,7 @@ $link
         //
         
     } elseif ($data == "Tickets") {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Tickets','data');
         $userData = getUser($update->cb_data_chatid);
         $TicketList = getUserTickets($userData['id']);
@@ -963,6 +974,7 @@ $link
             ]);
         }
     } elseif (isset($data) && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
+        setUserStep($update->cb_data_chatid,'none');
         $ticketId = $result[1];
         $ticketMessageId = $result[2];
         $show_ticket = getUserTmp($update->cb_data_chatid,'show_ticket');
@@ -1083,6 +1095,7 @@ $link
             ]
         ]);
     } elseif (isset($data) && preg_match("/ticket_attachment_(.*)_(.*)/",$data,$result)) {
+        setUserStep($update->cb_data_chatid,'none');
         # ticket_attachment_'.$ticketId.'_'.$ticketMessageId
         $getTicketMessages = getTicketMessage($result[1]);
         $getTicketMessage = $getTicketMessages[$result[2]];
@@ -1098,6 +1111,7 @@ $link
         ]);
 
     } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];
         $existingCard = adminCardNumber($update->cb_data_chatid);
@@ -1126,6 +1140,7 @@ $link
             ]
         ]);
     } elseif (isset($data) && preg_match("/bankcard_data_(.*)/",$data,$result)) {
+        setUserStep($update->cb_data_chatid,'none');
         $BankCard = getbankcard($result[1]);
         if ($BankCard['status'] == App\Enum\BankCardStatus::PENDING->value || $BankCard['status'] == App\Enum\BankCardStatus::WAITING_CONFIRMATION->value) {
             Telegram::api('answerCallbackQuery', [
@@ -1177,6 +1192,7 @@ $bankcardReasonText
         ]);
 
     } elseif (isset($data) && preg_match("/delete_bankcard_(.*)/",$data,$result)) {
+        setUserStep($update->cb_data_chatid,'none');
         $BankCard = getbankcard($result[1]);
         $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
         if ($BankCard['status'] != App\Enum\BankCardStatus::APPROVED->value) {
@@ -1211,6 +1227,7 @@ $bankcardReasonText
         ]);
 
     } elseif (isset($data) && preg_match("/invoice_data_(.*)/",$data,$result)) {
+        setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Invoices','data');
 
         $invoices = getInvoice($result[1]);
