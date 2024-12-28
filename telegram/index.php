@@ -169,6 +169,7 @@ try {
                 ['text' => $service['id'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
             ];
         }
+        
         $inline_keyboard[] = [
             ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
         ];
