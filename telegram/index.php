@@ -913,8 +913,8 @@ $link
 
         $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
         if ($webservice['status'] == true) {
-            Telegram::api('sendMessage',[
-                'chat_id' => $chat_id,
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
                 'text' => "سرویس ( $service_id ) با موفقیت تهیه شد. بابت تهیه این سرویس از شما سپاسگزاریم.
 
 لازم به ذکر است که سرویس شما هنوز نهایی نشده و در حال ساخت است. لطفاً منتظر بمانید تا فرایند فعال‌سازی به طور کامل انجام شود. به محض اتمام، به شما اطلاع‌رسانی خواهد شد.",
@@ -929,7 +929,7 @@ $link
             ]);
         } else {
             Telegram::api('sendMessage',[
-                'chat_id' => $chat_id,
+                'chat_id' => $update->cb_data_chatid,
                 'text' => "سرویس شما به دلیل ( ".$webservice['message']." ) ساخته نشد.",
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
@@ -941,19 +941,6 @@ $link
                 ]
             ]);
         }
-        Telegram::api('editMessageText',[
-            "message_id" => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid,
-            'parse_mode' => 'Markdown',
-            'text' => "
-    سرویس تایپ: ".$service_type."
-    سرویس سایز: ".$service_size."
-    irr wallet: ".$userData['irr_wallet']."
-    price irt: ".$price_irt."
-    price yc: ".$price_yc."
-            ",
-        ]);
-
     } elseif (isset($data) && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
         $ticketId = $result[1];
         $ticketMessageId = $result[2];
