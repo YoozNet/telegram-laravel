@@ -225,13 +225,14 @@ try {
         }
         */
 
+        $last_key = count($inline_keyboard);
         if((($page + 1) * 10) < countUserService ($getUser['id'])) {
-            $inline_keyboard[] = [
+            $inline_keyboard[$last_key] = [
                 ['text' => 'صفحه بعدی', 'callback_data'=>'get_service_page_'.$page+1],
             ];
         }
         if($page != 0) {
-            $inline_keyboard[] = [
+            $inline_keyboard[$last_key] = [
                 ['text' => 'صفحه قبلی', 'callback_data'=>'get_service_page_'.$page-1],
             ];
         }
