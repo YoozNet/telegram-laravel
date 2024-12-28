@@ -146,6 +146,17 @@ try {
         setBackTo($chat_id,'/start','text');
         setUserTmp($chat_id,'servicelist_page',0);
         $getUser = getUser($chat_id);
+        $countUserService = countUserService ($getUser['id']);
+        if($countUserService == 0) {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "
+سرویسی نداری
+                ",
+                'reply_to_message_id' => $update->message_id,
+            ]);
+            return;
+        }
         $services = getUserService ($getUser['id']);
         $serviceList = GetAllServices();
         $inline_keyboard = [];
@@ -171,7 +182,7 @@ try {
             ];
         }
 
-        if(countUserService ($getUser['id']) > 10) {
+        if($countUserService > 10) {
             $inline_keyboard[] = [
                 ['text' => 'صفحه بعدی', 'callback_data'=>'get_service_page_1'],
             ];
