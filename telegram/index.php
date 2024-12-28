@@ -302,16 +302,18 @@ try {
 
             $price = getServicePrice($chat_id,$service_type);
             $price_yc = $price['yc'] * $service_size;
-            if($userData['irr_wallet'] < $price_yc) {
+
+            if($userData['irr_wallet'] >= $price_yc) {
                 setUserTmp($chat_id,'waitpay_for_service',0);
                 $t = "آخرین سفارش شما به دلیل عدم موجودی نهایی نشده است. ⚠️ \t";
+                $size = "";
                 if ($service_type == "unlimited") {
                     $unlimitedPlans = $serviceList[$service_type]['plans'];
                     $selectedPlanName = "";
-
-                    foreach ($unlimitedPlans as $plan) {
+                    foreach ($unlimitedPlans as $planId => $plan) {
                         if ($plan['data_total'] == $service_size) {
                             $selectedPlanName = $plan['name'];
+                            $size = $planId;
                             break;
                         }
                     }
@@ -320,6 +322,7 @@ try {
 
                 } else {
                     $t .= "شما قصد تهیه $service_size گیگابایت حجم از سرویس ".$serviceList[$service_type]['name']." را داشتید.";
+                    $size = $userTmp['service_size'];
                 }
                 $t .= "\n \n🎗 هم اکنون اعتبار حساب کاربری شما برابر با مبلغ این سفارش است ، آیا مایل به نهایی کردن این سفارش هستید؟ 🤔✨";
                 Telegram::api('sendMessage',[
@@ -330,7 +333,7 @@ try {
                     'reply_markup' => [
                         'inline_keyboard' => [
                             [
-                                ['text' => 'تکمیل سفارش ✅', 'callback_data'=>'order_service2_'.$userTmp['service_orderby'].'_'.$userTmp['order_service_type'].'_'.$userTmp['service_size']],
+                                ['text' => 'تکمیل سفارش ✅', 'callback_data'=>'order_service2_'.$userTmp['service_orderby'].'_'.$userTmp['order_service_type'].'_'.$size],
                             ],
                         ],
                     ]
@@ -851,8 +854,10 @@ $link
 
 
         if($userData['irr_wallet'] < $price_yc) {
-            $diff = $price_yc - $userData['irr_wallet'];
-            $diff_toman = $diff * $price['irt'];
+            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
+
+            $config = GetConfig();
+            $diff_toman = $config['yc_price'] * $diff;
 
             setUserStep($update->cb_data_chatid,'addBalance_2');
             setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
@@ -883,7 +888,51 @@ $link
                 ]
             ]);
             return;
-        } Telegram::api('editMessageText',[
+        } 
+
+        if ($service_type == "tunnel") {
+            $service_size /= 2;
+        }
+
+        $service_id = Database::create('YN_services',
+            ['user_id','buy_method','main_traffic','status','created_at', 'updated_at'],
+                [
+                    $userData['id'],
+                    3,
+                    $service_size,
+                    App\Enum\ServiceStatus::PENDING->value,
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s")
+                ]
+        );
+        if ($service_type == "unlimited") {
+            $unlimitedPlans = GetAllServices()[$service_type]['plans'];
+            foreach ($unlimitedPlans as $planId => $plan) {
+                if ($plan['data_total'] == $service_size) {
+                    $service_size = $planId;
+                    break;
+                }
+            }
+        }
+
+        $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
+        if ($webservice['status'] == true) {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "سرویس ( $service_id ) با موفقیت تهیه شد. بابت تهیه این سرویس از شما سپاسگزاریم.
+
+لازم به ذکر است که سرویس شما هنوز نهایی نشده و در حال ساخت است. لطفاً منتظر بمانید تا فرایند فعال‌سازی به طور کامل انجام شود. به محض اتمام، به شما اطلاع‌رسانی خواهد شد.",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+        Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
             'parse_mode' => 'Markdown',
@@ -1346,7 +1395,7 @@ $invoiceReasonText
                 ]);
                 return;
             }
-        } else {
+        } elseif($order_service_by == "plan") {
             $plan_id = $result[3];
             if($userData['group_id'] == 0 && $plan_id != 1) {
                 Telegram::api('editMessageText',[
@@ -1388,8 +1437,8 @@ $invoiceReasonText
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
+                        ['text' => 'ادامه خرید 🎗', 'callback_data'=>'complate_order_service'],
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
-                        ['text' => 'ادامه خرید', 'callback_data'=>'complate_order_service'],
                     ]
                 ]
             ]
@@ -1747,22 +1796,22 @@ $invoiceReasonText
                 ]
         );
         $webservice = API::sendTicket(["user_id" => $user_id,"ticket_id" => $ticket_id,'type' => 'TicketMessage']);
-            if ($webservice['status'] == true) {
-                Telegram::api('sendMessage',[
-                    'chat_id' => $chat_id,
-                    'text' => "خبر خوب! تیکت ( $ticket_id ) شما به روز شد.
+        if ($webservice['status'] == true) {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "خبر خوب! تیکت ( $ticket_id ) شما به روز شد.
 مشترک گرامی ، پاسخ شما رو دریافت کردیم و به زودی به آن پاسخ می دهیم.",
-                    'parse_mode' => 'Markdown',
-                    'reply_to_message_id' => $update->message_id,
-                    'reply_markup' => [
-                        'inline_keyboard' => [
-                            [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'ticket_data_'.$ticket_id.'_0'],
-                            ]
-                        ],
-                    ]
-                ]);
-            }
+                'parse_mode' => 'Markdown',
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'ticket_data_'.$ticket_id.'_0'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
     } elseif ($step == "new_ticket_1") {
         setUserStep($chat_id,'new_ticket_2');
         setUserTmp($chat_id,'new_ticket_title',$text);
@@ -1870,26 +1919,26 @@ $invoiceReasonText
                 ]
         );
         $webservice = API::sendTicket(["user_id" => $userData['id'],"ticket_id" => $ticket_id,'type' => 'Ticket','message' => $reply_text]);
-            if ($webservice['status'] == true) {
-                $name = GetDepartments($tmp['new_ticket_department']);
-                Telegram::api('sendMessage',[
-                    'chat_id' => $chat_id,
-                    'text' => "درخواست شما برای بررسی به واحد $name ارسال شد.  👥
+        if ($webservice['status'] == true) {
+            $name = GetDepartments($tmp['new_ticket_department']);
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "درخواست شما برای بررسی به واحد $name ارسال شد.  👥
 
 حداکثر زمان بررسی 3 ساعت کاری می باشد ( ساعت کاری همه روزه از ساعت 8 صبح الی 12 بامداد ). 🕙
 
 بعد از بررسی ، جواب برای شما ارسال می شود! ♨️",
-                    'parse_mode' => 'Markdown',
-                    'reply_to_message_id' => $update->message_id,
-                    'reply_markup' => [
-                        'inline_keyboard' => [
-                            [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
-                            ]
-                        ],
-                    ]
-                ]);
-            }
+                'parse_mode' => 'Markdown',
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
     } elseif ($step == 'custom_value') {
         $tmp = getAllUserTmp($chat_id);
         $service_limit = $tmp['service_limit'];

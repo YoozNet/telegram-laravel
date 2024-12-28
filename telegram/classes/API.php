@@ -36,4 +36,8 @@ class API
     {
         return self::request('tg/ticket', $data); 
     }
+    public static function buyservice($data)
+    {
+        return self::request('tg/service/buy', $data); 
+    }
 }
