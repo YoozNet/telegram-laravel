@@ -1526,9 +1526,9 @@ $invoiceReasonText
                 $cardBankNumber = $cardInfo;
                 $cardBankImage = $cardNumber['card_image_file_id'];
                 $cardBankId = $cardNumber['id'];
-                $iban = $cardNumber['iban'];
+                $iban = $cardNumber['iban'] ?? 'تنظیم نشده';
                 $bank = getBankName($cardNumber['bank']);
-                $fullname = $cardNumber['first_name'] . " " . $cardNumber['last_name'];
+                $fullname = $cardNumber['first_name'] ?? 'تنظیم نشده' . " " . $cardNumber['last_name'] ?? 'تنظیم نشده';
             } else {
                 $findAsName = getBankByName($data['bank']);
                 if(count($findAsName) > 0) {
@@ -1573,6 +1573,12 @@ $invoiceReasonText
             ]);
 
             $backData = getBack($update->cb_data_chatid);
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => " Back Data: 
+                ".json_encode($backData,128|256)."
+                "
+            ]);
             if($backData['to'] != 'complate_order_service') {
                 setBackTo($update->cb_data_chatid,'wallet','data');
             }
