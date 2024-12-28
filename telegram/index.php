@@ -161,11 +161,11 @@ try {
             $days_left = round(($expired_at - time()) / 86400);
             $status = App\Enum\ServiceStatus::from($service['status'])->text();
             $inline_keyboard[] = [
-                ['text' => '-', 'callback_data'=>'open_service_'.$service['id']],
-                ['text' => $status, 'callback_data'=>'open_service_'.$service['id']],
-                ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$service['id']],
-                ['text' => $type, 'callback_data'=>'open_service_'.$service['id']],
-                ['text' => $service['id'], 'callback_data'=>'open_service_'.$service['id']],
+                ['text' => '🔍', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $status, 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $type, 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $service['id'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
             ];
         }
         $inline_keyboard[] = [
@@ -180,41 +180,53 @@ try {
             ]
         ]);
 
-    } elseif (isset($data) && preg_match('/open_service_(.*)/',$data,$result)) {
-        $service_id = $result[1];
+    } elseif (isset($data) && preg_match('/open_service_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
         $serviceData = getService($service_id);
         $status = $serviceData['status'];
         if(!in_array($status,[2,5,6])) {
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
-                'text' => "شما اجازه ندارید این سرویس را مدیریت کنید",
+                'text' => "⛔️ متاسفانه، شما مجاز به مدیریت این سرویس نیستید.",
                 'show_alert' => true,
             ]);
             return;
         } else {
             setBackTo($update->cb_data_chatid,'🗂 سرویس های من','text');
+
             $main_traffic = $serviceData['main_traffic'];
-            $traffic = $serviceData['traffic'];
-            $total_traffic = $traffic + $main_traffic;
             $data_usage = $serviceData['data_usage'];
-            $total_usage = $serviceData['total_usage'];
             $subscribe_uuid = $serviceData['subscribe_uuid'];
             $expired_at = $serviceData['expired_at'];
+            
+            $config = GetConfig();
+            $link = $config['uuid-subscripe'] . $subscribe_uuid;
+
+            $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
+            $t .= "🔗 لینک جهت اتصال : \n ``` $link ``` \n";
+            $t .= "📅 انقضا: $expired_at \n";
+
+            $total_traffic = 0;
+            $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
+            if ($type == "unlimited") {
+                $total_traffic = $main_traffic;
+                $total_usage = $serviceData['total_usage'];
+            } else {
+                $traffic = $serviceData['traffic'];
+                $total_traffic = $traffic + $main_traffic;
+                
+            }
+
+            $t .= "📊 ترافیک: $data_usage GB / $total_traffic GB \n";
+            if ($type == "unlimited") { $t .= "🌞 حجم مصرف امروز :  $data_usage GB \n"; }
+            
+            $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n \n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
 
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 'message_id' => $update->cb_data_message_id,
-                'text' => "
-                اطلاعات سرویس:
-status: $status
-main_traffic: $main_traffic
-traffic: $traffic
-total_traffic: $total_traffic
-data_usage: $data_usage
-total_usage: $total_usage
-subscribe_uuid: $subscribe_uuid
-expired_at: $expired_at
-                ",
+                'text' => $t,
                 'reply_to_message_id' => $update->message_id,
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
