@@ -57,7 +57,7 @@ try {
                     'reply_markup' => [
                         'keyboard' => [
                             [
-                                ['text' => '🗂 سرویس های من '],
+                                ['text' => '🗂 سرویس های من'],
                                 ['text' => '⚜️ ثبت سرویس جدید'],
                             ],
                             [
@@ -91,7 +91,7 @@ try {
                         'reply_markup' => [
                         'keyboard' => [
                             [
-                                ['text' => '🗂 سرویس های من '],
+                                ['text' => '🗂 سرویس های من'],
                                 ['text' => '⚜️ ثبت سرویس جدید'],
                             ],
                             [
@@ -124,7 +124,7 @@ try {
                     'reply_markup' => [
                         'keyboard' => [
                             [
-                                ['text' => '🗂 سرویس های من '],
+                                ['text' => '🗂 سرویس های من'],
                                 ['text' => '⚜️ ثبت سرویس جدید'],
                             ],
                             [
@@ -141,6 +141,45 @@ try {
                 ]);
             }
         }
+    } elseif ($text == '🗂 سرویس های من') {
+        setUserStep($chat_id,'none');
+        setBackTo($chat_id,'/start','text');
+        $getUser = getUser($chat_id);
+        $services = getUserService ($getUser['id']);
+        $inline_keyboard = [];
+        $inline_keyboard[] = [
+            ['text' => '-', 'callback_data'=>'open_service'],
+            ['text' => 'وضعیت', 'callback_data'=>'open_service'],
+            ['text' => 'تعداد روز های باقیمانده', 'callback_data'=>'open_service'],
+            ['text' => 'نوع', 'callback_data'=>'open_service'],
+            ['text' => 'شناسه', 'callback_data'=>'open_service'],
+        ];
+        foreach ($services as $service) {
+            $server_id = $service['server_id'];
+            $type = serverToType($server_id);
+            $expired_at = strtotime($service['expired_at']);
+            $days_left = round(($expired_at - time()) / 86400);
+            $inline_keyboard[] = [
+                ['text' => '-', 'callback_data'=>'open_service_'.$service['id']],
+                ['text' => $service['status'], 'callback_data'=>'open_service_'.$service['id']],
+                ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$service['id']],
+                ['text' => $type, 'callback_data'=>'open_service_'.$service['id']],
+                ['text' => $service['id'], 'callback_data'=>'open_service_'.$service['id']],
+            ];
+        }
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+        ];
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "شما در این بخش لیست سرویس های خود را مشاهده میکنید و میتوانید آنهارا مدیریت کنید",
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard
+            ]
+        ]);
+
+
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');

@@ -442,3 +442,23 @@ if(!function_exists('getServicePrice')) {
         ];
     }
 }
+
+if(!function_exists('getUserService')) {
+    function getUserService ($userId) {
+        return Database::select("YN_services", ["*"], 'user_id = ?', [$userId],null,null,'id');
+    }
+}
+
+if(!function_exists('serverIdToType')) {
+    function serverToType($server_id) {
+        $server = Database::select("YN_servers", ["location"], 'id = ?', [$server_id])[0];
+        $locations = [
+            "IR" => 'tunnel',
+            "DE" => 'direct',
+            "TR" => 'gaming',
+            "NL" => 'secure',
+            "FI" => 'unlimited'
+        ];
+        return $locations[$server['location']];
+    }
+}
