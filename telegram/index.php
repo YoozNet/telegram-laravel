@@ -229,13 +229,13 @@ try {
             $inline_keyboard[] = [
                 ['text' => 'صفحه بعدی', 'callback_data'=>'get_service_page_'.$page+1],
             ];
-        } else {
-            if($page != 0) {
-                $inline_keyboard[] = [
-                    ['text' => 'صفحه قبلی', 'callback_data'=>'get_service_page_'.$page-1],
-                ];
-            }
         }
+        if($page != 0) {
+            $inline_keyboard[] = [
+                ['text' => 'صفحه قبلی', 'callback_data'=>'get_service_page_'.$page-1],
+            ];
+        }
+        
 
         $inline_keyboard[] = [
             ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
