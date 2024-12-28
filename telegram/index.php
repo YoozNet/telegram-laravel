@@ -890,10 +890,6 @@ $link
             return;
         } 
 
-        if ($service_type == "tunnel") {
-            $service_size /= 2;
-        }
-
         $service_id = Database::create('YN_services',
             ['user_id','buy_method','main_traffic','status','created_at', 'updated_at'],
                 [
