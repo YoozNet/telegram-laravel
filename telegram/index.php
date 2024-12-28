@@ -35,7 +35,7 @@ try {
             if($backData['new_message'] == true) {
                 Telegram::api('deleteMessage',[
                     'message_id' => $update->cb_data_message_id,
-                    'chat_id' => $chat_id
+                    'chat_id' => $update->cb_data_chatid
                 ]);
                 $sendMessage = Telegram::api('sendMessage',[
                     'chat_id' => $update->cb_data_chatid,
