@@ -1561,10 +1561,6 @@ $invoiceReasonText
                 $firstName = $cardNumber['first_name'] ?? 'تنظیم نشده';
                 $lastName = $cardNumber['last_name'] ?? 'تنظیم نشده';
                 $fullname =  $firstName." ".$lastName;
-                Telegram::api('sendMessage',[
-                    'chat_id' => $update->cb_data_chatid,
-                    'text' => "json: " . json_encode($cardNumber,128|256),
-                ]);
                 
             } else {
                 $findAsName = getBankByName($data['bank']);

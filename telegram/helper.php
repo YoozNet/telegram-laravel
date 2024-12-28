@@ -49,7 +49,7 @@ if(!function_exists("adminCardNumber")) {
         if(is_null($adminCard)) {
             return null;
         }
-        $findCard = Database::select("YN_admin_bank_cards", ["id","bank","card_number","card_image_file_id"], "id = ?", [$adminCard])[0];
+        $findCard = Database::select("YN_admin_bank_cards", ["*"], "id = ?", [$adminCard])[0];
         return $findCard;
     }
 }
