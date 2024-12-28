@@ -16,6 +16,12 @@ try {
 
     if($data == "back") {
         $backData = getBack($update->cb_data_chatid);
+        Telegram::api('sendMessage',[
+            'chat_id' => $update->cb_data_chatid,
+            'text' => " Back Data: 
+            ".json_encode($backData,128|256)."
+            "
+        ]);
         if($backData['as'] == 'text') {
             $text = $backData['to'];
             $chat_id = $update->cb_data_chatid;
@@ -1573,12 +1579,6 @@ $invoiceReasonText
             ]);
 
             $backData = getBack($update->cb_data_chatid);
-            Telegram::api('sendMessage',[
-                'chat_id' => $update->cb_data_chatid,
-                'text' => " Back Data: 
-                ".json_encode($backData,128|256)."
-                "
-            ]);
             if($backData['to'] != 'complate_order_service') {
                 setBackTo($update->cb_data_chatid,'wallet','data');
             }
