@@ -12,12 +12,7 @@ try {
     $text = $update->text ?? '';
     $data = $update->cb_data ?? '';
     $step = null;
-    if (!is_null($chat_id)) {
-        $step = getUserStep($chat_id);
-    }
-    if(!is_null($update->cb_data_chatid)) {
-        $step = getUserStep($update->cb_data_chatid);
-    }
+    
 
     if($data == "back") {
         $backData = getBack($update->cb_data_chatid);
@@ -1481,10 +1476,16 @@ $invoiceReasonText
         
 
 
-    } else
+    }
 
     ## Step's ## <-------------------------
-    
+    if (!is_null($chat_id)) {
+        $step = getUserStep($chat_id);
+    }
+    if(!is_null($update->cb_data_chatid)) {
+        $step = getUserStep($update->cb_data_chatid);
+    }
+
     if ($step == 'set_ip_address_1') {
         if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
             $response = "این یک IP نیست";
@@ -1853,6 +1854,10 @@ $invoiceReasonText
             ]);
         }
     } elseif ($step == "new_ticket_1") {
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "Debug"
+        ]);
         setUserStep($chat_id,'new_ticket_2');
         setUserTmp($chat_id,'new_ticket_title',$text);
         $inline_keyboard = [];
