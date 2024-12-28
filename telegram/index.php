@@ -213,17 +213,13 @@ try {
             if ($type == "unlimited") {
                 $total_traffic = $main_traffic;
                 $total_usage = $serviceData['total_usage'];
-            } else {
-                $traffic = $serviceData['traffic'];
-                $total_traffic = $traffic + $main_traffic;
-                
-            }
-
-            $t .= "📊 ترافیک: \n $data_usage GB / $total_traffic GB \n";
-            if ($type == "unlimited") { 
+                $t .= "📊 ترافیک: \n $total_usage GB / $total_traffic GB \n";
                 $t .= "🪫 باقی مانده: \n ".( $total_traffic * 30 ) - $total_usage ." GB \n";
                 $t .= "🌞 حجم مصرف امروز : \n $data_usage GB \n"; 
             } else {
+                $traffic = $serviceData['traffic'];
+                $total_traffic = $traffic + $main_traffic;
+                $t .= "📊 ترافیک: \n $data_usage GB / $total_traffic GB \n";
                 $t .= "🪫 باقی مانده: \n ".$total_traffic - $data_usage ." GB \n";
             }
             
