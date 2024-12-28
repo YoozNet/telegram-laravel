@@ -933,7 +933,7 @@ $link
         } else {
             Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
-                'text' => "سرویس شما به دلیل ( ".$webservice['message']." ) ساخته نشد.",
+                'text' => "سرویس شما به دلیل ( ".json_decode($webservice['message'])." ) ساخته نشد.",
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
                     'inline_keyboard' => [
