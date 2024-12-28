@@ -1492,6 +1492,7 @@ $invoiceReasonText
             'chat_id' => $chat_id,
             'text' => $response,
             'parse_mode' => 'Markdown',
+            'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -1689,7 +1690,7 @@ $invoiceReasonText
             ]);
             return;
         }
-    } elseif ($step == "addBankCard") {
+    } elseif ($text != '' && $step == "addBankCard") {
         if(!is_numeric($text) or strlen($text) < 16) {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
