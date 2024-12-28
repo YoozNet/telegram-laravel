@@ -159,9 +159,10 @@ try {
             $type = serverToType($server_id);
             $expired_at = strtotime($service['expired_at']);
             $days_left = round(($expired_at - time()) / 86400);
+            $status = App\Enum\ServiceStatus::from($service['status'])->text();
             $inline_keyboard[] = [
                 ['text' => '-', 'callback_data'=>'open_service_'.$service['id']],
-                ['text' => $service['status'], 'callback_data'=>'open_service_'.$service['id']],
+                ['text' => $status, 'callback_data'=>'open_service_'.$service['id']],
                 ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$service['id']],
                 ['text' => $type, 'callback_data'=>'open_service_'.$service['id']],
                 ['text' => $service['id'], 'callback_data'=>'open_service_'.$service['id']],
