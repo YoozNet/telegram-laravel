@@ -150,7 +150,7 @@ try {
         $inline_keyboard[] = [
             ['text' => '-', 'callback_data'=>'open_service'],
             ['text' => 'وضعیت', 'callback_data'=>'open_service'],
-            ['text' => 'تعداد روز های باقیمانده', 'callback_data'=>'open_service'],
+            ['text' => 'زمان باقیمانده', 'callback_data'=>'open_service'],
             ['text' => 'نوع', 'callback_data'=>'open_service'],
             ['text' => 'شناسه', 'callback_data'=>'open_service'],
         ];
@@ -180,7 +180,53 @@ try {
             ]
         ]);
 
+    } elseif (isset($data) && preg_match('/open_service_(.*)/',$data,$result)) {
+        $service_id = $result[1];
+        $serviceData = getService($service_id);
+        $status = $serviceData['status'];
+        if(in_array($status,[2,5,6])) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "شما اجازه ندارید این سرویس را مدیریت کنید",
+                'show_alert' => true,
+            ]);
+            return;
+        } else {
+            setBackTo($update->cb_data_chatid,'🗂 سرویس های من','text');
+            $main_traffic = $serviceData['main_traffic'];
+            $traffic = $serviceData['traffic'];
+            $total_traffic = $traffic + $main_traffic;
+            $data_usage = $serviceData['data_usage'];
+            $total_usage = $serviceData['total_usage'];
+            $subscribe_uuid = $serviceData['total_usage'];
+            $expired_at = $serviceData['expired_at'];
 
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                'message_id' => $update->cb_data_message_id,
+                'text' => "
+                اطلاعات سرویس:
+status: $status
+main_traffic: $main_traffic
+traffic: $traffic
+total_traffic: $total_traffic
+data_usage: $data_usage
+total_usage: $total_usage
+subscribe_uuid: $subscribe_uuid
+expired_at: $expired_at
+                ",
+                'reply_to_message_id' => $update->message_id,
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+    
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');

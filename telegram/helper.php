@@ -462,3 +462,9 @@ if(!function_exists('serverIdToType')) {
         return $locations[$server['location']];
     }
 }
+
+if(!function_exists('getService')) {
+    function getService($serviceId) {
+        return Database::select("YN_services", ["*"], 'id = ?', [$serviceId])[0];
+    }
+}
