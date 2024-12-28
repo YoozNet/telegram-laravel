@@ -1510,7 +1510,7 @@ $invoiceReasonText
                 ],
             ]
         ]);
-    } elseif ($step == 'addBalance_1') {
+    } elseif ($text != '' && $step == 'addBalance_1') {
         $inline_keyboard = [];
         if (!is_numeric($text) || $text < 10000 || $text > 2000000) {
             $response = "لطفاً توجه نمایید که مبلغ مورد نظر برای افزایش اعتبار باید بین ۱۰,۰۰۰ تا ۲,۰۰۰,۰۰۰ تومان باشد! 💵✨ 
