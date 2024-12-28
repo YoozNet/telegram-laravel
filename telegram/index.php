@@ -198,7 +198,7 @@ try {
             $total_traffic = $traffic + $main_traffic;
             $data_usage = $serviceData['data_usage'];
             $total_usage = $serviceData['total_usage'];
-            $subscribe_uuid = $serviceData['total_usage'];
+            $subscribe_uuid = $serviceData['subscribe_uuid'];
             $expired_at = $serviceData['expired_at'];
 
             Telegram::api('editMessageText',[
