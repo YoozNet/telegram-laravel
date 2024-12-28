@@ -146,6 +146,7 @@ try {
         setBackTo($chat_id,'/start','text');
         $getUser = getUser($chat_id);
         $services = getUserService ($getUser['id']);
+        $serviceList = GetAllServices();
         $inline_keyboard = [];
         $inline_keyboard[] = [
             ['text' => '-', 'callback_data'=>'open_service'],
@@ -164,7 +165,7 @@ try {
                 ['text' => '🔍', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
                 ['text' => $status, 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
                 ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $type, 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $serviceList[$type]['name'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
                 ['text' => $service['id'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
             ];
         }
@@ -205,7 +206,7 @@ try {
 
             $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
             $t .= "🔗 لینک جهت اتصال : \n ``` $link ``` \n";
-            $t .= "📅 انقضا: $expired_at \n";
+            $t .= "📅 انقضا: \n $expired_at \n";
 
             $total_traffic = 0;
             $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
