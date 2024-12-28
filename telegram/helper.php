@@ -116,7 +116,7 @@ if(!function_exists("splitCardNumber")) {
 if(!function_exists('setUserStep')) {
     function setUserStep($userId, $step) {
         $getData = getUser($userId);
-        $getData = json_decode($getData['data'] ?? [],1);
+        $getData = json_decode($getData['data'] ?? '[]',1);
         $getData['step'] = $step;
         return Database::update('YN_users', ['data'],[json_encode($getData)], 'user_id =?', [$userId]);
     }
