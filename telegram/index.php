@@ -184,7 +184,7 @@ try {
         $service_id = $result[1];
         $serviceData = getService($service_id);
         $status = $serviceData['status'];
-        if(in_array($status,[2,5,6])) {
+        if(!in_array($status,[2,5,6])) {
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
                 'text' => "شما اجازه ندارید این سرویس را مدیریت کنید",
