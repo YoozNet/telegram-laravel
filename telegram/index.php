@@ -1853,11 +1853,7 @@ $invoiceReasonText
                 ]
             ]);
         }
-    } elseif ($step == "new_ticket_1") {
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "Debug"
-        ]);
+    } elseif (isset($text) && $step == "new_ticket_1") {
         setUserStep($chat_id,'new_ticket_2');
         setUserTmp($chat_id,'new_ticket_title',$text);
         $inline_keyboard = [];
