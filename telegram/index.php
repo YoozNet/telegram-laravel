@@ -220,8 +220,12 @@ try {
             }
 
             $t .= "📊 ترافیک: \n $data_usage GB / $total_traffic GB \n";
-            $t .= "🪫 باقی مانده: \n ".$total_traffic - $data_usage ." GB \n";
-            if ($type == "unlimited") { $t .= "🌞 حجم مصرف امروز : \n $data_usage GB \n"; }
+            if ($type == "unlimited") { 
+                $t .= "🪫 باقی مانده: \n ".( $total_traffic * 30 ) - $total_usage ." GB \n";
+                $t .= "🌞 حجم مصرف امروز : \n $data_usage GB \n"; 
+            } else {
+                $t .= "🪫 باقی مانده: \n ".$total_traffic - $data_usage ." GB \n";
+            }
             
             $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n \n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
 
