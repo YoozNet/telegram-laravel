@@ -217,20 +217,13 @@ try {
             ];
         }
 
-        /*
-        if(countUserService ($getUser['id']) > 10) {
-            $inline_keyboard[] = [
-                ['text' => 'صفحه بعدی', 'callback_data'=>'get_service_page_1'],
-            ];
-        }
-        */
-
+        setUserTmp($update->cb_data_chatid,'servicelist_page',$page);
         $last_key = count($inline_keyboard);
-        if((($page + 1) * 10) < countUserService ($getUser['id'])) {
-            $inline_keyboard[$last_key][] = ['text' => 'صفحه بعدی', 'callback_data'=>'get_service_page_'.$page+1];
-        }
         if($page != 0) {
             $inline_keyboard[$last_key][] = ['text' => 'صفحه قبلی', 'callback_data'=>'get_service_page_'.$page-1];
+        }
+        if((($page + 1) * 10) < countUserService ($getUser['id'])) {
+            $inline_keyboard[$last_key][] = ['text' => 'صفحه بعدی', 'callback_data'=>'get_service_page_'.$page+1];
         }
         
 
@@ -264,7 +257,7 @@ try {
             ]);
             return;
         } else {
-            setBackTo($update->cb_data_chatid,'🗂 سرویس های من','text');
+            #setBackTo($update->cb_data_chatid,'🗂 سرویس های من','text');
 
             $main_traffic = $serviceData['main_traffic'];
             $data_usage = $serviceData['data_usage'];
@@ -300,6 +293,7 @@ try {
                 $t .= "🪫 : ".$total_traffic - $data_usage ." GB \n";
             }
 
+            $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page');
             $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n \n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
 
             Telegram::api('editMessageText',[
@@ -311,7 +305,7 @@ try {
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
                         ]
                     ],
                 ]
