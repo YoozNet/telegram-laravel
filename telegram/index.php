@@ -16,10 +16,6 @@ try {
 
     if($data == "back") {
         $backData = getBack($update->cb_data_chatid);
-        Telegram::api('sendMessage',[
-            'chat_id' => $update->cb_data_chatid,
-            'text' => " JSON ENCODE: ".json_encode($backData,128|256)
-        ]);
 
         if($backData['as'] == 'text') {
             $text = $backData['to'];
