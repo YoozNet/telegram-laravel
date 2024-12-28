@@ -931,6 +931,19 @@ $link
                     ],
                 ]
             ]);
+        } else {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "سرویس شما به دلیل ( ".$webservice['message']." ) ساخته نشد.",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                        ]
+                    ],
+                ]
+            ]);
         }
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
