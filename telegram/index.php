@@ -910,10 +910,13 @@ $link
                 }
             }
         }
-
+        Telegram::api('deleteMessage',[
+            'message_id' => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid
+        ]);
         $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
         if ($webservice['status'] == true) {
-            Telegram::api('editMessageText',[
+            Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
                 'text' => "سرویس ( $service_id ) با موفقیت تهیه شد. بابت تهیه این سرویس از شما سپاسگزاریم.
 
