@@ -1664,6 +1664,10 @@ $invoiceReasonText
             );
             $webservice = API::sendInvoice(["user_id" => $userid,"invoice_id" => $invoiceId]);
             if ($webservice['status'] == true) {
+                deleteUserTmp($chat_id,[
+                    'addBalance_cardBankNumber','addBalance_cardBankId','addBalance_userCardId',
+                    'addBalance_amount','Tax_value','YC_value'
+                ]);
                 Telegram::api('sendMessage',[
                     'chat_id' => $chat_id,
                     'text' => "پرداخت شما با موفقیت به واحد مالی ارسال شد ، بعد از بررسی نتیجه را به شما اطلاع می‌دهیم.
@@ -1757,6 +1761,7 @@ $invoiceReasonText
             );
             $webservice = API::sendCard(["user_id" => $userid,"card_id" => $cardId]);
             if ($webservice['status'] == true) {
+                deleteUserTmp($chat_id,['add_cardBank_number','user_id']);
                 Telegram::api('sendMessage',[
                     'chat_id' => $chat_id,
                     'text' => "کارت شما برای بررسی به واحد فروش ارسال شد.  👥
@@ -1836,6 +1841,7 @@ $invoiceReasonText
         );
         $webservice = API::sendTicket(["user_id" => $user_id,"ticket_id" => $ticket_id,'type' => 'TicketMessage']);
         if ($webservice['status'] == true) {
+            deleteUserTmp($chat_id,['reply_ticket_id']);
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "خبر خوب! تیکت ( $ticket_id ) شما به روز شد.
@@ -1960,6 +1966,7 @@ $invoiceReasonText
         $webservice = API::sendTicket(["user_id" => $userData['id'],"ticket_id" => $ticket_id,'type' => 'Ticket','message' => $reply_text]);
         if ($webservice['status'] == true) {
             $name = GetDepartments($tmp['new_ticket_department']);
+            deleteUserTmp($chat_id,['new_ticket_title','new_ticket_department']);
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "درخواست شما برای بررسی به واحد $name ارسال شد.  👥
