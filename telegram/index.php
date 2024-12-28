@@ -1558,7 +1558,9 @@ $invoiceReasonText
                 $cardBankId = $cardNumber['id'];
                 $iban = $cardNumber['iban'] ?? 'تنظیم نشده';
                 $bank = getBankName($cardNumber['bank']);
-                $fullname = $cardNumber['first_name'] ?? 'تنظیم نشده' . " " . $cardNumber['last_name'] ?? 'تنظیم نشده';
+                $firstName = $cardNumber['first_name'] ?? 'تنظیم نشده';
+                $lastName = $cardNumber['last_name'] ?? 'تنظیم نشده';
+                $fullname =  $firstName." ".$lastName;
             } else {
                 $findAsName = getBankByName($data['bank']);
                 if(count($findAsName) > 0) {
@@ -1568,7 +1570,10 @@ $invoiceReasonText
                     $cardBankId =  $findAsName[$randKey]['id'];
                     $iban = $findAsName[$randKey]['iban'];
                     $bank = getBankName($findAsName[$randKey]['bank']);
-                    $fullname = $findAsName[$randKey]['first_name'] . " " . $findAsName[$randKey]['last_name'];
+                    $firstName = $findAsName[$randKey]['first_name'] ?? 'تنظیم نشده';
+                    $lastName = $findAsName[$randKey]['last_name'] ?? 'تنظیم نشده';
+                    $fullname =  $firstName." ".$lastName;
+                    # $fullname = $findAsName[$randKey]['first_name'] ?? 'تنظیم نشده' . " " . $findAsName[$randKey]['last_name'] ?? 'تنظیم نشده';
                 } else {
                     $adminCards = getAdminCards();
                     $randKey = array_rand($adminCards);
@@ -1577,7 +1582,9 @@ $invoiceReasonText
                     $cardBankId =  $adminCards[$randKey]['id'];
                     $iban = $adminCards[$randKey]['iban'];
                     $bank = getBankName($adminCards[$randKey]['bank']);
-                    $fullname = $adminCards[$randKey]['first_name'] . " " . $adminCards[$randKey]['last_name'];
+                    $firstName = $adminCards[$randKey]['first_name'] ?? 'تنظیم نشده';
+                    $lastName = $adminCards[$randKey]['last_name'] ?? 'تنظیم نشده';
+                    $fullname =  $firstName." ".$lastName;
                 }
             }
             setUserTmp($update->cb_data_chatid,'addBalance_cardBankNumber',$cardBankNumber);
