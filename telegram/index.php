@@ -12,7 +12,12 @@ try {
     $text = $update->text ?? '';
     $data = $update->cb_data ?? '';
     $step = null;
-    
+    if (!is_null($chat_id)) {
+        $step = getUserStep($chat_id);
+    }
+    if(!is_null($update->cb_data_chatid)) {
+        $step = getUserStep($update->cb_data_chatid);
+    }
 
     if($data == "back") {
         $backData = getBack($update->cb_data_chatid);
@@ -803,10 +808,6 @@ $link
             return;
         } else {
             setUserStep($update->cb_data_chatid,'new_ticket_1');
-            Telegram::api('deleteMessage',[
-                'message_id' => $update->cb_data_message_id,
-                'chat_id' => $update->cb_data_chatid
-            ]);
             Telegram::api('forwardMessage', [
                 'chat_id' => $update->cb_data_chatid,
                 'from_chat_id' => '@YozNet',
@@ -1480,16 +1481,10 @@ $invoiceReasonText
         
 
 
-    } 
+    } else
 
     ## Step's ## <-------------------------
-    if (!is_null($chat_id)) {
-        $step = getUserStep($chat_id);
-    }
-    if(!is_null($update->cb_data_chatid)) {
-        $step = getUserStep($update->cb_data_chatid);
-    }
-
+    
     if ($step == 'set_ip_address_1') {
         if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
             $response = "این یک IP نیست";
