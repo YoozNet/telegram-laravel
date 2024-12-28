@@ -1785,7 +1785,7 @@ $invoiceReasonText
                 ]
             ]);
         }
-    } elseif ($step == 'reply_to_ticket') {
+    } elseif ($text != '' && $step == 'reply_to_ticket') {
         $tmp = getAllUserTmp($chat_id);
         $ticket_id = $tmp['reply_ticket_id'];
         $user_id =  $tmp['user_id'];
