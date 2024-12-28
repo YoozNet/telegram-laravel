@@ -9,8 +9,8 @@ include_once("boot.php");
 $update = new TelegramUpdates();
 try {
     $chat_id = $update->chat_id ?? null;
-    $text = $update->text ?? null;
-    $data = $update->cb_data ?? null;
+    $text = $update->text ?? '';
+    $data = $update->cb_data ?? '';
     $step = null;
     
 
@@ -1112,7 +1112,7 @@ $link
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif (preg_match("/bankcard_data_(.*)/",$data,$result)) {
+    } elseif (isset($data) && preg_match("/bankcard_data_(.*)/",$data,$result)) {
         $BankCard = getbankcard($result[1]);
         if ($BankCard['status'] == App\Enum\BankCardStatus::PENDING->value || $BankCard['status'] == App\Enum\BankCardStatus::WAITING_CONFIRMATION->value) {
             Telegram::api('answerCallbackQuery', [
@@ -1163,7 +1163,7 @@ $bankcardReasonText
             ]
         ]);
 
-    } elseif (preg_match("/delete_bankcard_(.*)/",$data,$result)) {
+    } elseif (isset($data) && preg_match("/delete_bankcard_(.*)/",$data,$result)) {
         $BankCard = getbankcard($result[1]);
         $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
         if ($BankCard['status'] != App\Enum\BankCardStatus::APPROVED->value) {
@@ -1197,7 +1197,7 @@ $bankcardReasonText
             ]
         ]);
 
-    } elseif (preg_match("/invoice_data_(.*)/",$data,$result)) {
+    } elseif (isset($data) && preg_match("/invoice_data_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'Invoices','data');
 
         $invoices = getInvoice($result[1]);
@@ -1248,7 +1248,7 @@ $invoiceReasonText
             ]
         ]);
 
-    } elseif (preg_match("/faq_(.*)/",$data,$result)) {
+    } elseif (isset($data) && preg_match("/faq_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'faqs','data');
         $response = "";
         switch($result[1]) {
@@ -1288,7 +1288,7 @@ $invoiceReasonText
             ]
         ]);
 
-    } elseif (preg_match("/order_service_(.*)/",$data,$result)) {
+    } elseif (isset($data) && preg_match("/order_service_(.*)/",$data,$result)) {
         $serviceType = $result[1];
         
         setBackTo($update->cb_data_chatid,'⚜️ ثبت سرویس جدید','text');
@@ -1345,7 +1345,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard
             ]
         ]);
-    } elseif (preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
+    } elseif (isset($data) && preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
         $order_service_by = $result[1]; 
         $service_type = $result[2];
         $userData = getUser($update->cb_data_chatid);
@@ -1513,7 +1513,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($step == 'addBalance_2' && preg_match("/addBalance_select_(.*)/",$data,$result)) {
+    } elseif ($step == 'addBalance_2' && isset($data) && preg_match("/addBalance_select_(.*)/",$data,$result)) {
         if(isset($result[1])) {
             $data = getCardById($result[1]);
             setUserTmp($update->cb_data_chatid,'addBalance_userCardId',$result[1]);
@@ -1571,7 +1571,7 @@ $invoiceReasonText
                 'message_id' => $update->cb_data_message_id,
                 'chat_id' => $update->cb_data_chatid
             ]);
-            
+
             $backData = getBack($update->cb_data_chatid);
             if($backData['to'] != 'complate_order_service') {
                 setBackTo($update->cb_data_chatid,'wallet','data');
@@ -1847,7 +1847,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($step == 'new_ticket_2' && preg_match("/new_ticket_2_(.*)/", $data, $result)) {
+    } elseif ($step == 'new_ticket_2' && isset($data) && preg_match("/new_ticket_2_(.*)/", $data, $result)) {
         $department = $result[1];
         setUserTmp($update->cb_data_chatid,'new_ticket_department',$department);
         setUserStep($update->cb_data_chatid,'new_ticket_3');
