@@ -891,10 +891,11 @@ $link
 
             $config = GetConfig();
             $diff_toman = $config['yc_price'] * $diff;
-
+            setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
             setUserStep($update->cb_data_chatid,'addBalance_2');
             setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
             setUserTmp($update->cb_data_chatid,'waitpay_for_service',1);
+
 
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
@@ -953,6 +954,7 @@ $link
         ]);
         $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
         if ($webservice['status'] == true) {
+            setBackTo($update->cb_data_chatid,'/start','text');
             Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
                 'text' => "سرویس ( $service_id ) با موفقیت تهیه شد. بابت تهیه این سرویس از شما سپاسگزاریم.
@@ -962,7 +964,7 @@ $link
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                         ]
                     ],
                 ]
@@ -1772,7 +1774,7 @@ $invoiceReasonText
             );
             $webservice = API::sendCard(["user_id" => $userid,"card_id" => $cardId]);
             if ($webservice['status'] == true) {
-                deleteUserTmp($chat_id,['add_cardBank_number','user_id']);
+                deleteUserTmp($chat_id,['add_cardBank_number']);
                 Telegram::api('sendMessage',[
                     'chat_id' => $chat_id,
                     'text' => "کارت شما برای بررسی به واحد فروش ارسال شد.  👥
