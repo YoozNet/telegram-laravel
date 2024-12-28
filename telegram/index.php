@@ -652,6 +652,15 @@ $link
         setUserStep($update->cb_data_chatid,'none');
         $userData = getUser($update->cb_data_chatid);
         $group_id = App\Enum\UserGroupEnum::from($userData['group_id'])->bankCardLimit();
+        $getUserBankCardsPending = count(getUserBankCardsPending($userData['id']));
+        if($getUserBankCardsPending >= 0) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "یک کارت درحالت بررسی وجود دارد",
+                'show_alert' => true,
+            ]);
+            return;
+        }
         $getCountBankCardActive = count(getUserBankCardsActive($userData['id']));
 
         if($getCountBankCardActive >= $group_id) {

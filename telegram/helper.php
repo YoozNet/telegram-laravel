@@ -368,6 +368,12 @@ if (!function_exists('getUserBankCardsActive')) {
         return Database::select("YN_bank_cards", ["*"], "user_id =? AND status = '1'", [$id]);
     }
 }
+if (!function_exists('getUserBankCardsPending')) {
+    function getUserBankCardsPending($id)
+    {
+        return Database::select("YN_bank_cards", ["*"], "user_id =? AND (status = '0' OR status = '1')", [$id]);
+    }
+}
 
 if(!function_exists('addUserBankCard')) {
     function addUserBankCard($userId,$card_number,$card_image_file_id,$status=0) {
