@@ -1681,6 +1681,10 @@ $invoiceReasonText
                     'addBalance_cardBankNumber','addBalance_cardBankId','addBalance_userCardId',
                     'addBalance_amount','Tax_value','YC_value'
                 ]);
+                $backData = getBack($chat_id);
+                if($backData['to'] != 'complate_order_service') {
+                    setBackTo($chat_id,'/start');
+                }
                 Telegram::api('sendMessage',[
                     'chat_id' => $chat_id,
                     'text' => "پرداخت شما با موفقیت به واحد مالی ارسال شد ، بعد از بررسی نتیجه را به شما اطلاع می‌دهیم.
@@ -1690,7 +1694,7 @@ $invoiceReasonText
                     'reply_markup' => [
                         'inline_keyboard' => [
                             [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                             ]
                         ],
                     ]
