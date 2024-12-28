@@ -310,7 +310,7 @@ try {
         ]);
 
         $userTmp = getAllUserTmp($chat_id);
-        if($userTmp['waitpay_for_service'] == 1) {
+        if(isset($userTmp['waitpay_for_service']) && $userTmp['waitpay_for_service'] == 1) {
             $userData = getUser($chat_id);
             $service_type = $userTmp['service_type'];
             $service_size = $userTmp['service_size'];
