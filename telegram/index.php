@@ -211,18 +211,25 @@ try {
             $total_traffic = 0;
             $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
             if ($type == "unlimited") {
-                $total_traffic = $main_traffic;
+                $total_traffic = $main_traffic * 30;
                 $total_usage = $serviceData['total_usage'];
                 $t .= "📊 ترافیک: \n $total_usage GB / $total_traffic GB \n";
-                $t .= "🪫 باقی مانده: \n ".( $total_traffic * 30 ) - $total_usage ." GB \n";
                 $t .= "🌞 حجم مصرف امروز : \n $data_usage GB \n"; 
+                $t .= "🪫 باقی مانده: ".( $total_traffic * 30 ) - $total_usage ." GB \n";
             } else {
                 $traffic = $serviceData['traffic'];
-                $total_traffic = $traffic + $main_traffic;
+
+                if ($type == "tunnel") {
+                    $total_traffic = $traffic + $main_traffic;
+                    $total_traffic *= 2;
+                } else {
+                    $total_traffic = $traffic + $main_traffic;
+                }
+                
                 $t .= "📊 ترافیک: \n $data_usage GB / $total_traffic GB \n";
-                $t .= "🪫 باقی مانده: \n ".$total_traffic - $data_usage ." GB \n";
+                $t .= "🪫 باقی مانده: ".$total_traffic - $data_usage ." GB \n";
             }
-            
+
             $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n \n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
 
             Telegram::api('editMessageText',[
