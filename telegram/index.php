@@ -1092,18 +1092,12 @@ $link
         ]);
     } elseif ($data!= '' && preg_match("/ticket_attachment_(.*)_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
-        # ticket_attachment_'.$ticketId.'_'.$ticketMessageId
         $getTicketMessages = getTicketMessage($result[1]);
         $getTicketMessage = $getTicketMessages[$result[2]];
-        Telegram::api('sendMessage',[
-            'chat_id' => $update->cb_data_chatid,
-            'text' => " ticket photo data: 
-".json_encode($getTicketMessage,128|256)."
-            ",
-        ]);
         Telegram::api('sendPhoto',[
             'chat_id' => $update->cb_data_chatid,
             'photo' => $getTicketMessage['file_id'],
+            'caption' => 'پیوست برای تیکت: '.$result[1]
         ]);
 
     } elseif ($data!= '' && preg_match("/set_default_card_(.*)/",$data,$result)) {
