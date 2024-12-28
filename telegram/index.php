@@ -144,6 +144,7 @@ try {
     } elseif ($text == '🗂 سرویس های من') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
+        setUserTmp($update->cb_data_chatid,'servicelist_page',0);
         $getUser = getUser($chat_id);
         $services = getUserService ($getUser['id']);
         $serviceList = GetAllServices();
