@@ -1480,7 +1480,7 @@ $invoiceReasonText
         $step = getUserStep($update->cb_data_chatid);
     }
 
-    if ($step == 'set_ip_address_1') {
+    if ($text != '' && $step == 'set_ip_address_1') {
         if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
             $response = "این یک IP نیست";
         } else {
