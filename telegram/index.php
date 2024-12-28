@@ -169,13 +169,16 @@ try {
                 ['text' => $service['id'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
             ];
         }
-        
+
         $inline_keyboard[] = [
             ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
         ];
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
-            'text' => "شما در این بخش لیست سرویس های خود را مشاهده میکنید و میتوانید آنهارا مدیریت کنید",
+            'text' => "
+            شما در این بخش لیست سرویس های خود را مشاهده میکنید و میتوانید آنهارا مدیریت کنید
+            ".countUserService ($getUser['id'])."
+            ",
             'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard

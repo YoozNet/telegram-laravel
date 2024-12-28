@@ -450,6 +450,12 @@ if(!function_exists('getUserService')) {
     }
 }
 
+if(!function_exists('countUserService')) {
+    function countUserService ($userId) {
+        return Database::select("YN_services", ["COUNT(*) AS total"], 'user_id = ?', [$userId],null,null,'id')[0]['total'];
+    }
+}
+
 if(!function_exists('serverIdToType')) {
     function serverToType($server_id) {
         $server = Database::select("YN_servers", ["location"], 'id = ?', [$server_id])[0];
