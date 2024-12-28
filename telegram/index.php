@@ -283,9 +283,12 @@ try {
         $serviceDetail = "در این بخش می‌توانید نوع سرویسی که قصد دارید تهیه کنید را مشخص کنید ! 😊 \n\n";
         $inline_keyboard = [];
         $emojiList = ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'];
+        $randomEmojiIndex = array_rand($emojiList,3);
+        $c_for_randemoji = 0;
         foreach($serviceList as $service) {
-            $randomEmojiIndex = array_rand($emojiList);
-            $randomEmoji = $emojiList[$randomEmojiIndex];
+            // $randomEmojiIndex = array_rand($emojiList);
+            $randomEmoji = $emojiList[$randomEmojiIndex[$c_for_randemoji]];
+            $c_for_randemoji += 1;
             $servicePrice = getServicePrice($chat_id,$service['type']);
             $vip = $service['special'] == true ? "** ( پیشنهادی یوزنت ) **" : '';
             $serviceDetail .= $randomEmoji." ". $service['name'] ." $vip

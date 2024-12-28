@@ -316,7 +316,7 @@ if(!function_exists('getAllUserTmp')) {
     function getAllUserTmp($userId) {
         $getData = getUser($userId);
         $getData = json_decode($getData['data'],1);
-        return $getData['tmp'];
+        return $getData['tmp'] ?? [];
     }
 }
 
