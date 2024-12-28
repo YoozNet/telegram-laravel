@@ -215,7 +215,7 @@ try {
                 $total_usage = $serviceData['total_usage'];
                 $t .= "📊 ترافیک: \n $total_usage GB / $total_traffic GB \n";
                 $t .= "🌞 حجم مصرف امروز : \n $data_usage GB \n"; 
-                $t .= "🪫 باقی مانده: ".( $total_traffic * 30 ) - $total_usage ." GB \n";
+                $t .= "🪫 باقی مانده: ".$total_traffic - $total_usage ." GB \n";
             } else {
                 $traffic = $serviceData['traffic'];
 
@@ -225,7 +225,7 @@ try {
                 } else {
                     $total_traffic = $traffic + $main_traffic;
                 }
-                
+
                 $t .= "📊 ترافیک: \n $data_usage GB / $total_traffic GB \n";
                 $t .= "🪫 باقی مانده: ".$total_traffic - $data_usage ." GB \n";
             }
