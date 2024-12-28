@@ -44,7 +44,7 @@ try {
 
     }
 
-    if($text == "/start" || isset($text) && explode(" ", $text)[0] == "/start") {
+    if($text == "/start" || $text != '' && explode(" ", $text)[0] == "/start") {
         $existing_user = Database::select("YN_users", ["id"], "user_id = ?", [$chat_id]);
         if ($existing_user) {
             clearUserTmp($chat_id);
@@ -969,7 +969,7 @@ $link
                 ]
             ]);
         }
-    } elseif (isset($data) && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $ticketId = $result[1];
         $ticketMessageId = $result[2];
@@ -1067,7 +1067,7 @@ $link
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif (isset($data) && preg_match("/ticket_reply_to_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/ticket_reply_to_(.*)/",$data,$result)) {
         $ticketId = $result[1];
         setUserStep($update->cb_data_chatid,'reply_to_ticket');
         $userData = getUser($update->cb_data_chatid);
@@ -1090,7 +1090,7 @@ $link
                 ],
             ]
         ]);
-    } elseif (isset($data) && preg_match("/ticket_attachment_(.*)_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/ticket_attachment_(.*)_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         # ticket_attachment_'.$ticketId.'_'.$ticketMessageId
         $getTicketMessages = getTicketMessage($result[1]);
@@ -1106,7 +1106,7 @@ $link
             'photo' => $getTicketMessage['file_id'],
         ]);
 
-    } elseif (isset($data) && preg_match("/set_default_card_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/set_default_card_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];
@@ -1135,7 +1135,7 @@ $link
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif (isset($data) && preg_match("/bankcard_data_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/bankcard_data_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $BankCard = getbankcard($result[1]);
         if ($BankCard['status'] == App\Enum\BankCardStatus::PENDING->value || $BankCard['status'] == App\Enum\BankCardStatus::WAITING_CONFIRMATION->value) {
@@ -1187,7 +1187,7 @@ $bankcardReasonText
             ]
         ]);
 
-    } elseif (isset($data) && preg_match("/delete_bankcard_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/delete_bankcard_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $BankCard = getbankcard($result[1]);
         $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
@@ -1222,7 +1222,7 @@ $bankcardReasonText
             ]
         ]);
 
-    } elseif (isset($data) && preg_match("/invoice_data_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/invoice_data_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Invoices','data');
 
@@ -1274,7 +1274,7 @@ $invoiceReasonText
             ]
         ]);
 
-    } elseif (isset($data) && preg_match("/faq_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/faq_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'faqs','data');
         $response = "";
         switch($result[1]) {
@@ -1314,7 +1314,7 @@ $invoiceReasonText
             ]
         ]);
 
-    } elseif (isset($data) && preg_match("/order_service_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/order_service_(.*)/",$data,$result)) {
         $serviceType = $result[1];
         
         setBackTo($update->cb_data_chatid,'⚜️ ثبت سرویس جدید','text');
@@ -1371,7 +1371,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard
             ]
         ]);
-    } elseif (isset($data) && preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
+    } elseif ($data!= '' && preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
         $order_service_by = $result[1]; 
         $service_type = $result[2];
         $userData = getUser($update->cb_data_chatid);
@@ -1539,7 +1539,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($step == 'addBalance_2' && isset($data) && preg_match("/addBalance_select_(.*)/",$data,$result)) {
+    } elseif ($step == 'addBalance_2' && $data!= '' && preg_match("/addBalance_select_(.*)/",$data,$result)) {
         if(isset($result[1])) {
             $data = getCardById($result[1]);
             setUserTmp($update->cb_data_chatid,'addBalance_userCardId',$result[1]);
@@ -1801,7 +1801,7 @@ $invoiceReasonText
         if(isset($update->photo_file_id)) {
             $attachment = $update->photo_file_id;
             $reply_text = $update->caption;
-        } elseif (isset($text)) {
+        } elseif ($text != '') {
             $reply_text = $text;
         } else {
             Telegram::api('sendMessage',[
@@ -1853,7 +1853,7 @@ $invoiceReasonText
                 ]
             ]);
         }
-    } elseif (isset($text) && $step == "new_ticket_1") {
+    } elseif ($text != '' && $step == "new_ticket_1") {
         setUserStep($chat_id,'new_ticket_2');
         setUserTmp($chat_id,'new_ticket_title',$text);
         $inline_keyboard = [];
@@ -1879,7 +1879,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($step == 'new_ticket_2' && isset($data) && preg_match("/new_ticket_2_(.*)/", $data, $result)) {
+    } elseif ($step == 'new_ticket_2' && $data!= '' && preg_match("/new_ticket_2_(.*)/", $data, $result)) {
         $department = $result[1];
         setUserTmp($update->cb_data_chatid,'new_ticket_department',$department);
         setUserStep($update->cb_data_chatid,'new_ticket_3');
@@ -1913,7 +1913,7 @@ $invoiceReasonText
         if(isset($update->photo_file_id)) {
             $attachment = $update->photo_file_id;
             $reply_text = $update->caption;
-        } elseif (isset($text)) {
+        } elseif ($text != '') {
             $reply_text = $text;
         } else {
             Telegram::api('sendMessage',[
