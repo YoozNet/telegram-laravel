@@ -1673,6 +1673,18 @@ $invoiceReasonText
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
+                            ['text' => '🔄 تمدید', 'callback_data' => 'renew_service_'.$type.'_'.$service_id],
+                            ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_service_'.$type.'_'.$service_id],
+                        ],
+                        [
+                            ['text' => '📧 ارسال ایمیل', 'callback_data' => 'email_service_'.$type.'_'.$service_id],
+                            ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
+                        ],
+                        [
+                            ['text' => '🔧 اعلام خرابی', 'callback_data' => 'report_service_'.$type.'_'.$service_id],
+                            ['text' => '📊 ریز مصرف', 'callback_data' => 'data_usage_service_'.$type.'_'.$service_id],
+                        ],
+                        [
                             ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
                             ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
                         ]
