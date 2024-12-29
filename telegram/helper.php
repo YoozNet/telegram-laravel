@@ -446,7 +446,10 @@ if(!function_exists('getServicePrice')) {
 if(!function_exists('getUserService')) {
     function getUserService ($userId,$page_number=0,$item_per_page=10) {
         $offset = $page_number * $item_per_page;
-        return Database::select("YN_services", ["*"], 'user_id = ?', [$userId],$item_per_page,$offset,'id');
+        return Database::select("YN_services", ["*"], 'user_id = ?', [$userId],$item_per_page,$offset,'CASE 
+            WHEN status IN (3, 4) THEN 1 
+            ELSE 0 
+         END, id DESC');
     }
 }
 

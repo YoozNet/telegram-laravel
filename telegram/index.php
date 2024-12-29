@@ -1616,6 +1616,14 @@ $invoiceReasonText
         $type = $result[1];
         $service_id = $result[2];
         $serviceData = getService($service_id);
+        if (!$serviceData) { 
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⛔️ متاسفانه، سرویس مورد نظر یافت نشد.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
         $status = $serviceData['status'];
         if(!in_array($status,[2,5,6])) {
             Telegram::api('answerCallbackQuery', [
@@ -1693,7 +1701,23 @@ $invoiceReasonText
             ]);
         }
     
-    } 
+    } elseif ($data!= '' && preg_match('/report_service_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => "برای دریافت ریز مصرف، لطفاً بر روی دکمه ورود به سایت کلیک کنید. سپس از قسمت سرویس‌ها، سرویس ($service_id) را باز کرده و بر روی ریز مصرف کلیک کنید! 📊",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'open_service_'.$type.'_'.$service_id],
+                    ]
+                ],
+            ]
+        ]);
+    }
 
     ## Step's ## <-------------------------
     if (!is_null($chat_id)) {
