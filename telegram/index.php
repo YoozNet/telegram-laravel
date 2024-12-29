@@ -1632,19 +1632,21 @@ $invoiceReasonText
             
             $config = GetConfig();
             $link = $config['uuid-subscripe'] . $subscribe_uuid;
+            $expired_at_time = strtotime($serviceData['expired_at']);
+            $days_left = round(($expired_at_time - time()) / 86400);
 
             $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
             $t .= "🔗 لینک جهت اتصال : \n ``` $link ``` \n";
-            $t .= "📅 انقضا: \n $expired_at \n";
+            $t .= "📅 انقضا: \n $expired_at ($days_left D) \n";
 
             $total_traffic = 0;
             $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
             if ($type == "unlimited") {
                 $total_traffic = $main_traffic * 30;
                 $total_usage = $serviceData['total_usage'];
-                $t .= "📊 ترافیک: \n $total_usage GB / $total_traffic GB \n";
-                $t .= "🌞 حجم مصرف امروز : \n $data_usage GB \n"; 
-                $t .= "🪫 : ".$total_traffic - $total_usage ." GB \n";
+                $t .= "📊 ترافیک: \n ".formatWallet($total_usage)." GB / ".formatWallet($total_traffic)." GB \n";
+                $t .= "🌞 حجم مصرف امروز : \n ".formatWallet($data_usage)." GB \n"; 
+                $t .= "🪫 : ".formatWallet($total_traffic - $total_usage) ." GB \n";
             } else {
                 $traffic = $serviceData['traffic'];
 
@@ -1655,8 +1657,8 @@ $invoiceReasonText
                     $total_traffic = $traffic + $main_traffic;
                 }
 
-                $t .= "📊 ترافیک: \n $data_usage GB / $total_traffic GB \n";
-                $t .= "🪫 : ".$total_traffic - $data_usage ." GB \n";
+                $t .= "📊 ترافیک: \n ".formatWallet($data_usage)." GB / ".formatWallet($total_traffic)." GB \n";
+                $t .= "🪫 : ".formatWallet($total_traffic - $data_usage) ." GB \n";
             }
 
             $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page');
