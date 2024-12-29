@@ -1048,7 +1048,7 @@ $link
                 ]
             ]);
         }
-    } elseif ($data!= '' && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $ticketId = $result[1];
         $ticketMessageId = $result[2];
@@ -1146,7 +1146,7 @@ $link
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($data!= '' && preg_match("/ticket_reply_to_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/ticket_reply_to_(.*)/",$data,$result)) {
         $ticketId = $result[1];
         setUserStep($update->cb_data_chatid,'reply_to_ticket');
         $userData = getUser($update->cb_data_chatid);
@@ -1169,7 +1169,7 @@ $link
                 ],
             ]
         ]);
-    } elseif ($data!= '' && preg_match("/ticket_attachment_(.*)_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/ticket_attachment_(.*)_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $getTicketMessages = getTicketMessage($result[1]);
         $getTicketMessage = $getTicketMessages[$result[2]];
@@ -1179,7 +1179,7 @@ $link
             'caption' => 'پیوست برای تیکت: '.$result[1]
         ]);
 
-    } elseif ($data!= '' && preg_match("/set_default_card_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/set_default_card_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');
         $selectedCardId = $result[1];
@@ -1208,7 +1208,7 @@ $link
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($data!= '' && preg_match("/bankcard_data_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/bankcard_data_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $BankCard = getbankcard($result[1]);
         if ($BankCard['status'] == App\Enum\BankCardStatus::PENDING->value || $BankCard['status'] == App\Enum\BankCardStatus::WAITING_CONFIRMATION->value) {
@@ -1260,7 +1260,7 @@ $bankcardReasonText
             ]
         ]);
 
-    } elseif ($data!= '' && preg_match("/delete_bankcard_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/delete_bankcard_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $BankCard = getbankcard($result[1]);
         $BankcardactiveCount =  count(getUserBankCardsActive($BankCard['user_id']));
@@ -1295,7 +1295,7 @@ $bankcardReasonText
             ]
         ]);
 
-    } elseif ($data!= '' && preg_match("/invoice_data_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/invoice_data_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Invoices','data');
 
@@ -1347,7 +1347,7 @@ $invoiceReasonText
             ]
         ]);
 
-    } elseif ($data!= '' && preg_match("/faq_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/faq_(.*)/",$data,$result)) {
         setBackTo($update->cb_data_chatid,'faqs','data');
         $response = "";
         switch($result[1]) {
@@ -1397,7 +1397,7 @@ $invoiceReasonText
             ]
         ]);
 
-    } elseif ($data!= '' && preg_match("/order_service_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/order_service_(.*)/",$data,$result)) {
         $serviceType = $result[1];
         
         setBackTo($update->cb_data_chatid,'⚜️ ثبت سرویس جدید','text');
@@ -1454,7 +1454,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard
             ]
         ]);
-    } elseif ($data!= '' && preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
+    } elseif ($data != '' && preg_match("/order_service2_(.*)_(.*)_(.*)/",$data,$result)) {
         $order_service_by = $result[1]; 
         $service_type = $result[2];
         $userData = getUser($update->cb_data_chatid);
@@ -1556,10 +1556,7 @@ $invoiceReasonText
                 ]
             ]
         ]);
-        
-
-
-    } elseif ($data!= '' && preg_match('/get_service_page_(.*)/',$data,$result)) {
+    } elseif ($data != '' && preg_match('/get_service_page_(.*)/',$data,$result)) {
         $page = $result[1];
         $getUser = getUser($update->cb_data_chatid);
         $services = getUserService ($getUser['id'],$page);
@@ -1608,11 +1605,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard
             ]
         ]);
-
-
-
-    
-    } elseif ($data!= '' && preg_match('/open_service_(.*)_(.*)/',$data,$result)) {
+    } elseif ($data != '' && preg_match('/open_service_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
         $serviceData = getService($service_id);
@@ -1661,6 +1654,7 @@ $invoiceReasonText
                 if ($type == "tunnel") {
                     $total_traffic = $traffic + $main_traffic;
                     $total_traffic *= 2;
+                    $data_usage *= 2;
                 } else {
                     $total_traffic = $traffic + $main_traffic;
                 }
@@ -1676,7 +1670,6 @@ $invoiceReasonText
                 'chat_id' => $update->cb_data_chatid,
                 'message_id' => $update->cb_data_message_id,
                 'text' => $t,
-                'reply_to_message_id' => $update->message_id,
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
                     'inline_keyboard' => [
@@ -1701,13 +1694,13 @@ $invoiceReasonText
             ]);
         }
     
-    } elseif ($data!= '' && preg_match('/report_service_(.*)_(.*)/',$data,$result)) {
+    } elseif ($data != '' && preg_match('/data_usage_service_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             'message_id' => $update->cb_data_message_id,
-            'text' => "برای دریافت ریز مصرف، لطفاً بر روی دکمه ورود به سایت کلیک کنید. سپس از قسمت سرویس‌ها، سرویس ($service_id) را باز کرده و بر روی ریز مصرف کلیک کنید! 📊",
+            'text' => "برای دریافت ریز مصرف، لطفاً بر روی دکمه ورود به سایت کلیک کنید. سپس از قسمت سرویس‌ها، سرویس ( $service_id ) را باز کرده و بر روی ریز مصرف کلیک کنید! 📊",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
