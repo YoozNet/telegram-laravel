@@ -141,189 +141,6 @@ try {
                 ]);
             }
         }
-    } elseif ($text == '🗂 سرویس های من') {
-        setUserStep($chat_id,'none');
-        setBackTo($chat_id,'/start','text');
-        setUserTmp($chat_id,'servicelist_page',0);
-        $getUser = getUser($chat_id);
-        $countUserService = countUserService ($getUser['id']);
-        if($countUserService == 0) {
-            Telegram::api('sendMessage',[
-                'chat_id' => $chat_id,
-                'text' => "
-سرویسی نداری
-                ",
-                'reply_to_message_id' => $update->message_id,
-            ]);
-            return;
-        }
-        $services = getUserService ($getUser['id']);
-        $serviceList = GetAllServices();
-        $inline_keyboard = [];
-        $inline_keyboard[] = [
-            ['text' => '-', 'callback_data'=>'open_service'],
-            ['text' => 'وضعیت', 'callback_data'=>'open_service'],
-            ['text' => 'زمان باقیمانده', 'callback_data'=>'open_service'],
-            ['text' => 'نوع', 'callback_data'=>'open_service'],
-            ['text' => 'شناسه', 'callback_data'=>'open_service'],
-        ];
-        foreach ($services as $service) {
-            $server_id = $service['server_id'];
-            $type = serverToType($server_id);
-            $expired_at = strtotime($service['expired_at']);
-            $days_left = round(($expired_at - time()) / 86400);
-            $status = App\Enum\ServiceStatus::from($service['status'])->text();
-            $inline_keyboard[] = [
-                ['text' => '🔍', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $status, 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $serviceList[$type]['name'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $service['id'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-            ];
-        }
-
-        if($countUserService > 10) {
-            $inline_keyboard[] = [
-                ['text' => 'صفحه بعدی', 'callback_data'=>'get_service_page_1'],
-            ];
-        }
-
-        $inline_keyboard[] = [
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-        ];
-        Telegram::api('sendMessage',[
-            'chat_id' => $chat_id,
-            'text' => "
-            شما در این بخش لیست سرویس های خود را مشاهده میکنید و میتوانید آنهارا مدیریت کنید
-            ",
-            'reply_to_message_id' => $update->message_id,
-            'reply_markup' => [
-                'inline_keyboard' => $inline_keyboard
-            ]
-        ]);
-    } elseif (isset($data) && preg_match('/get_service_page_(.*)/',$data,$result)) {
-        $page = $result[1];
-        $getUser = getUser($update->cb_data_chatid);
-        $services = getUserService ($getUser['id'],$page);
-        $serviceList = GetAllServices();
-        $inline_keyboard = [];
-        $inline_keyboard[] = [
-            ['text' => '-', 'callback_data'=>'open_service'],
-            ['text' => 'وضعیت', 'callback_data'=>'open_service'],
-            ['text' => 'زمان باقیمانده', 'callback_data'=>'open_service'],
-            ['text' => 'نوع', 'callback_data'=>'open_service'],
-            ['text' => 'شناسه', 'callback_data'=>'open_service'],
-        ];
-        foreach ($services as $service) {
-            $server_id = $service['server_id'];
-            $type = serverToType($server_id);
-            $expired_at = strtotime($service['expired_at']);
-            $days_left = round(($expired_at - time()) / 86400);
-            $status = App\Enum\ServiceStatus::from($service['status'])->text();
-            $inline_keyboard[] = [
-                ['text' => '🔍', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $status, 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $serviceList[$type]['name'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-                ['text' => $service['id'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
-            ];
-        }
-
-        setUserTmp($update->cb_data_chatid,'servicelist_page',$page);
-        $last_key = count($inline_keyboard);
-        if($page != 0) {
-            $inline_keyboard[$last_key][] = ['text' => 'صفحه قبلی', 'callback_data'=>'get_service_page_'.$page-1];
-        }
-        if((($page + 1) * 10) < countUserService ($getUser['id'])) {
-            $inline_keyboard[$last_key][] = ['text' => 'صفحه بعدی', 'callback_data'=>'get_service_page_'.$page+1];
-        }
-        
-
-        $inline_keyboard[] = [
-            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-        ];
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            'message_id' => $update->cb_data_message_id,
-            'text' => "
-            شما در این بخش لیست سرویس های خود را مشاهده میکنید و میتوانید آنهارا مدیریت کنید
-            ",
-            'reply_markup' => [
-                'inline_keyboard' => $inline_keyboard
-            ]
-        ]);
-
-
-
-    
-    } elseif (isset($data) && preg_match('/open_service_(.*)_(.*)/',$data,$result)) {
-        $type = $result[1];
-        $service_id = $result[2];
-        $serviceData = getService($service_id);
-        $status = $serviceData['status'];
-        if(!in_array($status,[2,5,6])) {
-            Telegram::api('answerCallbackQuery', [
-                'callback_query_id' => $update->cb_data_id,
-                'text' => "⛔️ متاسفانه، شما مجاز به مدیریت این سرویس نیستید.",
-                'show_alert' => true,
-            ]);
-            return;
-        } else {
-            #setBackTo($update->cb_data_chatid,'🗂 سرویس های من','text');
-
-            $main_traffic = $serviceData['main_traffic'];
-            $data_usage = $serviceData['data_usage'];
-            $subscribe_uuid = $serviceData['subscribe_uuid'];
-            $expired_at = $serviceData['expired_at'];
-            
-            $config = GetConfig();
-            $link = $config['uuid-subscripe'] . $subscribe_uuid;
-
-            $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
-            $t .= "🔗 لینک جهت اتصال : \n ``` $link ``` \n";
-            $t .= "📅 انقضا: \n $expired_at \n";
-
-            $total_traffic = 0;
-            $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
-            if ($type == "unlimited") {
-                $total_traffic = $main_traffic * 30;
-                $total_usage = $serviceData['total_usage'];
-                $t .= "📊 ترافیک: \n $total_usage GB / $total_traffic GB \n";
-                $t .= "🌞 حجم مصرف امروز : \n $data_usage GB \n"; 
-                $t .= "🪫 : ".$total_traffic - $total_usage ." GB \n";
-            } else {
-                $traffic = $serviceData['traffic'];
-
-                if ($type == "tunnel") {
-                    $total_traffic = $traffic + $main_traffic;
-                    $total_traffic *= 2;
-                } else {
-                    $total_traffic = $traffic + $main_traffic;
-                }
-
-                $t .= "📊 ترافیک: \n $data_usage GB / $total_traffic GB \n";
-                $t .= "🪫 : ".$total_traffic - $data_usage ." GB \n";
-            }
-
-            $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page');
-            $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n \n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
-
-            Telegram::api('editMessageText',[
-                'chat_id' => $update->cb_data_chatid,
-                'message_id' => $update->cb_data_message_id,
-                'text' => $t,
-                'reply_to_message_id' => $update->message_id,
-                'parse_mode' => 'Markdown',
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
-                        ]
-                    ],
-                ]
-            ]);
-        }
-    
     } elseif ($text == '👤 حساب کاربری') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
@@ -468,7 +285,6 @@ try {
         $randomEmojiIndex = array_rand($emojiList,3);
         $c_for_randemoji = 0;
         foreach($serviceList as $service) {
-            // $randomEmojiIndex = array_rand($emojiList);
             $randomEmoji = $emojiList[$randomEmojiIndex[$c_for_randemoji]];
             $c_for_randemoji += 1;
             $servicePrice = getServicePrice($chat_id,$service['type']);
@@ -541,6 +357,75 @@ try {
                 return;
             }
         }
+    } elseif ($text == '🗂 سرویس های من') {
+        setUserStep($chat_id,'none');
+        setBackTo($chat_id,'/start','text');
+        setUserTmp($chat_id,'servicelist_page',0);
+        $getUser = getUser($chat_id);
+        $countUserService = countUserService ($getUser['id']);
+        if($countUserService == 0) {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "با خرید سرویس امن VPN از ما، شما به راحتی می‌توانید به سایت‌هایی که از سوی دولت یا سایر نهادها مسدود شده‌اند، دسترسی پیدا کنید. همچنین، با استفاده از این سرویس، می‌توانید از تحریم‌های دولتی جلوگیری کنید 🤗
+
+سرویس ما از تکنولوژی رمزنگاری برای حفظ حریم خصوصی شما استفاده می‌کند و شما می‌توانید با سرعت بالا و بدون قطعی در اینترنت سرعت بگیرید! 😎
+
+برای تهیه سرویس از منو به بخش ⚜️ ثبت سرویس جدید مراجعه کنید.",
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                    ],
+                ],
+            ]
+            ]);
+            return;
+        }
+        $services = getUserService ($getUser['id']);
+        $serviceList = GetAllServices();
+        $inline_keyboard = [];
+        $inline_keyboard[] = [
+            ['text' => '-', 'callback_data'=>'open_service'],
+            ['text' => 'وضعیت', 'callback_data'=>'open_service'],
+            ['text' => 'زمان باقیمانده', 'callback_data'=>'open_service'],
+            ['text' => 'نوع', 'callback_data'=>'open_service'],
+            ['text' => 'شناسه', 'callback_data'=>'open_service'],
+        ];
+        foreach ($services as $service) {
+            $server_id = $service['server_id'];
+            $type = serverToType($server_id);
+            $expired_at = strtotime($service['expired_at']);
+            $days_left = round(($expired_at - time()) / 86400);
+            $status = App\Enum\ServiceStatus::from($service['status'])->text();
+            $inline_keyboard[] = [
+                ['text' => '🔍', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $status, 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $serviceList[$type]['name'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $service['id'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+            ];
+        }
+
+        if($countUserService > 10) {
+            $inline_keyboard[] = [
+                ['text' => 'بعدی ⬅️', 'callback_data'=>'get_service_page_1'],
+            ];
+        }
+
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+        ];
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => "
+            شما در این بخش لیست سرویس های خود را مشاهده میکنید و میتوانید آنهارا مدیریت کنید
+            ",
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard
+            ]
+        ]);
     } 
     if ($data == "Profile") {
         setUserStep($update->cb_data_chatid,'none');
@@ -1088,9 +973,6 @@ $link
                     ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
                 ];
             }
-            #  setUserTmp($update->cb_data_chatid,'service_orderby
-            # order_service2_'.$service_orderby.'_'.$service_type.'_'.$service_size
-            # order_service2_bygig_'.$serviceType.'_'.$volume
             setBackTo($update->cb_data_chatid,'complate_order_service','data',false,true);
             $inline_keyboard[] = [
                 ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service2_'.$service_orderby.'_'.$service_type.'_'.$service_size],
@@ -1677,7 +1559,127 @@ $invoiceReasonText
         
 
 
-    }
+    } elseif ($data!= '' && preg_match('/get_service_page_(.*)/',$data,$result)) {
+        $page = $result[1];
+        $getUser = getUser($update->cb_data_chatid);
+        $services = getUserService ($getUser['id'],$page);
+        $serviceList = GetAllServices();
+        $inline_keyboard = [];
+        $inline_keyboard[] = [
+            ['text' => '-', 'callback_data'=>'open_service'],
+            ['text' => 'وضعیت', 'callback_data'=>'open_service'],
+            ['text' => 'زمان باقیمانده', 'callback_data'=>'open_service'],
+            ['text' => 'نوع', 'callback_data'=>'open_service'],
+            ['text' => 'شناسه', 'callback_data'=>'open_service'],
+        ];
+        foreach ($services as $service) {
+            $server_id = $service['server_id'];
+            $type = serverToType($server_id);
+            $expired_at = strtotime($service['expired_at']);
+            $days_left = round(($expired_at - time()) / 86400);
+            $status = App\Enum\ServiceStatus::from($service['status'])->text();
+            $inline_keyboard[] = [
+                ['text' => '🔍', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $status, 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $days_left.' روز', 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $serviceList[$type]['name'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+                ['text' => $service['id'], 'callback_data'=>'open_service_'.$type.'_'.$service['id']],
+            ];
+        }
+
+        setUserTmp($update->cb_data_chatid,'servicelist_page',$page);
+        $last_key = count($inline_keyboard);
+        if($page != 0) {
+            $inline_keyboard[$last_key][] = ['text' => 'قبلی ➡️', 'callback_data'=>'get_service_page_'.$page-1];
+        }
+        if((($page + 1) * 10) < countUserService ($getUser['id'])) {
+            $inline_keyboard[$last_key][] = ['text' => 'بعدی ⬅️', 'callback_data'=>'get_service_page_'.$page+1];
+        }
+        
+
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+        ];
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => "شما در این بخش لیست سرویس های خود را مشاهده میکنید و میتوانید آنهارا مدیریت کنید",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard
+            ]
+        ]);
+
+
+
+    
+    } elseif ($data!= '' && preg_match('/open_service_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+        $serviceData = getService($service_id);
+        $status = $serviceData['status'];
+        if(!in_array($status,[2,5,6])) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⛔️ متاسفانه، شما مجاز به مدیریت این سرویس نیستید.",
+                'show_alert' => true,
+            ]);
+            return;
+        } else {
+            $main_traffic = $serviceData['main_traffic'];
+            $data_usage = $serviceData['data_usage'];
+            $subscribe_uuid = $serviceData['subscribe_uuid'];
+            $expired_at = $serviceData['expired_at'];
+            
+            $config = GetConfig();
+            $link = $config['uuid-subscripe'] . $subscribe_uuid;
+
+            $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
+            $t .= "🔗 لینک جهت اتصال : \n ``` $link ``` \n";
+            $t .= "📅 انقضا: \n $expired_at \n";
+
+            $total_traffic = 0;
+            $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
+            if ($type == "unlimited") {
+                $total_traffic = $main_traffic * 30;
+                $total_usage = $serviceData['total_usage'];
+                $t .= "📊 ترافیک: \n $total_usage GB / $total_traffic GB \n";
+                $t .= "🌞 حجم مصرف امروز : \n $data_usage GB \n"; 
+                $t .= "🪫 : ".$total_traffic - $total_usage ." GB \n";
+            } else {
+                $traffic = $serviceData['traffic'];
+
+                if ($type == "tunnel") {
+                    $total_traffic = $traffic + $main_traffic;
+                    $total_traffic *= 2;
+                } else {
+                    $total_traffic = $traffic + $main_traffic;
+                }
+
+                $t .= "📊 ترافیک: \n $data_usage GB / $total_traffic GB \n";
+                $t .= "🪫 : ".$total_traffic - $data_usage ." GB \n";
+            }
+
+            $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page');
+            $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n \n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
+
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                'message_id' => $update->cb_data_message_id,
+                'text' => $t,
+                'reply_to_message_id' => $update->message_id,
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+    
+    } 
 
     ## Step's ## <-------------------------
     if (!is_null($chat_id)) {
