@@ -1852,10 +1852,6 @@ $invoiceReasonText
         ]);
     } elseif ($data == 'extra_view_pay') {
         
-
-
-
-
         $userData = getUser($update->cb_data_chatid);
         $userTmp = getAllUserTmp($update->cb_data_chatid);
 
