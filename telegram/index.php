@@ -1608,7 +1608,9 @@ $invoiceReasonText
     } elseif ($data != '' && preg_match('/open_service_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
+
         $serviceData = getService($service_id);
+
         if (!$serviceData) { 
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
@@ -1617,6 +1619,7 @@ $invoiceReasonText
             ]);
             return;
         }
+
         $status = $serviceData['status'];
         if(!in_array($status,[2,5,6])) {
             Telegram::api('answerCallbackQuery', [
@@ -1625,76 +1628,94 @@ $invoiceReasonText
                 'show_alert' => true,
             ]);
             return;
+        } 
+        $main_traffic = $serviceData['main_traffic'];
+        $data_usage = $serviceData['data_usage'];
+        $subscribe_uuid = $serviceData['subscribe_uuid'];
+        $expired_at = $serviceData['expired_at'];
+        $link = GetConfig()['uuid-subscripe'] . $subscribe_uuid;
+        $expired_at_time = strtotime($serviceData['expired_at']);
+        $days_left = round(($expired_at_time - time()) / 86400);
+        $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
+
+        $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page');
+
+        $total_traffic = $main_traffic;
+        $traffic_info = "";
+        $plugin_text = "";
+        $plugin_text .= "🔄 تمدید یار: " . ($serviceData['AutomaticRenewal'] == 1 ? "فعال" : "غیرفعال") . "\n";
+
+        if ($type == "unlimited") {
+            $total_traffic *= 30;
+            $total_usage = $serviceData['total_usage'];
+
+            $traffic_info .= "📊 ترافیک: \n ".formatWallet($total_usage)." GB / ".formatWallet($total_traffic)." GB \n";
+            $traffic_info .= "🌞 حجم مصرف امروز : \n ".formatWallet($data_usage)." GB \n"; 
+            $traffic_info .= "🪫 : ".formatWallet($total_traffic - $total_usage) ." GB \n";
+
+            $plugin_text .= " ━━━━━━━━━━ \n";
         } else {
-            $main_traffic = $serviceData['main_traffic'];
-            $data_usage = $serviceData['data_usage'];
-            $subscribe_uuid = $serviceData['subscribe_uuid'];
-            $expired_at = $serviceData['expired_at'];
-            
-            $config = GetConfig();
-            $link = $config['uuid-subscripe'] . $subscribe_uuid;
-            $expired_at_time = strtotime($serviceData['expired_at']);
-            $days_left = round(($expired_at_time - time()) / 86400);
+            $traffic = $serviceData['traffic'];
 
-            $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
-            $t .= "🔗 لینک جهت اتصال : \n ``` $link ``` \n";
-            $t .= "📅 انقضا: \n $expired_at ($days_left D) \n";
-
-            $total_traffic = 0;
-            $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
-            $inline_keyboard = [];
-            if ($type == "unlimited") {
-                $total_traffic = $main_traffic * 30;
-                $total_usage = $serviceData['total_usage'];
-                $t .= "📊 ترافیک: \n ".formatWallet($total_usage)." GB / ".formatWallet($total_traffic)." GB \n";
-                $t .= "🌞 حجم مصرف امروز : \n ".formatWallet($data_usage)." GB \n"; 
-                $t .= "🪫 : ".formatWallet($total_traffic - $total_usage) ." GB \n";
-                $inline_keyboard[] = [
-                    ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_'.$type.'_'.$service_id],
-                ];
+            if ($type == "tunnel") {
+                $total_traffic = ($traffic + $main_traffic) * 2;
+                $data_usage *= 2;
             } else {
-                $traffic = $serviceData['traffic'];
-
-                if ($type == "tunnel") {
-                    $total_traffic = $traffic + $main_traffic;
-                    $total_traffic *= 2;
-                    $data_usage *= 2;
-                } else {
-                    $total_traffic = $traffic + $main_traffic;
-                }
-
-                $t .= "📊 ترافیک: \n ".formatWallet($data_usage)." GB / ".formatWallet($total_traffic)." GB \n";
-                $t .= "🪫 : ".formatWallet($total_traffic - $data_usage) ." GB \n";
-                $inline_keyboard[] = [
-                    ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_'.$type.'_'.$service_id],
-                    ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_view_'.$type.'_'.$service_id],
-                ];
+                $total_traffic += $traffic;
             }
 
-            $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page');
-            $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n \n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
-            $inline_keyboard[] = [
-                ['text' => '📧 ارسال ایمیل', 'callback_data' => 'email_service_'.$type.'_'.$service_id],
-                ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
-            ];
-            $inline_keyboard[] = [
-                ['text' => '🔧 اعلام خرابی', 'callback_data' => 'report_service_'.$type.'_'.$service_id],
-                ['text' => '📊 ریز مصرف', 'callback_data' => 'data_usage_service_'.$type.'_'.$service_id],
-            ];
-            $inline_keyboard[] = [
-                ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
-            ];
-            Telegram::api('editMessageText',[
-                'chat_id' => $update->cb_data_chatid,
-                'message_id' => $update->cb_data_message_id,
-                'text' => $t,
-                'parse_mode' => 'Markdown',
-                'reply_markup' => [
-                    'inline_keyboard' => $inline_keyboard
-                ]
-            ]);
+            $traffic_info .= "📊 ترافیک: \n ".formatWallet($data_usage)." GB / ".formatWallet($total_traffic)." GB \n";
+            $traffic_info .= "🪫 : ".formatWallet($total_traffic - $data_usage) ." GB \n";
+
+            if ($serviceData['AutoEVS'] == 1) {
+                $traffic_plus = $serviceData['AutoEVV'] ?? "اتوماتیک";
+                $plugin_text .= "🚀 ترافیک پلاس: فعال ( $traffic_plus ) \n ━━━━━━━━━━ \n";
+            } else {
+                $plugin_text .= "🚀 ترافیک پلاس: غیرفعال \n ━━━━━━━━━━ \n";
+            }
         }
+
+        $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
+        $t .= "🔗 لینک جهت اتصال : \n ```$link ``` \n";
+        $t .= "📅 انقضا: \n $expired_at ($days_left D) \n";
+        $t .= $traffic_info;
+        $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n";
+        $t .= $plugin_text;
+        $t .= "\n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
+
+        $inline_keyboard = [
+            [
+                ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_' . $type . '_' . $service_id],
+            ],
+        ];
+        if ($type != "unlimited") {
+            $inline_keyboard[] = [
+                ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_view_' . $type . '_' . $service_id],
+            ];
+        }
+        $inline_keyboard[] = [
+            ['text' => '📧 ارسال ایمیل', 'callback_data' => 'email_service_'.$type.'_'.$service_id],
+            ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
+        ];
+        $inline_keyboard[] = [
+            ['text' => '🔧 اعلام خرابی', 'callback_data' => 'report_service_'.$type.'_'.$service_id],
+            ['text' => '📊 ریز مصرف', 'callback_data' => 'data_usage_service_'.$type.'_'.$service_id],
+        ];
+        $inline_keyboard[] = [
+            ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
+        ];
+
+        
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => $t,
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard
+            ]
+        ]);
     
     } elseif ($data != '' && preg_match('/data_usage_service_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
