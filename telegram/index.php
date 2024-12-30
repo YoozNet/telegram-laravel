@@ -1654,6 +1654,12 @@ $invoiceReasonText
             $traffic_info .= "🪫 : ".formatWallet($total_traffic - $total_usage) ." GB \n";
 
             $plugin_text .= " ━━━━━━━━━━ \n";
+
+            $inline_keyboard = [
+                [
+                    ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_' . $type . '_' . $service_id],
+                ],
+            ];
         } else {
             $traffic = $serviceData['traffic'];
 
@@ -1673,6 +1679,13 @@ $invoiceReasonText
             } else {
                 $plugin_text .= "🚀 ترافیک پلاس: غیرفعال \n ━━━━━━━━━━ \n";
             }
+
+            $inline_keyboard = [
+                [
+                    ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_' . $type . '_' . $service_id],
+                    ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_view_' . $type . '_' . $service_id],
+                ],
+            ];
         }
 
         $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
@@ -1683,17 +1696,6 @@ $invoiceReasonText
         $t .= $plugin_text;
         $t .= "\n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
 
-        $inline_keyboard = [
-            [
-                ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_' . $type . '_' . $service_id],
-                $type != "unlimited" ? ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_view_' . $type . '_' . $service_id] : null,
-            ],
-        ];
-    
-        if ($type != "unlimited") {
-            $inline_keyboard[0] = array_filter($inline_keyboard[0]);
-        }
-        
         $inline_keyboard[] = [
             ['text' => '📧 ارسال ایمیل', 'callback_data' => 'email_service_'.$type.'_'.$service_id],
             ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
