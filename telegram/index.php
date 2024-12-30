@@ -2139,7 +2139,7 @@ $invoiceReasonText
             ]);
 
             $backData = getBack($update->cb_data_chatid);
-            if($backData['to'] != 'complate_order_service') {
+            if($backData['to'] != 'complate_order_service' and $backData['to'] != 'extra_service_pay') {
                 setBackTo($update->cb_data_chatid,'wallet','data');
             }
             $sendPhoto = Telegram::api('sendPhoto',[
