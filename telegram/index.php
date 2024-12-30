@@ -1720,6 +1720,44 @@ $invoiceReasonText
             ]
         ]);
     
+    } elseif ($data != '' && preg_match('/QR_service_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+        $serviceData = getService($service_id);
+
+        $subscribe_uuid = $serviceData['subscribe_uuid'];
+        $link = GetConfig()['uuid-subscripe'] . $subscribe_uuid;
+
+        $qrCode = QrCode::create($link)
+            ->setEncoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
+            ->setErrorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
+            ->setSize(300)
+            ->setMargin(10);
+
+        $writer = new PngWriter();
+        $result = $writer->write($qrCode);
+        if(!is_dir(__DIR__ . '/tmp')) {
+            mkdir(__DIR__ . '/tmp');
+        }
+        $result->saveToFile(__DIR__ . '/tmp/'.$update->cb_data_chatid.'.png');
+
+        Telegram::api('deleteMessage',[
+            'chat_id'=>$update->cb_data_chatid,
+            'message_id'=>$update->cb_data_message_id
+        ]);
+
+        Telegram::api('sendPhoto',[
+            'chat_id'=>$update->cb_data_chatid,
+            'photo'=>fopen(__DIR__ . '/tmp/'.$update->cb_data_chatid.'.png','r'),
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'open_service_'.$type.'_'.$service_id],
+                    ]
+                ],
+            ]
+        ]);
+    
     } elseif ($data != '' && preg_match('/data_usage_service_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];

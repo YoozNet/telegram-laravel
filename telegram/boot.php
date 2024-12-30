@@ -10,6 +10,9 @@ include_once("../../app/Enum/BankCardStatus.php");
 
 include_once("classes/banks.php");
 use Dotenv\Dotenv;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
+
 $env = Dotenv::createImmutable("../../");
 $env->load();
 /*
