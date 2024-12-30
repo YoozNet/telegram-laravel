@@ -1642,12 +1642,16 @@ $invoiceReasonText
 
             $total_traffic = 0;
             $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
+            $inline_keyboard = [];
             if ($type == "unlimited") {
                 $total_traffic = $main_traffic * 30;
                 $total_usage = $serviceData['total_usage'];
                 $t .= "📊 ترافیک: \n ".formatWallet($total_usage)." GB / ".formatWallet($total_traffic)." GB \n";
                 $t .= "🌞 حجم مصرف امروز : \n ".formatWallet($data_usage)." GB \n"; 
                 $t .= "🪫 : ".formatWallet($total_traffic - $total_usage) ." GB \n";
+                $inline_keyboard[] = [
+                    ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_'.$type.'_'.$service_id],
+                ];
             } else {
                 $traffic = $serviceData['traffic'];
 
@@ -1661,35 +1665,33 @@ $invoiceReasonText
 
                 $t .= "📊 ترافیک: \n ".formatWallet($data_usage)." GB / ".formatWallet($total_traffic)." GB \n";
                 $t .= "🪫 : ".formatWallet($total_traffic - $data_usage) ." GB \n";
+                $inline_keyboard[] = [
+                    ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_'.$type.'_'.$service_id],
+                    ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_view_'.$type.'_'.$service_id],
+                ];
             }
 
             $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page');
             $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n \n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
-
+            $inline_keyboard[] = [
+                ['text' => '📧 ارسال ایمیل', 'callback_data' => 'email_service_'.$type.'_'.$service_id],
+                ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
+            ];
+            $inline_keyboard[] = [
+                ['text' => '🔧 اعلام خرابی', 'callback_data' => 'report_service_'.$type.'_'.$service_id],
+                ['text' => '📊 ریز مصرف', 'callback_data' => 'data_usage_service_'.$type.'_'.$service_id],
+            ];
+            $inline_keyboard[] = [
+                ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
+            ];
             Telegram::api('editMessageText',[
                 'chat_id' => $update->cb_data_chatid,
                 'message_id' => $update->cb_data_message_id,
                 'text' => $t,
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => '🔄 تمدید', 'callback_data' => 'renew_service_'.$type.'_'.$service_id],
-                            ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_service_'.$type.'_'.$service_id],
-                        ],
-                        [
-                            ['text' => '📧 ارسال ایمیل', 'callback_data' => 'email_service_'.$type.'_'.$service_id],
-                            ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
-                        ],
-                        [
-                            ['text' => '🔧 اعلام خرابی', 'callback_data' => 'report_service_'.$type.'_'.$service_id],
-                            ['text' => '📊 ریز مصرف', 'callback_data' => 'data_usage_service_'.$type.'_'.$service_id],
-                        ],
-                        [
-                            ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
-                        ]
-                    ],
+                    'inline_keyboard' => $inline_keyboard
                 ]
             ]);
         }
@@ -1704,6 +1706,92 @@ $invoiceReasonText
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'open_service_'.$type.'_'.$service_id],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($data != '' && preg_match('/extra_view_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+
+        if ($type == "unlimited") {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⛔️ متاسفانه، حجم مازاد برای این سرویس فعال نمی باشد.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => "در بخش حجم مازاد دو ویژگی داریم:
+
+1. خرید حجم مازاد 💳: حجم مورد نیاز خود را از وارد کرده و سپس خریداری کنید. برای خرید، روی دکمه «خرید حجم» کلیک کنید.
+
+2. ترافیک پلاس 🚀: با فعال‌سازی این قابلیت، در صورت غیرفعالی سرویس، حجم لازم به‌طور خودکار از حساب شما کسر و به سرویس اضافه می‌شود. برای فعال‌سازی، روی «ترافیک پلاس» کلیک کنید.
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'ترافیک پلاس 🚀', 'callback_data' => 'extra_plugin_'.$type.'_'.$service_id],
+                        ['text' => 'خرید حجم مازاد 💳', 'callback_data' => 'extra_service_'.$type.'_'.$service_id],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'open_service_'.$type.'_'.$service_id],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($data != '' && preg_match('/renew_view_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+        $serviceData = getService($service_id);
+
+        $expired_at = strtotime($serviceData['expired_at']);
+        $current_time = time();
+
+        $remaining_days = ($expired_at - $current_time) / (60 * 60 * 24);
+
+        if ($remaining_days > 10) {
+            $days_until_extend = ceil($remaining_days - 10);
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⛔️ در حال حاضر امکان تمدید برای این سرویس وجود ندارد. لطفاً $days_until_extend روز دیگر برای تمدید اقدام نمایید.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        if ($remaining_days < 0) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⛔️ سرویس شما منقضی شده است و امکان تمدید وجود ندارد.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => "در بخش تمدید دو ویژگی داریم:
+
+1. تمدید یار 🔄: با فعال‌سازی، در زمان تمدید در صورت عدم حضور شما، سیستم به‌طور خودکار از اعتبار شما کسر کرده و سرویس را تمدید می‌کند. این ویژگی آرامش خیال را برای شما به ارمغان می‌آورد.
+
+2. تمدید سرویس 🛠: در این حالت، شما باید به‌صورت دستی سرویس را تمدید کنید. این امکان کنترل کامل بر هزینه‌ها و زمان تمدید را به شما می‌دهد.
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'تمدید یار ⏳', 'callback_data' => 'renew_plugin_'.$type.'_'.$service_id],
+                        ['text' => 'تمدید سرویس 🔧', 'callback_data' => 'renew_service_'.$type.'_'.$service_id],
+                    ],
                     [
                         ['text' => 'بازگشت ◀️', 'callback_data' => 'open_service_'.$type.'_'.$service_id],
                     ]
