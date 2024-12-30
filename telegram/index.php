@@ -1736,12 +1736,12 @@ $invoiceReasonText
             ]);
         }
 
-    } elseif ($data != '' && preg_match('/extra_view_(.*)_(.*)/',$data,$result)) {
+    } elseif ($data != '' && preg_match('/extra_service_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
         setUserTmp($update->cb_data_chatid,'service_id',$service_id);
         setUserTmp($update->cb_data_chatid,'service_type',$type);
-        setUserStep($update->cb_data_chatid,'extra_view_1');
+        setUserStep($update->cb_data_chatid,'extra_service_1');
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             'message_id' => $update->cb_data_message_id,
@@ -1850,18 +1850,18 @@ $invoiceReasonText
                 ],
             ]
         ]);
-    } elseif ($data == 'extra_view_pay') {
+    } elseif ($data == 'extra_service_pay') {
         
         $userData = getUser($update->cb_data_chatid);
         $userTmp = getAllUserTmp($update->cb_data_chatid);
 
         $service_type = $userTmp['service_type'];
         $service_id = $userTmp['service_id'];
-        $extra_view_size = $userTmp['extra_view_size'];
+        $extra_service_size = $userTmp['extra_service_size'];
 
         $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $price_irt = $price['irt'] * $extra_view_size;
-        $price_yc = $price['yc'] * $extra_view_size;
+        $price_irt = $price['irt'] * $extra_service_size;
+        $price_yc = $price['yc'] * $extra_service_size;
 
 
         if($userData['irr_wallet'] < $price_yc) {
@@ -2571,7 +2571,7 @@ $invoiceReasonText
                 ]
             ]);
         }
-    } elseif (isset($text) && $step == 'extra_view_1') {
+    } elseif (isset($text) && $step == 'extra_service_1') {
         $userData = getUser($chat_id);
         $service_limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
         if(!is_numeric($text) || $text < 5 || $text > $service_limit) {
@@ -2592,7 +2592,7 @@ $invoiceReasonText
         $service_type = getUserTmp($chat_id,'service_type');
         $service_id = getUserTmp($chat_id,'service_id');
         $price = getServicePrice($chat_id,$service_type);
-        setUserTmp($chat_id,'extra_view_size',$text);
+        setUserTmp($chat_id,'extra_service_size',$text);
         $irt_price = $price['irt'] * $text;
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
@@ -2600,7 +2600,7 @@ $invoiceReasonText
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'نهایی کردن پرداخت', 'callback_data'=>'extra_view_pay'],
+                        ['text' => 'نهایی کردن پرداخت', 'callback_data'=>'extra_service_pay'],
                         ['text' => 'بازگشت ◀️ ', 'callback_data'=>'extra_view_' . $service_type . '_' . $service_id],
                     ]
                 ],
