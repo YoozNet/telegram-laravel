@@ -1728,13 +1728,13 @@ $invoiceReasonText
         $subscribe_uuid = $serviceData['subscribe_uuid'];
         $link = GetConfig()['uuid-subscripe'] . $subscribe_uuid;
 
-        $qrCode = QrCode::create($link)
+        $qrCode = \Endroid\QrCode\QrCode::create($link)
             ->setEncoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
-            ->setErrorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
+            ->setErrorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High)
             ->setSize(300)
             ->setMargin(10);
 
-        $writer = new PngWriter();
+        $writer = new \Endroid\QrCode\Writer\PngWriter();
         $result = $writer->write($qrCode);
         if(!is_dir(__DIR__ . '/tmp')) {
             mkdir(__DIR__ . '/tmp');
