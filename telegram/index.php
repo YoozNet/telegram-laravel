@@ -1739,7 +1739,7 @@ $invoiceReasonText
         if(!is_dir(__DIR__ . '/tmp')) {
             mkdir(__DIR__ . '/tmp');
         }
-        $result->saveToFile(__DIR__ . '/tmp/'.$update->cb_data_chatid.'.png');
+        $result->saveToFile(__DIR__ . '/tmp/'.$service_id.'.png');
 
         Telegram::api('deleteMessage',[
             'chat_id'=>$update->cb_data_chatid,
@@ -1748,7 +1748,7 @@ $invoiceReasonText
 
         Telegram::api('sendPhoto',[
             'chat_id'=>$update->cb_data_chatid,
-            'photo'=>fopen(__DIR__ . '/tmp/'.$update->cb_data_chatid.'.png','r'),
+            'photo'=>"https://maindns.space/telegram/tmp/$service_id.png",
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -1757,6 +1757,8 @@ $invoiceReasonText
                 ],
             ]
         ]);
+
+        unlink(__DIR__ . '/tmp/'.$service_id.'.png');
     
     } elseif ($data != '' && preg_match('/data_usage_service_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
