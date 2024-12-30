@@ -1750,7 +1750,7 @@ $invoiceReasonText
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'بازگشت ◀️', 'callback_data' => 'open_service_'.$type.'_'.$service_id],
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_view_'.$type.'_'.$service_id],
                     ]
                 ],
             ]
@@ -1883,7 +1883,7 @@ $invoiceReasonText
                     ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
                 ];
             }
-            setBackTo($update->cb_data_chatid,'complate_order_service','data',false,true);
+            setBackTo($update->cb_data_chatid,'extra_service_pay','data',false,true);
             $inline_keyboard[] = [
                 ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_service_'.$service_type.'_'.$service_id],
             ];
