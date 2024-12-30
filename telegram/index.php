@@ -1676,7 +1676,7 @@ $invoiceReasonText
         }
 
         $t = "شما درحال مدیریت اشتراک ( $service_id ) هستید! 😎 \n ━━━━━━━━━━ \n";
-        $t .= "🔗 لینک جهت اتصال : \n ```$link ``` \n";
+        $t .= "🔗 لینک جهت اتصال : \n ``` $link ``` \n";
         $t .= "📅 انقضا: \n $expired_at ($days_left D) \n";
         $t .= $traffic_info;
         $t .= "📶 وضعیت: $status_text \n ━━━━━━━━━━ \n";
@@ -1686,13 +1686,14 @@ $invoiceReasonText
         $inline_keyboard = [
             [
                 ['text' => '🔄 تمدید', 'callback_data' => 'renew_view_' . $type . '_' . $service_id],
+                $type != "unlimited" ? ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_view_' . $type . '_' . $service_id] : null,
             ],
         ];
+    
         if ($type != "unlimited") {
-            $inline_keyboard[] = [
-                ['text' => '➕ حجم مازاد', 'callback_data' => 'extra_view_' . $type . '_' . $service_id],
-            ];
+            $inline_keyboard[0] = array_filter($inline_keyboard[0]);
         }
+        
         $inline_keyboard[] = [
             ['text' => '📧 ارسال ایمیل', 'callback_data' => 'email_service_'.$type.'_'.$service_id],
             ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
