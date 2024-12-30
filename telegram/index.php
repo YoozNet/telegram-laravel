@@ -1735,6 +1735,26 @@ $invoiceReasonText
                 ]
             ]);
         }
+
+    } elseif ($data != '' && preg_match('/extra_view_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+        setUserTmp($update->cb_data_chatid,'service_id',$service_id);
+        setUserTmp($update->cb_data_chatid,'service_type',$type);
+        setUserStep($update->cb_data_chatid,'extra_view_1');
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => 'حجم مورد نظر را وارد کنید',
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'open_service_'.$type.'_'.$service_id],
+                    ]
+                ],
+            ]
+        ]);
     
     } elseif ($data != '' && preg_match('/QR_service_(.*)_(.*)/',$data,$result)) {
 
@@ -1830,6 +1850,97 @@ $invoiceReasonText
                 ],
             ]
         ]);
+    } elseif ($data == 'extra_view_pay') {
+        
+
+
+
+
+        $userData = getUser($update->cb_data_chatid);
+        $userTmp = getAllUserTmp($update->cb_data_chatid);
+
+        $service_type = $userTmp['service_type'];
+        $service_id = $userTmp['service_id'];
+        $extra_view_size = $userTmp['extra_view_size'];
+
+        $price = getServicePrice($update->cb_data_chatid,$service_type);
+        $price_irt = $price['irt'] * $extra_view_size;
+        $price_yc = $price['yc'] * $extra_view_size;
+
+
+        if($userData['irr_wallet'] < $price_yc) {
+            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
+
+            $config = GetConfig();
+            $diff_toman = $config['yc_price'] * $diff;
+            setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
+            setUserStep($update->cb_data_chatid,'addBalance_2');
+            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
+            setUserTmp($update->cb_data_chatid,'waitpay_for_service',1);
+
+
+            $userID = getUser($update->cb_data_chatid)['id'];
+            $cardBanks = getCardsBank($userID);
+
+            foreach ($cardBanks as $cardData) {
+                $inline_keyboard[] = [
+                    ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
+                ];
+            }
+            setBackTo($update->cb_data_chatid,'complate_order_service','data',false,true);
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_view_'.$service_type.'_'.$service_id],
+            ];
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "متأسفانه، حساب شما اعتبار کافی برای تهیه این سرویس را ندارد. ❌😔
+
+برای ادامه‌ی فرآیند، مبلغ $diff یوزکوین معادل ( ".number_format($diff_toman, 0, '', ',')." تومان ) اعتبار دیگر نیاز دارید.
+
+برای افزایش اعتبار، لطفاً بفرمایید قصد دارید با کدام یک از کارت‌های بانکی خود پرداخت را انجام دهید؟ ✨",
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard
+                ]
+            ]);
+            return;
+        } 
+
+        
+        /*
+        $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
+        if ($webservice['status'] == true) {
+            setBackTo($update->cb_data_chatid,'/start','text');
+            */
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "
+            ارسال درخواست به api برای افزایش حجم مازاد
+
+
+            حجم درخواستی: $extra_view_size گیگابایت
+            شناسه سرویس: $service_id
+                ",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'open_service_'.$service_type.'_'.$service_id],
+                        ]
+                    ],
+                ]
+            ]);
+        // }
+        
+
+
+
+
+
+
+
+    
     } elseif ($data != '' && preg_match('/renew_view_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
@@ -2464,6 +2575,41 @@ $invoiceReasonText
                 ]
             ]);
         }
+    } elseif (isset($text) && $step == 'extra_view_1') {
+        $userData = getUser($chat_id);
+        $service_limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
+        if(!is_numeric($text) || $text < 5 || $text > $service_limit) {
+            Telegram::api('sendMessage', [
+                'chat_id' => $chat_id,
+                'text' => "⚠️ مقدار وارد شده نامعتبر است! لطفاً عددی بین 5 گیگ و $service_limit گیگ وارد کنید.",
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                        ]
+                    ],
+                ]
+            ]);
+            return;
+        }
+        $service_type = getUserTmp($chat_id,'service_type');
+        $service_id = getUserTmp($chat_id,'service_id');
+        $price = getServicePrice($chat_id,$service_type);
+        setUserTmp($chat_id,'extra_view_size',$text);
+        $irt_price = $price['irt'] * $text;
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => 'قیمت: '.$irt_price,
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'نهایی کردن پرداخت', 'callback_data'=>'extra_view_pay'],
+                        ['text' => 'بازگشت ◀️ ', 'callback_data'=>'extra_view_' . $service_type . '_' . $service_id],
+                    ]
+                ],
+            ]
+        ]);
     }
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
