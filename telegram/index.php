@@ -1798,6 +1798,26 @@ $invoiceReasonText
                 ],
             ]
         ]);
+    } elseif ($data != '' && preg_match('/renew_plugin_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+        $serviceData = getService($service_id);
+
+        if ($serviceData['AutomaticRenewal'] == 0) {
+            Database::update('YN_services', ['AutomaticRenewal'],[1], 'id =?', [$service_id]);
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "تمدید یار برای این اشتراک فعال شد ✅",
+                'show_alert' => true,
+            ]);
+        } elseif ($serviceData['AutomaticRenewal'] == 1) {
+            Database::update('YN_services', ['AutomaticRenewal'],[0], 'id =?', [$service_id]);
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "تمدید یار برای این اشتراک غیرفعال شد ❌",
+                'show_alert' => true,
+            ]);
+        }
     }
 
     ## Step's ## <-------------------------
