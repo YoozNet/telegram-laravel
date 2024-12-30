@@ -1872,7 +1872,6 @@ $invoiceReasonText
             setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
             setUserStep($update->cb_data_chatid,'addBalance_2');
             setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
-            setUserTmp($update->cb_data_chatid,'waitpay_for_service',1);
 
 
             $userID = getUser($update->cb_data_chatid)['id'];
@@ -1987,6 +1986,112 @@ $invoiceReasonText
                 ],
             ]
         ]);
+    } elseif ($data != '' && preg_match('/renew_service_(.*)_(.*)/',$data,$result)) {
+        $service_type = $result[1];
+        $service_id = $result[2];
+        $serviceData = getService($service_id);
+        $main_traffic = $serviceData['main_traffic'];
+
+        $price = getServicePrice($chat_id,$service_type);
+        $irt_price = $price['irt'] * $text;
+        setUserTmp($update->cb_data_chatid,'service_id',$service_id);
+        setUserTmp($update->cb_data_chatid,'service_type',$service_type);
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'text' => 'مبلغ : '.$irt_price.' تومان ',
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'ادامه پرداخت', 'callback_data'=>'complate_renew_service_'.$type.'_'.$service_id],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
+                    ]
+                ],
+            ]
+        ]);
+
+    } elseif ($data == 'complate_renew_service') {
+        $tmp = getAllUserTmp($update->cb_data_chatid);
+        $service_type = $tmp['service_id'];
+        $service_id = $tmp['service_type'];
+        $serviceData = getService($service_id);
+        $userData = getUser($update->cb_data_chatid);
+        $main_traffic = $serviceData['main_traffic'];
+
+        $price = getServicePrice($update->cb_data_chatid,$service_type);
+        $price_irt = $price['irt'] * $main_traffic;
+        $price_yc = $price['yc'] * $main_traffic;
+
+
+        if($userData['irr_wallet'] < $price_yc) {
+            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
+
+            $config = GetConfig();
+            $diff_toman = $config['yc_price'] * $diff;
+            setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
+            setUserStep($update->cb_data_chatid,'addBalance_2');
+            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
+
+
+            $userID = getUser($update->cb_data_chatid)['id'];
+            $cardBanks = getCardsBank($userID);
+
+            foreach ($cardBanks as $cardData) {
+                
+                $inline_keyboard[] = [
+                    ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
+                ];
+            }
+            setBackTo($update->cb_data_chatid,'complate_renew_service','data',false,true);
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'renew_service_'.$service_type.'_'.$service_id],
+            ];
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "متأسفانه، حساب شما اعتبار کافی برای تمدید این سرویس را ندارد. ❌😔
+
+برای ادامه‌ی فرآیند، مبلغ $diff یوزکوین معادل ( ".number_format($diff_toman, 0, '', ',')." تومان ) اعتبار دیگر نیاز دارید.
+
+برای افزایش اعتبار، لطفاً بفرمایید قصد دارید با کدام یک از کارت‌های بانکی خود پرداخت را انجام دهید؟ ✨",
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard
+                ]
+            ]);
+            return;
+        } 
+
+        
+        /*
+        $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
+        if ($webservice['status'] == true) {
+            setBackTo($update->cb_data_chatid,'/start','text');
+            */
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "
+            ارسال درخواست به api برای تمدید
+
+            شناسه سرویس: $service_id
+                ",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_view_'.$service_type.'_'.$service_id],
+                        ]
+                    ],
+                ]
+            ]);
+
+
+
+
+
+
+
+
     } elseif ($data != '' && preg_match('/renew_plugin_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
