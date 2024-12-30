@@ -1709,18 +1709,36 @@ $invoiceReasonText
             ['text' => 'بازگشت ◀️', 'callback_data'=>'get_service_page_'.$backPage],
         ];
 
-        
-        Telegram::api('editMessageText',[
-            'chat_id' => $update->cb_data_chatid,
-            'message_id' => $update->cb_data_message_id,
-            'text' => $t,
-            'parse_mode' => 'Markdown',
-            'reply_markup' => [
-                'inline_keyboard' => $inline_keyboard
-            ]
-        ]);
+        $edit_to_sendMessage = getUserTmp($update->cb_data_chatid,'edit_to_sendMessage');
+        if($edit_to_sendMessage == 1) {
+            setUserTmp($update->cb_data_chatid,'edit_to_sendMessage',0);
+            Telegram::api('deleteMessage',[
+                'chat_id'=>$update->cb_data_chatid,
+                'message_id'=>$update->cb_data_message_id
+            ]);
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => $t,
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard
+                ]
+            ]);
+        } else {
+            Telegram::api('editMessageText',[
+                'chat_id' => $update->cb_data_chatid,
+                'message_id' => $update->cb_data_message_id,
+                'text' => $t,
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard
+                ]
+            ]);
+        }
     
     } elseif ($data != '' && preg_match('/QR_service_(.*)_(.*)/',$data,$result)) {
+
+        setUserTmp($update->cb_data_chatid,'edit_to_sendMessage',1);
         $type = $result[1];
         $service_id = $result[2];
         $serviceData = getService($service_id);
