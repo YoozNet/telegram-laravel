@@ -964,7 +964,7 @@ IRR WALLET : ".$userData['irr_wallet']."
             ",
         ]);
 
-        if($userData['irr_wallet'] < $price_irt * 10) {
+        if($userData['irr_wallet'] < $price_yc) {
             $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
 
             $config = GetConfig();
@@ -1874,7 +1874,7 @@ $invoiceReasonText
         $price_yc = $price['yc'] * $extra_service_size;
 
 
-        if($userData['irr_wallet'] < $price_irt * 10) {
+        if($userData['irr_wallet'] < $price_yc) {
             $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
 
             $config = GetConfig();
@@ -2034,7 +2034,7 @@ $invoiceReasonText
         $price_yc = $price['yc'] * $main_traffic;
 
 
-        if($userData['irr_wallet'] < $price_irt * 10) {
+        if($userData['irr_wallet'] < $price_yc) {
             $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
 
             $config = GetConfig();
