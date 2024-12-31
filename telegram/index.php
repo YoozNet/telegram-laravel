@@ -1894,7 +1894,7 @@ $invoiceReasonText
                 'inline_keyboard' => [
                     [
                         ['text' => 'تعیین حجم دلخواه 📏', 'callback_data' => 'set_value_extra_plugin_'.$service_type.'_'.$service_id],
-                        ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                        ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'set_status_extra_plugin_'.$service_type.'_'.$service_id],
                     ],
                     [
                         ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_view_'.$service_type.'_'.$service_id],
@@ -1925,6 +1925,44 @@ $invoiceReasonText
             ]
         ]);
 
+    } elseif ($data != '' && preg_match('/set_status_extra_plugin_(.*)_(.*)_to_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+        $serviceData = getService($service_id);
+        
+        if ($serviceData['AutoEVS'] == 0) {
+            Database::update('YN_services', ['AutoEVS'],[1], 'id =?', [$service_id]);
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "قابلیت ترافیک پلاس برای شما فعال شد! 🚀  
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                        ]
+                    ]
+                ]
+            ]);
+        } elseif ($serviceData['AutoEVS'] == 1) {
+            Database::update('YN_services', ['AutoEVS', 'AutoEVV'],[0, null], 'id =?', [$service_id]);
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "قابلیت ترافیک پلاس برای شما غیرفعال شد! 🚀  
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                        ]
+                    ]
+                ]
+            ]);
+        }
     } elseif ($data == 'extra_service_pay') {
         
         $userData = getUser($update->cb_data_chatid);
