@@ -1860,6 +1860,85 @@ $invoiceReasonText
                 ],
             ]
         ]);
+    } elseif ($data != '' && preg_match('/extra_plugin_(.*)_(.*)/',$data,$result)) {
+        $service_type = $result[1];
+        $service_id = $result[2];
+        $serviceData = getService($service_id);
+        if ($serviceData['AutoEVS'] == 1) {
+            $traffic_plus = $serviceData['AutoEVV'] ?? "اتوماتیک";
+            $plugin_text .= "🚀 ترافیک پلاس: فعال ( $traffic_plus ) \n ━━━━━━━━━━ \n";
+        } else {
+            $plugin_text .= "🚀 ترافیک پلاس: غیرفعال \n ━━━━━━━━━━ \n";
+        }
+        $status_to = ($serviceData['AutoEVS'] == 1) ? 0 : 1;
+        // $t .= $plugin_text;
+    // extra_view_
+        Telegram::api('editMessageText',[
+            "message_id" => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid,
+            'parse_mode' => 'Markdown',
+            'text' => "
+    $plugin_text
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'تغییر وضعیت', 'callback_data' => 'set_status_extra_plugin_'.$type.'_'.$service_id.'_to_'.$status_to],
+                        ['text' => 'تنظیم حجم', 'callback_data' => 'set_value_extra_plugin_'.$type.'_'.$service_id],
+                    ],
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_view_'.$service_type.'_'.$service_id],
+                    ]
+                ]
+            ]
+        ]);
+        return;
+
+    } elseif ($data != '' && preg_match('/set_value_extra_plugin_(.*)_(.*)/',$data,$result)) {
+        $service_type = $result[1];
+        $service_id = $result[2];
+        setUserTmp($update->cb_data_chatid,'service_id',$service_id);
+        setUserTmp($update->cb_data_chatid,'service_type',$service_type);
+        setUserStep($update->cb_data_chatid,'set_value_for_extra_plugin');
+        Telegram::api('editMessageText',[
+            "message_id" => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid,
+            'parse_mode' => 'Markdown',
+            'text' => "
+حجم دلخواه را وارد کنید
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                    ]
+                ]
+            ]
+        ]);
+
+    } elseif ($data != '' && preg_match('/set_status_extra_plugin_(.*)_(.*)_to_(.*)/',$data,$result)) {
+        $service_type = $result[1];
+        $service_id = $result[2];
+        $auto_evs_to = $result[3];
+        
+        // DB QUERY
+
+        Telegram::api('editMessageText',[
+            "message_id" => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid,
+            'parse_mode' => 'Markdown',
+            'text' => "
+وضعیت به $auto_evs_to تغییر کرد
+            ",
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                    ]
+                ]
+            ]
+        ]);
+
     } elseif ($data == 'extra_service_pay') {
         
         $userData = getUser($update->cb_data_chatid);
@@ -2719,6 +2798,42 @@ $invoiceReasonText
                     [
                         ['text' => 'نهایی کردن پرداخت', 'callback_data'=>'extra_service_pay'],
                         ['text' => 'بازگشت ◀️ ', 'callback_data'=>'extra_view_' . $service_type . '_' . $service_id],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($text != '' && $step == 'set_value_for_extra_plugin') {
+        if(!is_numeric($text)) {
+            Telegram::api('sendMessage',[
+                'chat_id' => $chat_id,
+                'text' => "مقدار وارد شده باید عددی باشد",
+                'parse_mode' => 'Markdown',
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_plugin_' . $service_type . '_' . $service_id],
+                        ]
+                    ],
+                ]
+            ]);
+            return;
+        }
+        $service_id = getUserTmp($update->cb_data_chatid,'service_id');
+        $service_type = getUserTmp($update->cb_data_chatid,'service_type');
+        // DB QUERY
+        Telegram::api('sendMessage',[
+            'chat_id' => $chat_id,
+            'text' => '
+            حجم دلخواه تنظیم شد
+
+            سرویس آیدی: '.$service_id.'
+            حجم وارد شده: '.$text.'
+            ',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️ ', 'callback_data'=>'extra_plugin_' . $service_type . '_' . $service_id],
                     ]
                 ],
             ]
