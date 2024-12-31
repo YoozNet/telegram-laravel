@@ -953,6 +953,16 @@ $link
         $price_irt = $price['irt'] * $service_size;
         $price_yc = $price['yc'] * $service_size;
 
+        Telegram::api('sendMessage',[
+            "message_id" => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid,
+            'parse_mode' => 'Markdown',
+            'text' => "
+PRICE IRT : $price_irt
+PRICE YC : $price_yc
+IRR WALLET : $userData['irr_wallet']
+            ",
+        ]);
 
         if($userData['irr_wallet'] < $price_irt * 10) {
             $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
