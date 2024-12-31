@@ -1993,7 +1993,7 @@ $invoiceReasonText
         $main_traffic = $serviceData['main_traffic'];
 
         $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $irt_price = $price['irt'] * $text;
+        $irt_price = $price['irt'] * $main_traffic;
         setUserTmp($update->cb_data_chatid,'service_id',$service_id);
         setUserTmp($update->cb_data_chatid,'service_type',$service_type);
         Telegram::api('editMessageText',[
