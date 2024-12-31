@@ -1893,8 +1893,8 @@ $invoiceReasonText
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'تعیین حجم دلخواه 📏', 'callback_data' => 'set_value_extra_plugin_'.$service_type.'_'.$service_id],
-                        ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'set_status_extra_plugin_'.$service_type.'_'.$service_id],
+                        ['text' => 'تعیین حجم دلخواه 📏', 'callback_data' => 'set_value_extra_'.$service_type.'_'.$service_id],
+                        ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'set_status_extra_'.$service_type.'_'.$service_id],
                     ],
                     [
                         ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_view_'.$service_type.'_'.$service_id],
@@ -1902,20 +1902,19 @@ $invoiceReasonText
                 ]
             ]
         ]);
-        return;
-    } elseif ($data != '' && preg_match('/set_value_extra_plugin_(.*)_(.*)/',$data,$result)) {
+    } elseif ($data != '' && preg_match('/set_value_extra_(.*)_(.*)/',$data,$result)) {
         $service_type = $result[1];
         $service_id = $result[2];
+        
         setUserTmp($update->cb_data_chatid,'service_id',$service_id);
         setUserTmp($update->cb_data_chatid,'service_type',$service_type);
         setUserStep($update->cb_data_chatid,'set_value_for_extra_plugin');
+
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
             'parse_mode' => 'Markdown',
-            'text' => "
-حجم دلخواه را وارد کنید
-            ",
+            'text' => "لطفاً حجمی بین ۱ تا ۲۰ گیگابایت را وارد کنید.",
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -1925,7 +1924,7 @@ $invoiceReasonText
             ]
         ]);
 
-    } elseif ($data != '' && preg_match('/set_status_extra_plugin_(.*)_(.*)/',$data,$result)) {
+    } elseif ($data != '' && preg_match('/set_status_extra_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
         $serviceData = getService($service_id);
@@ -1940,7 +1939,7 @@ $invoiceReasonText
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$type.'_'.$service_id],
                         ]
                     ]
                 ]
@@ -1955,7 +1954,7 @@ $invoiceReasonText
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$type.'_'.$service_id],
                         ]
                     ]
                 ]
@@ -2828,7 +2827,7 @@ $invoiceReasonText
         if(!is_numeric($text)) {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
-                'text' => "مقدار وارد شده باید عددی باشد",
+                'text' => "لطفاً عددی بین ۱ تا ۲۰ گیگابایت را وارد کنید.",
                 'parse_mode' => 'Markdown',
                 'reply_to_message_id' => $update->message_id,
                 'reply_markup' => [
@@ -2843,15 +2842,18 @@ $invoiceReasonText
         }
         $service_id = getUserTmp($update->cb_data_chatid,'service_id');
         $service_type = getUserTmp($update->cb_data_chatid,'service_type');
-        // DB QUERY
+
+        Database::update('YN_services', ['AutoEVV'],[$text], 'id =?', [$service_id]);
+
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
-            'text' => '
-            حجم دلخواه تنظیم شد
+            'text' => "🟢 توجه! 
 
-            سرویس آیدی: '.$service_id.'
-            حجم وارد شده: '.$text.'
-            ',
+حجم ترافیک پلاس شما اکنون بر روی $text گیگ تنظیم شده است. 📊
+
+🔔 خبر خوب: اگر ترافیک شما به اتمام برسد، به صورت اتوماتیک $text گیگ دیگر به آن اضافه خواهد شد! 🚀
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
