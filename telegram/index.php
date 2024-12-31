@@ -2768,6 +2768,14 @@ $invoiceReasonText
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
                 'text' => "شما اجازه خرید حجم بالای 10 گیگ را ندارید",
+                'reply_to_message_id' => $update->message_id,
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'order_service_'.$service_type],
+                        ]
+                    ],
+                ]
             ]);
         } else {
 
@@ -2815,6 +2823,7 @@ $invoiceReasonText
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
             'text' => 'قیمت: '.$irt_price,
+            'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
@@ -2855,6 +2864,7 @@ $invoiceReasonText
 🔔 خبر خوب: اگر ترافیک شما به اتمام برسد، به صورت اتوماتیک $text گیگ دیگر به آن اضافه خواهد شد! 🚀
 
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+            'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
