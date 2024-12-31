@@ -1998,12 +1998,13 @@ $invoiceReasonText
         setUserTmp($update->cb_data_chatid,'service_type',$service_type);
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
             'text' => 'مبلغ : '.$irt_price.' تومان ',
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'ادامه پرداخت', 'callback_data'=>'complate_renew_service_'.$type.'_'.$service_id],
+                        ['text' => 'ادامه پرداخت', 'callback_data'=>'complate_renew_service_'.$service_type.'_'.$service_id],
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
                     ]
                 ],
