@@ -79,8 +79,12 @@ try {
             if ($referral_code) {
                 $referrer = Database::select("YN_users", ["*"], "referral_id = ?", [$referral_code]);
                 if ($referrer) {
-                    # createUser($chat_id);
                     $referrer_chat_id = $referrer[0]['user_id'];
+                    $referrer_balance = $referrer[0]['irr_wallet'];
+
+                    $new_balance = $referrer_balance + 0.5;
+                    Database::update('YN_users', ['irr_wallet'], [$new_balance], 'user_id = ?', [$referrer_chat_id]);
+                    
                     Database::update('YN_users',['referred_by'],[$referral_code],'user_id = ?',[$chat_id]);
                     
                     Telegram::api('sendMessage',[
@@ -106,12 +110,12 @@ try {
                         'resize_keyboard' => true,
                         ]
                     ]);
+
                     Telegram::api('sendMessage',[
                         'chat_id' => $referrer_chat_id,
-                        'text' => "تشکر ویژه از شما! 👏😊
-    با معرفی یوزنت، نشون دادید که همیشه بهترین‌ها رو برای دوستاتون می‌خواید. 😌🌷
-    حالا بقیه هم مثل شما می‌تونن لذت یه اینترنت حرفه‌ای و سریع رو تجربه کنند. 🎉
-    حضور شما برای ما ارزشمند است. 🌟"
+                        'text' => "از حضور گرمتون بی‌نهایت سپاسگزاریم! 🙏😊 با معرفی یوزنت، شما بهترین‌ها رو برای دوستانتون به ارمغان آوردید و حالا همه می‌تونن از اینترنتی حرفه‌ای و پرسرعت بهره‌مند بشن. 🎉
+
+به پاس دعوت شما، مبلغ ۰.۵ یوزکوین به حسابتون اضافه شده است. 💰✨ امیدواریم همواره در کنار ما باشید! 🌷"
                     ]);
                 }
             } else {
@@ -153,13 +157,12 @@ try {
         $cardInfo = isset($cardNumber['card_number']) && $cardNumber['card_number'] != null ? splitCardNumber($cardNumber['card_number'])  : "تنظیم نشده";
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
-            'text' => "
-ℹ️ اطلاعات حساب کاربری: 
-شناسه مشتری : ".$userData['id']."
-ایمیل: ".$email."
-شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
-گروه کاربری: ".$group_id."
-تخفیف: ".$discount."%
+            'text' => "🌟  اطلاعات حساب کاربری 🌟
+🆔 شناسه مشتری: ".$userData['id']."
+📧 ایمیل: ".$email."
+💳 شماره کارت پیش‌فرض برای پرداخت: ".$cardInfo."
+👥 گروه کاربری: ".$group_id."
+🎟️ تخفیف: ".$discount."%
 
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'reply_to_message_id' => $update->message_id,
@@ -278,15 +281,18 @@ try {
     } elseif($text == '⚜️ ثبت سرویس جدید') {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
+
         $serviceList = GetAllServices();
         $serviceDetail = "در این بخش می‌توانید نوع سرویسی که قصد دارید تهیه کنید را مشخص کنید ! 😊 \n\n";
         $inline_keyboard = [];
         $emojiList = ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'];
         $randomEmojiIndex = array_rand($emojiList,3);
         $c_for_randemoji = 0;
+        
         foreach($serviceList as $service) {
             $randomEmoji = $emojiList[$randomEmojiIndex[$c_for_randemoji]];
             $c_for_randemoji += 1;
+
             $servicePrice = getServicePrice($chat_id,$service['type']);
             $vip = $service['special'] == true ? "** ( پیشنهادی یوزنت ) **" : '';
             $serviceDetail .= $randomEmoji." ". $service['name'] ." $vip
@@ -320,9 +326,11 @@ try {
             $price_yc = $price['yc'] * $service_size;
 
             if($userData['irr_wallet'] >= $price_yc) {
+
                 setUserTmp($chat_id,'waitpay_for_service',0);
                 $t = "آخرین سفارش شما به دلیل عدم موجودی نهایی نشده است. ⚠️ \t";
                 $size = "";
+
                 if ($service_type == "unlimited") {
                     $unlimitedPlans = $serviceList[$service_type]['plans'];
                     $selectedPlanName = "";
@@ -340,6 +348,7 @@ try {
                     $t .= "شما قصد تهیه $service_size گیگابایت حجم از سرویس ".$serviceList[$service_type]['name']." را داشتید.";
                     $size = $userTmp['service_size'];
                 }
+
                 $t .= "\n \n🎗 هم اکنون اعتبار حساب کاربری شما برابر با مبلغ این سفارش است ، آیا مایل به نهایی کردن این سفارش هستید؟ 🤔✨";
                 Telegram::api('sendMessage',[
                     'chat_id' => $chat_id,
@@ -361,6 +370,7 @@ try {
         setUserStep($chat_id,'none');
         setBackTo($chat_id,'/start','text');
         setUserTmp($chat_id,'servicelist_page',0);
+
         $getUser = getUser($chat_id);
         $countUserService = countUserService ($getUser['id']);
         if($countUserService == 0) {
@@ -440,13 +450,12 @@ try {
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => "
-ℹ️ اطلاعات حساب کاربری: 
-شناسه مشتری : ".$userData['id']."
-ایمیل: ".$email."
-شماره کارت پیشفرض برای پرداخت: ".$cardInfo."
-گروه کاربری: ".$group_id."
-تخفیف: ".$discount."%
+            'text' => "🌟  اطلاعات حساب کاربری 🌟
+🆔 شناسه مشتری: ".$userData['id']."
+📧 ایمیل: ".$email."
+💳 شماره کارت پیش‌فرض برای پرداخت: ".$cardInfo."
+👥 گروه کاربری: ".$group_id."
+🎟️ تخفیف: ".$discount."%
             
 برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'reply_markup' => [
@@ -495,9 +504,11 @@ try {
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => "
-لطف کنید IP مورد نظر را ارسال کنید
-            ",
+            'text' => "برای ارتباط شما با توکن، لطفاً یک آدرس IPv4 با فرمت زیر ارسال نمایید: 
+
+- مثال : 192.168.251.1
+
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
@@ -517,7 +528,9 @@ try {
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => "میتوانید از طریق ارسال و به اشتراک گذاری لینک، دعوت دیگران به این سایت را داشته باشید. با هر خریدی که از لینک شما انجام شود، شما می‌توانید 0.1 درصد پورسانت دریافت کنید. همچنین، با جذب افراد جدید و دعوت آن‌ها برای استفاده از این سایت می‌توانید درآمد رفرال نیز کسب کنید.
+            'text' => "🎉 به ازای هر عضو جدید، 0.5 یوزکوین دریافت کنید!  
+💸 همچنین برای هر خرید سرویس، 0.1% از مبلغ کل فاکتور به شما رفرال داده می‌شود!  
+دعوت کنید و درآمدتان را افزایش دهید! 🚀
 
 تعداد رفرال های دریافتی : `$referral_count`
 لینک دعوت شما : 
@@ -540,36 +553,37 @@ $link
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'Profile','data');
         $activeBanks = getAdminCards();
+
         if ($activeBanks == []) {
-            Telegram::api('editMessageText',[
-                'chat_id' => $chat_id,
-                'text' => "
-کارت بانکی فعالی وجود ندارد
-                ",
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $chat_id,
+                'text' => "❌ کارت بانکی فعالی وجود ندارد.",
+                'show_alert' => true,
             ]);
-        } else {
-            $activeCardNumber = adminCardNumber($update->cb_data_chatid);
-            $inline_keyboard = [];
-            foreach ($activeBanks as $cardData) {
-                $is_setted = ($activeCardNumber != null && $cardData['card_number'] == $activeCardNumber['card_number']) ? "✅" : "تنظیم";
-                $inline_keyboard[] = [
-                    ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
-                    ['text' => getBankName($cardData['bank']), 'callback_data'=>'set_default_card_'. $cardData['id']],
-                    ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
-                ];
-            }
-            $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
-            ];
-            Telegram::api('editMessageText',[
-                'chat_id' => $update->cb_data_chatid,
-                "message_id" => $update->cb_data_message_id,
-                'text' => "در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود",
-                'reply_markup' => [
-                    'inline_keyboard' => $inline_keyboard,
-                ]
-            ]);
+            return;
         }
+
+        $activeCardNumber = adminCardNumber($update->cb_data_chatid);
+        $inline_keyboard = [];
+        foreach ($activeBanks as $cardData) {
+            $is_setted = ($activeCardNumber != null && $cardData['card_number'] == $activeCardNumber['card_number']) ? "✅" : "تنظیم";
+            $inline_keyboard[] = [
+                ['text' => $is_setted, 'callback_data'=>'set_default_card_'. $cardData['id']],
+                ['text' => getBankName($cardData['bank']), 'callback_data'=>'set_default_card_'. $cardData['id']],
+                ['text' => splitCardNumber($cardData['card_number']), 'callback_data'=>'set_default_card_'. $cardData['id']],
+            ];
+        }
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data'=>'Profile'],
+        ];
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            "message_id" => $update->cb_data_message_id,
+            'text' => "در بخش شماره کارتی را انتخاب کنید. در پرداخت ها شما باید واریزی های خود را به این کارت انجام دهید; در صورتی که پرداختی شما با کارت انتخابی مغایرت داشته باشد، تراکنش شما رد میشود",
+            'reply_markup' => [
+                'inline_keyboard' => $inline_keyboard,
+            ]
+        ]);
     } elseif ($data == "wallet") {
         setUserStep($update->cb_data_chatid,'none');
         setBackTo($update->cb_data_chatid,'/start','text');
@@ -952,17 +966,6 @@ $link
         $price = getServicePrice($update->cb_data_chatid,$service_type);
         $price_irt = $price['irt'] * $service_size;
         $price_yc = $price['yc'] * $service_size;
-
-        Telegram::api('sendMessage',[
-            "message_id" => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid,
-            'parse_mode' => 'Markdown',
-            'text' => "
-PRICE IRT : $price_irt
-PRICE YC : $price_yc
-IRR WALLET : ".$userData['irr_wallet']."
-            ",
-        ]);
 
         if($userData['irr_wallet'] < $price_yc) {
             $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
@@ -1749,13 +1752,18 @@ $invoiceReasonText
     } elseif ($data != '' && preg_match('/extra_service_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
+
         setUserTmp($update->cb_data_chatid,'service_id',$service_id);
         setUserTmp($update->cb_data_chatid,'service_type',$type);
         setUserStep($update->cb_data_chatid,'extra_service_1');
+
+        $userData = getUser($update->cb_data_chatid);
+        $service_limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
+
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             'message_id' => $update->cb_data_message_id,
-            'text' => 'حجم مورد نظر را وارد کنید',
+            'text' => "لطفاً حجم مازاد خود را در بازه 5 گیگابایت تا $service_limit گیگابایت وارد کنید! 📦✨",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
@@ -1863,28 +1871,30 @@ $invoiceReasonText
     } elseif ($data != '' && preg_match('/extra_plugin_(.*)_(.*)/',$data,$result)) {
         $service_type = $result[1];
         $service_id = $result[2];
+
         $serviceData = getService($service_id);
+        $plugin_text = "🔧 وضعیت فعلی افزونه:\n";
+
         if ($serviceData['AutoEVS'] == 1) {
             $traffic_plus = $serviceData['AutoEVV'] ?? "اتوماتیک";
             $plugin_text .= "🚀 ترافیک پلاس: فعال ( $traffic_plus ) \n ━━━━━━━━━━ \n";
         } else {
             $plugin_text .= "🚀 ترافیک پلاس: غیرفعال \n ━━━━━━━━━━ \n";
         }
-        $status_to = ($serviceData['AutoEVS'] == 1) ? 0 : 1;
-        // $t .= $plugin_text;
-    // extra_view_
+
+        $plugin_text .= "━━━━━━━━━━\n";
+        $plugin_text .= "برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎 \n";
+
         Telegram::api('editMessageText',[
             "message_id" => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid,
             'parse_mode' => 'Markdown',
-            'text' => "
-    $plugin_text
-            ",
+            'text' => $plugin_text,
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'تغییر وضعیت', 'callback_data' => 'set_status_extra_plugin_'.$type.'_'.$service_id.'_to_'.$status_to],
-                        ['text' => 'تنظیم حجم', 'callback_data' => 'set_value_extra_plugin_'.$type.'_'.$service_id],
+                        ['text' => 'تعیین حجم دلخواه 📏', 'callback_data' => 'set_value_extra_plugin_'.$type.'_'.$service_id],
+                        ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'extra_plugin_'.$type.'_'.$service_id],
                     ],
                     [
                         ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_view_'.$service_type.'_'.$service_id],
@@ -1893,7 +1903,6 @@ $invoiceReasonText
             ]
         ]);
         return;
-
     } elseif ($data != '' && preg_match('/set_value_extra_plugin_(.*)_(.*)/',$data,$result)) {
         $service_type = $result[1];
         $service_id = $result[2];
@@ -1917,28 +1926,43 @@ $invoiceReasonText
         ]);
 
     } elseif ($data != '' && preg_match('/set_status_extra_plugin_(.*)_(.*)_to_(.*)/',$data,$result)) {
-        $service_type = $result[1];
+        $type = $result[1];
         $service_id = $result[2];
-        $auto_evs_to = $result[3];
+        $serviceData = getService($service_id);
         
-        // DB QUERY
-
-        Telegram::api('editMessageText',[
-            "message_id" => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid,
-            'parse_mode' => 'Markdown',
-            'text' => "
-وضعیت به $auto_evs_to تغییر کرد
-            ",
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+        if ($serviceData['AutoEVS'] == 0) {
+            Database::update('YN_services', ['AutoEVS'],[1], 'id =?', [$service_id]);
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "قابلیت ترافیک پلاس برای شما فعال شد! 🚀  
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                        ]
                     ]
                 ]
-            ]
-        ]);
-
+            ]);
+        } elseif ($serviceData['AutoEVS'] == 1) {
+            Database::update('YN_services', ['AutoEVS', 'AutoEVV'],[0, null], 'id =?', [$service_id]);
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "قابلیت ترافیک پلاس برای شما غیرفعال شد! 🚀  
+برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎",
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
+                        ]
+                    ]
+                ]
+            ]);
+        }
     } elseif ($data == 'extra_service_pay') {
         
         $userData = getUser($update->cb_data_chatid);
