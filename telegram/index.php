@@ -1992,7 +1992,7 @@ $invoiceReasonText
         $serviceData = getService($service_id);
         $main_traffic = $serviceData['main_traffic'];
 
-        $price = getServicePrice($chat_id,$service_type);
+        $price = getServicePrice($update->cb_data_chatid,$service_type);
         $irt_price = $price['irt'] * $text;
         setUserTmp($update->cb_data_chatid,'service_id',$service_id);
         setUserTmp($update->cb_data_chatid,'service_type',$service_type);
