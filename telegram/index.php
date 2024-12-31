@@ -1874,14 +1874,23 @@ $invoiceReasonText
 
         $serviceData = getService($service_id);
         $plugin_text = "🔧 وضعیت فعلی افزونه:\n";
-
+        $inline_keyboard = [];
         if ($serviceData['AutoEVS'] == 1) {
             $traffic_plus = $serviceData['AutoEVV'] ?? "اتوماتیک";
             $plugin_text .= "🚀 ترافیک پلاس: فعال ( $traffic_plus )";
+            $inline_keyboard[] = [
+                ['text' => 'تعیین حجم دلخواه 📏', 'callback_data' => 'set_value_extra_'.$service_type.'_'.$service_id],
+                ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'set_status_extra_'.$service_type.'_'.$service_id],
+            ];
         } else {
             $plugin_text .= "🚀 ترافیک پلاس: غیرفعال ";
+            $inline_keyboard[] = [
+                ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'set_status_extra_'.$service_type.'_'.$service_id],
+            ];
         }
-
+        $inline_keyboard[] = [
+            ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_view_'.$service_type.'_'.$service_id],
+        ];
         $plugin_text .= "\n";
         $plugin_text .= "برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎 \n";
 
@@ -1891,15 +1900,7 @@ $invoiceReasonText
             'parse_mode' => 'Markdown',
             'text' => $plugin_text,
             'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'تعیین حجم دلخواه 📏', 'callback_data' => 'set_value_extra_'.$service_type.'_'.$service_id],
-                        ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'set_status_extra_'.$service_type.'_'.$service_id],
-                    ],
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_view_'.$service_type.'_'.$service_id],
-                    ]
-                ]
+                'inline_keyboard' => $inline_keyboard
             ]
         ]);
     } elseif ($data != '' && preg_match('/set_value_extra_(.*)_(.*)/',$data,$result)) {
