@@ -960,7 +960,7 @@ $link
             'text' => "
 PRICE IRT : $price_irt
 PRICE YC : $price_yc
-IRR WALLET : $userData['irr_wallet']
+IRR WALLET : ".$userData['irr_wallet']."
             ",
         ]);
 
