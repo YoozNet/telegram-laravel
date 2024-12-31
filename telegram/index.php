@@ -1784,14 +1784,15 @@ $invoiceReasonText
         $subscribe_uuid = $serviceData['subscribe_uuid'];
         $link = GetConfig()['uuid-subscripe'] . $subscribe_uuid;
 
+        $logo = new \Endroid\QrCode\Logo\Logo(path:__DIR__ . '/../assets/img/logo1.png',resizeToWidth: 50,punchoutBackground:true);
+
         $qrCode = \Endroid\QrCode\QrCode::create($link)
             ->setEncoding(new \Endroid\QrCode\Encoding\Encoding('UTF-8'))
             ->setErrorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High)
-            ->setSize(300)
+            ->setSize(512)
             ->setMargin(10);
 
         $writer = new \Endroid\QrCode\Writer\PngWriter();
-        $logo = new \Endroid\QrCode\Logo\Logo('https://subcdn.cfd/assets/img/logo.png');
 
         $result = $writer->write($qrCode, $logo);
         if(!is_dir(__DIR__ . '/tmp')) {
