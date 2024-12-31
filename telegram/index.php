@@ -2841,8 +2841,8 @@ $invoiceReasonText
             ]);
             return;
         }
-        $service_id = getUserTmp($update->cb_data_chatid,'service_id');
-        $service_type = getUserTmp($update->cb_data_chatid,'service_type');
+        $service_id = getUserTmp($chat_id,'service_id');
+        $service_type = getUserTmp($chat_id,'service_type');
 
         Database::update('YN_services', ['AutoEVV'],[$text], 'id =?', [$service_id]);
 
