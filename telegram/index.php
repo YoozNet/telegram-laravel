@@ -2004,7 +2004,7 @@ $invoiceReasonText
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'ادامه پرداخت', 'callback_data'=>'complate_renew_service_'.$service_type.'_'.$service_id],
+                        ['text' => 'ادامه پرداخت', 'callback_data'=>'complate_renew_service'],
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
                     ]
                 ],
