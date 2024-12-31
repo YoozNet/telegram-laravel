@@ -2005,7 +2005,7 @@ $invoiceReasonText
                 'inline_keyboard' => [
                     [
                         ['text' => 'ادامه پرداخت', 'callback_data'=>'complate_renew_service'],
-                        ['text' => 'بازگشت ◀️', 'callback_data'=>'web_service'],
+                        ['text' => 'بازگشت ◀️', 'callback_data'=>'renew_view_'.$service_type.'_'.$service_id],
                     ]
                 ],
             ]
@@ -2013,8 +2013,8 @@ $invoiceReasonText
 
     } elseif ($data == 'complate_renew_service') {
         $tmp = getAllUserTmp($update->cb_data_chatid);
-        $service_type = $tmp['service_id'];
-        $service_id = $tmp['service_type'];
+        $service_type = $tmp['service_type'];
+        $service_id = $tmp['service_id'];
         $serviceData = getService($service_id);
         $userData = getUser($update->cb_data_chatid);
         $main_traffic = $serviceData['main_traffic'];
@@ -2069,7 +2069,8 @@ $invoiceReasonText
         if ($webservice['status'] == true) {
             setBackTo($update->cb_data_chatid,'/start','text');
             */
-            Telegram::api('sendMessage',[
+            Telegram::api('editMessageText',[
+                'message_id' => $update->cb_data_message_id,
                 'chat_id' => $update->cb_data_chatid,
                 'text' => "
             ارسال درخواست به api برای تمدید
