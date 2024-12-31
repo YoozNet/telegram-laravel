@@ -1877,12 +1877,12 @@ $invoiceReasonText
 
         if ($serviceData['AutoEVS'] == 1) {
             $traffic_plus = $serviceData['AutoEVV'] ?? "اتوماتیک";
-            $plugin_text .= "🚀 ترافیک پلاس: فعال ( $traffic_plus ) \n ━━━━━━━━━━ \n";
+            $plugin_text .= "🚀 ترافیک پلاس: فعال ( $traffic_plus )";
         } else {
-            $plugin_text .= "🚀 ترافیک پلاس: غیرفعال \n ━━━━━━━━━━ \n";
+            $plugin_text .= "🚀 ترافیک پلاس: غیرفعال ";
         }
 
-        $plugin_text .= "━━━━━━━━━━\n";
+        $plugin_text .= "\n";
         $plugin_text .= "برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎 \n";
 
         Telegram::api('editMessageText',[
