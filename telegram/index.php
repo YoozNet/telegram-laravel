@@ -1893,8 +1893,8 @@ $invoiceReasonText
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'تعیین حجم دلخواه 📏', 'callback_data' => 'set_value_extra_plugin_'.$type.'_'.$service_id],
-                        ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'extra_plugin_'.$type.'_'.$service_id],
+                        ['text' => 'تعیین حجم دلخواه 📏', 'callback_data' => 'set_value_extra_plugin_'.$service_type.'_'.$service_id],
+                        ['text' => 'تغییر وضعیت 🔄', 'callback_data' => 'extra_plugin_'.$service_type.'_'.$service_id],
                     ],
                     [
                         ['text' => 'بازگشت ◀️', 'callback_data' => 'extra_view_'.$service_type.'_'.$service_id],
