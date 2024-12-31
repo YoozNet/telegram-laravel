@@ -1791,10 +1791,8 @@ $invoiceReasonText
             ->setMargin(10);
 
         $writer = new \Endroid\QrCode\Writer\PngWriter();
-        $logo = new \Endroid\QrCode\Logo\Logo(
-            'https://subcdn.cfd/assets/img/logo.png',
-            new \Endroid\QrCode\Logo\LogoSize(50, 50) 
-        );
+        $logo = new \Endroid\QrCode\Logo\Logo('https://subcdn.cfd/assets/img/logo.png');
+
         $result = $writer->write($qrCode, $logo);
         if(!is_dir(__DIR__ . '/tmp')) {
             mkdir(__DIR__ . '/tmp');
