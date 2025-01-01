@@ -1148,7 +1148,14 @@ $link
         $service_id = $tmp['service_id'];
         $serviceData = getService($service_id);
         $userData = getUser($update->cb_data_chatid);
-        $main_traffic = $serviceData['main_traffic'];
+
+        if ($service_type == "tunnel") {
+            $main_traffic = $serviceData['main_traffic'] * 2;
+        } elseif ($service_type == "unlimited") {
+            $main_traffic = $serviceData['main_traffic'] * 30;
+        } else {
+            $main_traffic = $serviceData['main_traffic'];
+        }
 
         $price = getServicePrice($update->cb_data_chatid,$service_type);
         $price_irt = $price['irt'] * $main_traffic;
@@ -2179,9 +2186,14 @@ $invoiceReasonText
             ]);
             return;
         }
-
-        $main_traffic = $serviceData['main_traffic'];
-
+        if ($service_type == "tunnel") {
+            $main_traffic = $serviceData['main_traffic'] * 2;
+        } elseif ($service_type == "unlimited") {
+            $main_traffic = $serviceData['main_traffic'] * 30;
+        } else {
+            $main_traffic = $serviceData['main_traffic'];
+        }
+        
         $price = getServicePrice($update->cb_data_chatid,$service_type);
         $irt_price = number_format($price['irt'] * $main_traffic, 0, '', ',');
         $yc_price = $price['yc'] * $main_traffic;
