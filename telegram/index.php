@@ -1881,8 +1881,6 @@ $invoiceReasonText
         $inline_keyboard[] = [
             ['text' => '📊 ریز مصرف', 'callback_data' => 'data_usage_service_'.$type.'_'.$service_id],
             ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
-        ];
-        $inline_keyboard[] = [
             ['text' => '🔧 اعلام خرابی', 'callback_data' => 'report_service_'.$type.'_'.$service_id],
         ];
         $inline_keyboard[] = [
@@ -1994,6 +1992,30 @@ $invoiceReasonText
             'chat_id' => $update->cb_data_chatid,
             'message_id' => $update->cb_data_message_id,
             'text' => "برای دریافت ریز مصرف، لطفاً بر روی دکمه ورود به سایت کلیک کنید. سپس از قسمت سرویس‌ها، سرویس ( $service_id ) را باز کرده و بر روی ریز مصرف کلیک کنید! 📊",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'open_service_'.$type.'_'.$service_id],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($data != '' && preg_match('/report_service_(.*)_(.*)/',$data,$result)) {
+        $type = $result[1];
+        $service_id = $result[2];
+        Telegram::api('editMessageText',[
+            'chat_id' => $update->cb_data_chatid,
+            'message_id' => $update->cb_data_message_id,
+            'text' => "برای ثبت اعلام خرابی، مراحل زیر را دنبال کنید:
+
+1. از دکمه های پایین بر روی ( 🌐 ورود به سایت 🌐 ) کلیک کنید و سپس وارد سایت شوید.
+2. به قسمت 'سرویس‌ها' بروید. 📂
+3. مدیریت سرویس ($service_id) را انتخاب کنید. ⚙️
+4. بر روی 'ثبت اعلام خرابی' کلیک کنید. 📝
+5. سوالات را با دقت پاسخ دهید. 📋
+
+مطمئن شوید که اطلاعات کامل و دقیق است تا همکاران فنی بتوانند مشکل را بررسی و پاسخ دهند. 🙏✨",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
