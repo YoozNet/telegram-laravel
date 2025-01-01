@@ -981,6 +981,27 @@ $link
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
 
+            if($userData['group_id'] == 0 || count($cardBanks) == 0) {
+                Telegram::api('editMessageText',[
+                    "message_id" => $update->cb_data_message_id,
+                    'chat_id' => $update->cb_data_chatid,
+                    'parse_mode' => 'Markdown',
+                    'text' => "
+لازم است کارت بانکی خود را جهت خرید اضافه کنید
+
+                    ",
+                        'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                                ['text' => 'افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
+                            ]
+                        ],
+                    ]
+                ]);
+                return;
+            }
+
             foreach ($cardBanks as $cardData) {
                 $inline_keyboard[] = [
                     ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
@@ -1088,6 +1109,27 @@ $link
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
 
+            if($userData['group_id'] == 0 || count($cardBanks) == 0) {
+                Telegram::api('editMessageText',[
+                    "message_id" => $update->cb_data_message_id,
+                    'chat_id' => $update->cb_data_chatid,
+                    'parse_mode' => 'Markdown',
+                    'text' => "
+لازم است کارت بانکی خود را جهت خرید اضافه کنید
+
+                    ",
+                        'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                                ['text' => 'افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
+                            ]
+                        ],
+                    ]
+                ]);
+                return;
+            }
+
             foreach ($cardBanks as $cardData) {
                 $inline_keyboard[] = [
                     ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
@@ -1175,6 +1217,27 @@ $link
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
 
+            if($userData['group_id'] == 0 || count($cardBanks) == 0) {
+                Telegram::api('editMessageText',[
+                    "message_id" => $update->cb_data_message_id,
+                    'chat_id' => $update->cb_data_chatid,
+                    'parse_mode' => 'Markdown',
+                    'text' => "
+لازم است کارت بانکی خود را جهت خرید اضافه کنید
+
+                    ",
+                        'reply_markup' => [
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                                ['text' => 'افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
+                            ]
+                        ],
+                    ]
+                ]);
+                return;
+            }
+            
             foreach ($cardBanks as $cardData) {
                 
                 $inline_keyboard[] = [
