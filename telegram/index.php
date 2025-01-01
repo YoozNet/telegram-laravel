@@ -1879,12 +1879,11 @@ $invoiceReasonText
         $t .= "\n برای ادامه، روی یکی از دکمه‌های زیر کلیک کنید! 👇😎";
 
         $inline_keyboard[] = [
-            ['text' => '📧 ارسال ایمیل', 'callback_data' => 'email_service_'.$type.'_'.$service_id],
+            ['text' => '📊 ریز مصرف', 'callback_data' => 'data_usage_service_'.$type.'_'.$service_id],
             ['text' => '📲 دریافت QR کد', 'callback_data' => 'QR_service_'.$type.'_'.$service_id],
         ];
         $inline_keyboard[] = [
             ['text' => '🔧 اعلام خرابی', 'callback_data' => 'report_service_'.$type.'_'.$service_id],
-            ['text' => '📊 ریز مصرف', 'callback_data' => 'data_usage_service_'.$type.'_'.$service_id],
         ];
         $inline_keyboard[] = [
             ['text' => 'کپی لینک', 'copy_text' => ['text' => $link]],
@@ -2193,7 +2192,7 @@ $invoiceReasonText
         } else {
             $main_traffic = $serviceData['main_traffic'];
         }
-        
+
         $price = getServicePrice($update->cb_data_chatid,$service_type);
         $irt_price = number_format($price['irt'] * $main_traffic, 0, '', ',');
         $yc_price = $price['yc'] * $main_traffic;
