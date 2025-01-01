@@ -2708,7 +2708,7 @@ $invoiceReasonText
         $price = getServicePrice($chat_id,$service_type);
 
         setUserTmp($chat_id,'extra_service_size',$text);
-        $irt_price = $price['irt'] * $text;
+        $irt_price = number_format($price['irt'] * $text, 0, '', ',');
         $yc_price = $price['yc'] * $text;
 
         Telegram::api('sendMessage',[
