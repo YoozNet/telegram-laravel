@@ -44,4 +44,8 @@ class API
     {
         return self::request('tg/service/add-traffic', $data); 
     }
+    public static function renew($data)
+    {
+        return self::request('tg/service/renew', $data); 
+    }
 }

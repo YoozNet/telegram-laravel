@@ -1122,7 +1122,7 @@ $link
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'open_service_'.$service_type.'_'.$service_id],
                         ]
                     ],
                 ]
@@ -1135,7 +1135,7 @@ $link
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'open_service_'.$service_type.'_'.$service_id],
                         ]
                     ],
                 ]
@@ -1193,38 +1193,36 @@ $link
             ]);
             return;
         } 
-
-        
-        /*
-        $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
+        $webservice = API::renew(["user_id" => $userData['id'],"service_id" => $service_id,]);
         if ($webservice['status'] == true) {
             setBackTo($update->cb_data_chatid,'/start','text');
-            */
-            Telegram::api('editMessageText',[
-                'message_id' => $update->cb_data_message_id,
+            Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
-                'text' => "
-            ارسال درخواست به api برای تمدید
-
-            شناسه سرویس: $service_id
-                ",
+                'text' => "سرویس ( $service_id ) با موفقیت تمدید شد. بابت تمدید این اشتراک از شما سپاسگزاریم.",
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
                     'inline_keyboard' => [
                         [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_view_'.$service_type.'_'.$service_id],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'open_service_'.$service_type.'_'.$service_id],
                         ]
                     ],
                 ]
             ]);
-
-
-
-
-
-
-
-
+        } else {
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "تمدید شما به دلیل ( ".json_decode($webservice['message'])." ) انجام نشد.",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'open_service_'.$service_type.'_'.$service_id],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+        return;
     } elseif ($data != '' && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $ticketId = $result[1];
@@ -2131,30 +2129,6 @@ $invoiceReasonText
     } elseif ($data != '' && preg_match('/renew_view_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
-        $serviceData = getService($service_id);
-
-        $expired_at = strtotime($serviceData['expired_at']);
-        $current_time = time();
-
-        $remaining_days = ($expired_at - $current_time) / (60 * 60 * 24);
-
-        if ($remaining_days > 10) {
-            $days_until_extend = ceil($remaining_days - 10);
-            Telegram::api('answerCallbackQuery', [
-                'callback_query_id' => $update->cb_data_id,
-                'text' => "⛔️ در حال حاضر امکان تمدید برای این سرویس وجود ندارد. لطفاً $days_until_extend روز دیگر برای تمدید اقدام نمایید.",
-                'show_alert' => true,
-            ]);
-            return;
-        }
-        if ($remaining_days < 0) {
-            Telegram::api('answerCallbackQuery', [
-                'callback_query_id' => $update->cb_data_id,
-                'text' => "⛔️ سرویس شما منقضی شده است و امکان تمدید وجود ندارد.",
-                'show_alert' => true,
-            ]);
-            return;
-        }
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             'message_id' => $update->cb_data_message_id,
@@ -2182,21 +2156,51 @@ $invoiceReasonText
         $service_type = $result[1];
         $service_id = $result[2];
         $serviceData = getService($service_id);
+
+        $expired_at = strtotime($serviceData['expired_at']);
+        $current_time = time();
+
+        $remaining_days = ($expired_at - $current_time) / (60 * 60 * 24);
+
+        if ($remaining_days > 10) {
+            $days_until_extend = ceil($remaining_days - 10);
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⛔️ در حال حاضر امکان تمدید برای این سرویس وجود ندارد. لطفاً $days_until_extend روز دیگر برای تمدید اقدام نمایید.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+        if ($remaining_days < 0) {
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $update->cb_data_id,
+                'text' => "⛔️ سرویس شما منقضی شده است و امکان تمدید وجود ندارد.",
+                'show_alert' => true,
+            ]);
+            return;
+        }
+
         $main_traffic = $serviceData['main_traffic'];
 
         $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $irt_price = $price['irt'] * $main_traffic;
+        $irt_price = number_format($price['irt'] * $main_traffic, 0, '', ',');
+        $yc_price = $price['yc'] * $main_traffic;
+        
         setUserTmp($update->cb_data_chatid,'service_id',$service_id);
         setUserTmp($update->cb_data_chatid,'service_type',$service_type);
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             'message_id' => $update->cb_data_message_id,
-            'text' => 'مبلغ : '.$irt_price.' تومان ',
+            'text' => "🔔 شما در حال تمدید اشتراک ( $service_id ) هستید.
+
+💰 هزینه این تمدید : $yc_price یوزکوین معادل $irt_price تومان می شود. 
+
+✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
             'parse_mode' => 'Markdown',
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'ادامه پرداخت', 'callback_data'=>'complate_renew_service'],
+                        ['text' => '📯 ادامه ', 'callback_data'=>'complate_renew_service'],
                         ['text' => 'بازگشت ◀️', 'callback_data'=>'renew_view_'.$service_type.'_'.$service_id],
                     ]
                 ],
@@ -2827,7 +2831,6 @@ $invoiceReasonText
                     $firstName = $findAsName[$randKey]['first_name'] ?? 'تنظیم نشده';
                     $lastName = $findAsName[$randKey]['last_name'] ?? 'تنظیم نشده';
                     $fullname =  $firstName." ".$lastName;
-                    # $fullname = $findAsName[$randKey]['first_name'] ?? 'تنظیم نشده' . " " . $findAsName[$randKey]['last_name'] ?? 'تنظیم نشده';
                 } else {
                     $adminCards = getAdminCards();
                     $randKey = array_rand($adminCards);
