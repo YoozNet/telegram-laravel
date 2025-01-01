@@ -40,4 +40,8 @@ class API
     {
         return self::request('tg/service/buy', $data); 
     }
+    public static function addtraffic($data)
+    {
+        return self::request('tg/service/add-traffic', $data); 
+    }
 }

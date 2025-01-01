@@ -1061,6 +1061,170 @@ $link
                 ]
             ]);
         }
+    } elseif ($data == 'extra_service_pay') {
+        
+        $userData = getUser($update->cb_data_chatid);
+        $userTmp = getAllUserTmp($update->cb_data_chatid);
+
+        $service_type = $userTmp['service_type'];
+        $service_id = $userTmp['service_id'];
+        $extra_service_size = $userTmp['extra_service_size'];
+
+        $price = getServicePrice($update->cb_data_chatid,$service_type);
+        $price_irt = $price['irt'] * $extra_service_size;
+        $price_yc = $price['yc'] * $extra_service_size;
+
+
+        if($userData['irr_wallet'] < $price_yc) {
+            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
+
+            $config = GetConfig();
+            $diff_toman = $config['yc_price'] * $diff;
+            setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
+            setUserStep($update->cb_data_chatid,'addBalance_2');
+            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
+
+
+            $userID = getUser($update->cb_data_chatid)['id'];
+            $cardBanks = getCardsBank($userID);
+
+            foreach ($cardBanks as $cardData) {
+                $inline_keyboard[] = [
+                    ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
+                ];
+            }
+            setBackTo($update->cb_data_chatid,'extra_service_pay','data',false,true);
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_service_'.$service_type.'_'.$service_id],
+            ];
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "متأسفانه، حساب شما اعتبار کافی برای تهیه این حجم را ندارد. ❌😔
+
+برای ادامه‌ی فرآیند، مبلغ $diff یوزکوین معادل ( ".number_format($diff_toman, 0, '', ',')." تومان ) اعتبار دیگر نیاز دارید.
+
+برای افزایش اعتبار، لطفاً بفرمایید قصد دارید با کدام یک از کارت‌های بانکی خود پرداخت را انجام دهید؟ ✨",
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard
+                ]
+            ]);
+            return;
+        } 
+        $webservice = API::addtraffic(["user_id" => $userData['id'],"service_id" => $service_id,'traffic' => $extra_service_size,]);
+        if ($webservice['status'] == true) {
+            setBackTo($update->cb_data_chatid,'/start','text');
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "حجم ( $service_id ) با موفقیت تهیه شد. بابت تهیه این خرید از شما سپاسگزاریم.",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ]
+                    ],
+                ]
+            ]);
+        } else {
+            Telegram::api('sendMessage',[
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "حجم شما به دلیل ( ".json_decode($webservice['message'])." ) افزوده نشد.",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'Tickets'],
+                        ]
+                    ],
+                ]
+            ]);
+        }
+        return;
+    } elseif ($data == 'complate_renew_service') {
+        $tmp = getAllUserTmp($update->cb_data_chatid);
+        $service_type = $tmp['service_type'];
+        $service_id = $tmp['service_id'];
+        $serviceData = getService($service_id);
+        $userData = getUser($update->cb_data_chatid);
+        $main_traffic = $serviceData['main_traffic'];
+
+        $price = getServicePrice($update->cb_data_chatid,$service_type);
+        $price_irt = $price['irt'] * $main_traffic;
+        $price_yc = $price['yc'] * $main_traffic;
+
+
+        if($userData['irr_wallet'] < $price_yc) {
+            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
+
+            $config = GetConfig();
+            $diff_toman = $config['yc_price'] * $diff;
+            setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
+            setUserStep($update->cb_data_chatid,'addBalance_2');
+            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
+
+
+            $userID = getUser($update->cb_data_chatid)['id'];
+            $cardBanks = getCardsBank($userID);
+
+            foreach ($cardBanks as $cardData) {
+                
+                $inline_keyboard[] = [
+                    ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
+                ];
+            }
+            setBackTo($update->cb_data_chatid,'complate_renew_service','data',false,true);
+            $inline_keyboard[] = [
+                ['text' => 'بازگشت ◀️', 'callback_data'=>'renew_service_'.$service_type.'_'.$service_id],
+            ];
+            Telegram::api('editMessageText',[
+                "message_id" => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'parse_mode' => 'Markdown',
+                'text' => "متأسفانه، حساب شما اعتبار کافی برای تمدید این سرویس را ندارد. ❌😔
+
+برای ادامه‌ی فرآیند، مبلغ $diff یوزکوین معادل ( ".number_format($diff_toman, 0, '', ',')." تومان ) اعتبار دیگر نیاز دارید.
+
+برای افزایش اعتبار، لطفاً بفرمایید قصد دارید با کدام یک از کارت‌های بانکی خود پرداخت را انجام دهید؟ ✨",
+                'reply_markup' => [
+                    'inline_keyboard' => $inline_keyboard
+                ]
+            ]);
+            return;
+        } 
+
+        
+        /*
+        $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
+        if ($webservice['status'] == true) {
+            setBackTo($update->cb_data_chatid,'/start','text');
+            */
+            Telegram::api('editMessageText',[
+                'message_id' => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid,
+                'text' => "
+            ارسال درخواست به api برای تمدید
+
+            شناسه سرویس: $service_id
+                ",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_view_'.$service_type.'_'.$service_id],
+                        ]
+                    ],
+                ]
+            ]);
+
+
+
+
+
+
+
+
     } elseif ($data != '' && preg_match("/ticket_data_(.*)_(.*)/",$data,$result)) {
         setUserStep($update->cb_data_chatid,'none');
         $ticketId = $result[1];
@@ -1964,92 +2128,6 @@ $invoiceReasonText
                 ]
             ]);
         }
-    } elseif ($data == 'extra_service_pay') {
-        
-        $userData = getUser($update->cb_data_chatid);
-        $userTmp = getAllUserTmp($update->cb_data_chatid);
-
-        $service_type = $userTmp['service_type'];
-        $service_id = $userTmp['service_id'];
-        $extra_service_size = $userTmp['extra_service_size'];
-
-        $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $price_irt = $price['irt'] * $extra_service_size;
-        $price_yc = $price['yc'] * $extra_service_size;
-
-
-        if($userData['irr_wallet'] < $price_yc) {
-            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
-
-            $config = GetConfig();
-            $diff_toman = $config['yc_price'] * $diff;
-            setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
-            setUserStep($update->cb_data_chatid,'addBalance_2');
-            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
-
-
-            $userID = getUser($update->cb_data_chatid)['id'];
-            $cardBanks = getCardsBank($userID);
-
-            foreach ($cardBanks as $cardData) {
-                $inline_keyboard[] = [
-                    ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
-                ];
-            }
-            setBackTo($update->cb_data_chatid,'extra_service_pay','data',false,true);
-            $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_service_'.$service_type.'_'.$service_id],
-            ];
-            Telegram::api('editMessageText',[
-                "message_id" => $update->cb_data_message_id,
-                'chat_id' => $update->cb_data_chatid,
-                'parse_mode' => 'Markdown',
-                'text' => "متأسفانه، حساب شما اعتبار کافی برای تهیه این سرویس را ندارد. ❌😔
-
-برای ادامه‌ی فرآیند، مبلغ $diff یوزکوین معادل ( ".number_format($diff_toman, 0, '', ',')." تومان ) اعتبار دیگر نیاز دارید.
-
-برای افزایش اعتبار، لطفاً بفرمایید قصد دارید با کدام یک از کارت‌های بانکی خود پرداخت را انجام دهید؟ ✨",
-                'reply_markup' => [
-                    'inline_keyboard' => $inline_keyboard
-                ]
-            ]);
-            return;
-        } 
-
-        
-        /*
-        $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
-        if ($webservice['status'] == true) {
-            setBackTo($update->cb_data_chatid,'/start','text');
-            */
-            Telegram::api('sendMessage',[
-                'chat_id' => $update->cb_data_chatid,
-                'text' => "
-            ارسال درخواست به api برای افزایش حجم مازاد
-
-
-            حجم درخواستی: $extra_view_size گیگابایت
-            شناسه سرویس: $service_id
-                ",
-                'parse_mode' => 'Markdown',
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_view_'.$service_type.'_'.$service_id],
-                        ]
-                    ],
-                ]
-            ]);
-        // }
-        
-
-
-
-
-
-
-
-    
     } elseif ($data != '' && preg_match('/renew_view_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
@@ -2125,89 +2203,6 @@ $invoiceReasonText
             ]
         ]);
 
-    } elseif ($data == 'complate_renew_service') {
-        $tmp = getAllUserTmp($update->cb_data_chatid);
-        $service_type = $tmp['service_type'];
-        $service_id = $tmp['service_id'];
-        $serviceData = getService($service_id);
-        $userData = getUser($update->cb_data_chatid);
-        $main_traffic = $serviceData['main_traffic'];
-
-        $price = getServicePrice($update->cb_data_chatid,$service_type);
-        $price_irt = $price['irt'] * $main_traffic;
-        $price_yc = $price['yc'] * $main_traffic;
-
-
-        if($userData['irr_wallet'] < $price_yc) {
-            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
-
-            $config = GetConfig();
-            $diff_toman = $config['yc_price'] * $diff;
-            setUserTmp($update->cb_data_chatid,'user_id',$userData['id']);
-            setUserStep($update->cb_data_chatid,'addBalance_2');
-            setUserTmp($update->cb_data_chatid,'addBalance_amount',$diff_toman);
-
-
-            $userID = getUser($update->cb_data_chatid)['id'];
-            $cardBanks = getCardsBank($userID);
-
-            foreach ($cardBanks as $cardData) {
-                
-                $inline_keyboard[] = [
-                    ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
-                ];
-            }
-            setBackTo($update->cb_data_chatid,'complate_renew_service','data',false,true);
-            $inline_keyboard[] = [
-                ['text' => 'بازگشت ◀️', 'callback_data'=>'renew_service_'.$service_type.'_'.$service_id],
-            ];
-            Telegram::api('editMessageText',[
-                "message_id" => $update->cb_data_message_id,
-                'chat_id' => $update->cb_data_chatid,
-                'parse_mode' => 'Markdown',
-                'text' => "متأسفانه، حساب شما اعتبار کافی برای تمدید این سرویس را ندارد. ❌😔
-
-برای ادامه‌ی فرآیند، مبلغ $diff یوزکوین معادل ( ".number_format($diff_toman, 0, '', ',')." تومان ) اعتبار دیگر نیاز دارید.
-
-برای افزایش اعتبار، لطفاً بفرمایید قصد دارید با کدام یک از کارت‌های بانکی خود پرداخت را انجام دهید؟ ✨",
-                'reply_markup' => [
-                    'inline_keyboard' => $inline_keyboard
-                ]
-            ]);
-            return;
-        } 
-
-        
-        /*
-        $webservice = API::buyservice(["user_id" => $userData['id'],"service_id" => $service_id,'type' => $service_type,'value' => $service_size]);
-        if ($webservice['status'] == true) {
-            setBackTo($update->cb_data_chatid,'/start','text');
-            */
-            Telegram::api('editMessageText',[
-                'message_id' => $update->cb_data_message_id,
-                'chat_id' => $update->cb_data_chatid,
-                'text' => "
-            ارسال درخواست به api برای تمدید
-
-            شناسه سرویس: $service_id
-                ",
-                'parse_mode' => 'Markdown',
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'extra_view_'.$service_type.'_'.$service_id],
-                        ]
-                    ],
-                ]
-            ]);
-
-
-
-
-
-
-
-
     } elseif ($data != '' && preg_match('/renew_plugin_(.*)_(.*)/',$data,$result)) {
         $type = $result[1];
         $service_id = $result[2];
@@ -2242,9 +2237,25 @@ $invoiceReasonText
         if(!filter_var($text,FILTER_VALIDATE_IP,FILTER_FLAG_IPV4)) {
             $response = "این یک IP نیست";
         } else {
-            setUserStep($chat_id,'none');
-            setUserIP($chat_id,$text);
-            $response = "تنظیم شد";
+            $private_ips = [
+                '10.0.0.0' => '10.255.255.255',  
+                '172.16.0.0' => '172.31.255.255', 
+                '192.168.0.0' => '192.168.255.255' 
+            ];
+            $is_private = false;
+            foreach ($private_ips as $start => $end) {
+                if (ip2long($text) >= ip2long($start) && ip2long($text) <= ip2long($end)) {
+                    $is_private = true;
+                    break;
+                }
+            }
+            if ($is_private) {
+                $response = "این یک IP خصوصی است و قابل قبول نمی‌باشد.";
+            } else {
+                setUserStep($chat_id, 'none');
+                setUserIP($chat_id, $text);
+                $response = "تنظیم شد";
+            }
         }
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
@@ -2292,107 +2303,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($step == 'addBalance_2' && $data!= '' && preg_match("/addBalance_select_(.*)/",$data,$result)) {
-        if(isset($result[1])) {
-            $data = getCardById($result[1]);
-            setUserTmp($update->cb_data_chatid,'addBalance_userCardId',$result[1]);
-            $cardNumber = adminCardNumber($update->cb_data_chatid);
-            $cardInfo = $cardNumber['card_number'] ?? null;
-            $iban = null;
-            $bank = null;
-            $fullname = null;
-            if(!is_null($cardInfo)) {
-                $cardBankNumber = $cardInfo;
-                $cardBankImage = $cardNumber['card_image_file_id'];
-                $cardBankId = $cardNumber['id'];
-                $iban = $cardNumber['iban'] ?? 'تنظیم نشده';
-                $bank = getBankName($cardNumber['bank']);
-                $firstName = $cardNumber['first_name'] ?? 'تنظیم نشده';
-                $lastName = $cardNumber['last_name'] ?? 'تنظیم نشده';
-                $fullname =  $firstName." ".$lastName;
-                
-            } else {
-                $findAsName = getBankByName($data['bank']);
-                if(count($findAsName) > 0) {
-                    $randKey = array_rand($findAsName);
-                    $cardBankNumber = $findAsName[$randKey]['card_number'];
-                    $cardBankImage =  $findAsName[$randKey]['card_image_file_id'];
-                    $cardBankId =  $findAsName[$randKey]['id'];
-                    $iban = $findAsName[$randKey]['iban'];
-                    $bank = getBankName($findAsName[$randKey]['bank']);
-                    $firstName = $findAsName[$randKey]['first_name'] ?? 'تنظیم نشده';
-                    $lastName = $findAsName[$randKey]['last_name'] ?? 'تنظیم نشده';
-                    $fullname =  $firstName." ".$lastName;
-                    # $fullname = $findAsName[$randKey]['first_name'] ?? 'تنظیم نشده' . " " . $findAsName[$randKey]['last_name'] ?? 'تنظیم نشده';
-                } else {
-                    $adminCards = getAdminCards();
-                    $randKey = array_rand($adminCards);
-                    $cardBankNumber = $adminCards[$randKey]['card_number'];
-                    $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
-                    $cardBankId =  $adminCards[$randKey]['id'];
-                    $iban = $adminCards[$randKey]['iban'];
-                    $bank = getBankName($adminCards[$randKey]['bank']);
-                    $firstName = $adminCards[$randKey]['first_name'] ?? 'تنظیم نشده';
-                    $lastName = $adminCards[$randKey]['last_name'] ?? 'تنظیم نشده';
-                    $fullname =  $firstName." ".$lastName;
-                }
-            }
-            setUserTmp($update->cb_data_chatid,'addBalance_cardBankNumber',$cardBankNumber);
-            setUserTmp($update->cb_data_chatid,'addBalance_cardBankId',$cardBankId);
-            setUserStep($update->cb_data_chatid,'addBalance_3');
-            $amount = getUserTmp($update->cb_data_chatid,'addBalance_amount');
-
-            $tax = GenerateTaxPrice($amount);
-            setUserTmp($update->cb_data_chatid,'Tax_value',$tax);
-            
-            $total = $amount + $tax;
-            $amount_format = number_format($total, 0, '', ',');
-            $card_number_format = splitCardNumber($cardBankNumber);
-
-            $config = GetConfig();
-            $YC_Price = $config['yc_price'];
-
-            $YC_COIN = displayNumber($total / $YC_Price,true);
-            setUserTmp($update->cb_data_chatid,'YC_value',$YC_COIN);
-            Telegram::api('deleteMessage',[
-                'message_id' => $update->cb_data_message_id,
-                'chat_id' => $update->cb_data_chatid
-            ]);
-
-            $backData = getBack($update->cb_data_chatid);
-            if($backData['to'] != 'complate_order_service' and $backData['to'] != 'extra_service_pay' and $backData['to'] != 'complate_renew_service') {
-                setBackTo($update->cb_data_chatid,'wallet','data');
-            }
-            $sendPhoto = Telegram::api('sendPhoto',[
-                'chat_id' => $update->cb_data_chatid,
-                'photo' => "https://maindns.space/file/" . $cardBankImage,
-                'caption' => "💰 لطفا مبلغ : ` $amount_format ` تومان معادل ( ".$YC_COIN." ) یوزکوین
-💳 به شماره کارت : 
-` $card_number_format `
-💳 به شماره شبا : 
-` $iban `
-💎 به نام :  $bank ( ".$fullname." )
-واریز بفرمایید و سپس اسکرین شات واریزی را برای ما ارسال کنید!😅
-
-‼️ لطفا با کارتی که تایید کردید واریز بفرمایید تا تراکنش شما تایید شود 😊",
-                'parse_mode' => 'Markdown',
-                'reply_markup' => [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => 'کپی شماره کارت', 'copy_text' => ['text' => $cardBankNumber]],
-                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
-                        ]
-                    ],
-                ]
-            ]);
-
-            $messageId = json_decode($sendPhoto->getContents(),1)['result']['message_id'];
-            setUserTmp($update->cb_data_chatid,'addBalance_message_id',$messageId);
-            setUserTmp($update->cb_data_chatid,'addBalance_created_at',time());
-        } else {
-            setUserStep($update->cb_data_chatid,'none');
-        }
-    } elseif ($step == 'addBalance_3') {
+    } elseif ($text != '' && $step == 'addBalance_3') {
         if(isset($update->photo_file_id)) {
             $tmp = getAllUserTmp($chat_id);
             $adminCardNumber = $tmp['addBalance_cardBankNumber'];
@@ -2506,7 +2417,7 @@ $invoiceReasonText
             ]
         ]);
         
-    } elseif ($step == "addBankCard_2") {
+    } elseif ($text != '' && $step == "addBankCard_2") {
         if(isset($update->photo_file_id)) {
             $tmp = getAllUserTmp($chat_id);
             $cardnumber = $tmp['add_cardBank_number'];
@@ -2645,35 +2556,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($step == 'new_ticket_2' && $data!= '' && preg_match("/new_ticket_2_(.*)/", $data, $result)) {
-        $department = $result[1];
-        setUserTmp($update->cb_data_chatid,'new_ticket_department',$department);
-        setUserStep($update->cb_data_chatid,'new_ticket_3');
-        Telegram::api('deleteMessage',[
-            'message_id' => $update->cb_data_message_id,
-            'chat_id' => $update->cb_data_chatid
-        ]);
-        Telegram::api('sendMessage',[
-            'chat_id' => $update->cb_data_chatid,
-            'text' => "🎉 تبریک! واحد شما برای پیگیری انتخاب شد.
-لطفاً مشکل خود را از طریق یکی از روش‌های زیر با ما در میان بگذارید:
-
-1️⃣ ارسال عکس به همراه توضیحات 📸✍️
-2️⃣ ارسال توضیحات بدون عکس 📝
-
-در صورت نیاز به بازگشت، دکمه بازگشت را انتخاب نمایید.
-
-منتظر توضیحات شما هستیم تا بتوانیم بهترین راه‌حل را ارائه دهیم! 🌟",
-            'reply_to_message_id' => $update->message_id,
-            'reply_markup' => [
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'بازگشت ◀️', 'callback_data' => 'new_ticket'],
-                    ]
-                ],
-            ]
-        ]);
-    } elseif ($step == 'new_ticket_3') {
+    } elseif ($text != '' && $step == 'new_ticket_3') {
         $tmp = getAllUserTmp($chat_id);
         $attachment = null;
         if(isset($update->photo_file_id)) {
@@ -2747,7 +2630,7 @@ $invoiceReasonText
                 ]
             ]);
         }
-    } elseif ($step == 'custom_value') {
+    } elseif ($text != '' && $step == 'custom_value') {
         $tmp = getAllUserTmp($chat_id);
         $service_limit = $tmp['service_limit'];
         $service_type = $tmp['service_type'];
@@ -2800,7 +2683,7 @@ $invoiceReasonText
                 ]
             ]);
         }
-    } elseif (isset($text) && $step == 'extra_service_1') {
+    } elseif ($text != '' && $step == 'extra_service_1') {
         $userData = getUser($chat_id);
         $service_limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
         if(!is_numeric($text) || $text < 5 || $text > $service_limit) {
@@ -2818,19 +2701,28 @@ $invoiceReasonText
             ]);
             return;
         }
+
         $service_type = getUserTmp($chat_id,'service_type');
+        $service_type_name = GetAllServices()[$service_type]['name'];
         $service_id = getUserTmp($chat_id,'service_id');
         $price = getServicePrice($chat_id,$service_type);
+
         setUserTmp($chat_id,'extra_service_size',$text);
         $irt_price = $price['irt'] * $text;
+        $yc_price = $price['yc'] * $text;
+
         Telegram::api('sendMessage',[
             'chat_id' => $chat_id,
-            'text' => 'قیمت: '.$irt_price,
+            'text' => "🔔 شما در حال خرید $text گیگ حجم مازاد از سرویس $service_type_name هستید.
+
+💰 هزینه این سرویس: $yc_price یوزکوین معادل $irt_price تومان می شود. 
+
+✅ در صورت تایید، بر روی ادامه کلیک کنید و چنانچه مورد تایید نیست، بر روی بازگشت کلیک کنید.",
             'reply_to_message_id' => $update->message_id,
             'reply_markup' => [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'نهایی کردن پرداخت', 'callback_data'=>'extra_service_pay'],
+                        ['text' => '📯 ادامه ', 'callback_data'=>'extra_service_pay'],
                         ['text' => 'بازگشت ◀️ ', 'callback_data'=>'extra_view_' . $service_type . '_' . $service_id],
                     ]
                 ],
@@ -2876,7 +2768,135 @@ $invoiceReasonText
                 ],
             ]
         ]);
-    }
+    } elseif ($step == 'new_ticket_2' && $data!= '' && preg_match("/new_ticket_2_(.*)/", $data, $result)) {
+        $department = $result[1];
+        setUserTmp($update->cb_data_chatid,'new_ticket_department',$department);
+        setUserStep($update->cb_data_chatid,'new_ticket_3');
+        Telegram::api('deleteMessage',[
+            'message_id' => $update->cb_data_message_id,
+            'chat_id' => $update->cb_data_chatid
+        ]);
+        Telegram::api('sendMessage',[
+            'chat_id' => $update->cb_data_chatid,
+            'text' => "🎉 تبریک! واحد شما برای پیگیری انتخاب شد.
+لطفاً مشکل خود را از طریق یکی از روش‌های زیر با ما در میان بگذارید:
+
+1️⃣ ارسال عکس به همراه توضیحات 📸✍️
+2️⃣ ارسال توضیحات بدون عکس 📝
+
+در صورت نیاز به بازگشت، دکمه بازگشت را انتخاب نمایید.
+
+منتظر توضیحات شما هستیم تا بتوانیم بهترین راه‌حل را ارائه دهیم! 🌟",
+            'reply_to_message_id' => $update->message_id,
+            'reply_markup' => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'بازگشت ◀️', 'callback_data' => 'new_ticket'],
+                    ]
+                ],
+            ]
+        ]);
+    } elseif ($step == 'addBalance_2' && $data!= '' && preg_match("/addBalance_select_(.*)/",$data,$result)) {
+        if(isset($result[1])) {
+            $data = getCardById($result[1]);
+            setUserTmp($update->cb_data_chatid,'addBalance_userCardId',$result[1]);
+            $cardNumber = adminCardNumber($update->cb_data_chatid);
+            $cardInfo = $cardNumber['card_number'] ?? null;
+            $iban = null;
+            $bank = null;
+            $fullname = null;
+            if(!is_null($cardInfo)) {
+                $cardBankNumber = $cardInfo;
+                $cardBankImage = $cardNumber['card_image_file_id'];
+                $cardBankId = $cardNumber['id'];
+                $iban = $cardNumber['iban'] ?? 'تنظیم نشده';
+                $bank = getBankName($cardNumber['bank']);
+                $firstName = $cardNumber['first_name'] ?? 'تنظیم نشده';
+                $lastName = $cardNumber['last_name'] ?? 'تنظیم نشده';
+                $fullname =  $firstName." ".$lastName;
+                
+            } else {
+                $findAsName = getBankByName($data['bank']);
+                if(count($findAsName) > 0) {
+                    $randKey = array_rand($findAsName);
+                    $cardBankNumber = $findAsName[$randKey]['card_number'];
+                    $cardBankImage =  $findAsName[$randKey]['card_image_file_id'];
+                    $cardBankId =  $findAsName[$randKey]['id'];
+                    $iban = $findAsName[$randKey]['iban'];
+                    $bank = getBankName($findAsName[$randKey]['bank']);
+                    $firstName = $findAsName[$randKey]['first_name'] ?? 'تنظیم نشده';
+                    $lastName = $findAsName[$randKey]['last_name'] ?? 'تنظیم نشده';
+                    $fullname =  $firstName." ".$lastName;
+                    # $fullname = $findAsName[$randKey]['first_name'] ?? 'تنظیم نشده' . " " . $findAsName[$randKey]['last_name'] ?? 'تنظیم نشده';
+                } else {
+                    $adminCards = getAdminCards();
+                    $randKey = array_rand($adminCards);
+                    $cardBankNumber = $adminCards[$randKey]['card_number'];
+                    $cardBankImage =  $adminCards[$randKey]['card_image_file_id'];
+                    $cardBankId =  $adminCards[$randKey]['id'];
+                    $iban = $adminCards[$randKey]['iban'];
+                    $bank = getBankName($adminCards[$randKey]['bank']);
+                    $firstName = $adminCards[$randKey]['first_name'] ?? 'تنظیم نشده';
+                    $lastName = $adminCards[$randKey]['last_name'] ?? 'تنظیم نشده';
+                    $fullname =  $firstName." ".$lastName;
+                }
+            }
+            setUserTmp($update->cb_data_chatid,'addBalance_cardBankNumber',$cardBankNumber);
+            setUserTmp($update->cb_data_chatid,'addBalance_cardBankId',$cardBankId);
+            setUserStep($update->cb_data_chatid,'addBalance_3');
+            $amount = getUserTmp($update->cb_data_chatid,'addBalance_amount');
+
+            $tax = GenerateTaxPrice($amount);
+            setUserTmp($update->cb_data_chatid,'Tax_value',$tax);
+            
+            $total = $amount + $tax;
+            $amount_format = number_format($total, 0, '', ',');
+            $card_number_format = splitCardNumber($cardBankNumber);
+
+            $config = GetConfig();
+            $YC_Price = $config['yc_price'];
+
+            $YC_COIN = displayNumber($total / $YC_Price,true);
+            setUserTmp($update->cb_data_chatid,'YC_value',$YC_COIN);
+            Telegram::api('deleteMessage',[
+                'message_id' => $update->cb_data_message_id,
+                'chat_id' => $update->cb_data_chatid
+            ]);
+
+            $backData = getBack($update->cb_data_chatid);
+            if($backData['to'] != 'complate_order_service' and $backData['to'] != 'extra_service_pay' and $backData['to'] != 'complate_renew_service') {
+                setBackTo($update->cb_data_chatid,'wallet','data');
+            }
+            $sendPhoto = Telegram::api('sendPhoto',[
+                'chat_id' => $update->cb_data_chatid,
+                'photo' => "https://maindns.space/file/" . $cardBankImage,
+                'caption' => "💰 لطفا مبلغ : ` $amount_format ` تومان معادل ( ".$YC_COIN." ) یوزکوین
+💳 به شماره کارت : 
+` $card_number_format `
+💳 به شماره شبا : 
+` $iban `
+💎 به نام :  $bank ( ".$fullname." )
+واریز بفرمایید و سپس اسکرین شات واریزی را برای ما ارسال کنید!😅
+
+‼️ لطفا با کارتی که تایید کردید واریز بفرمایید تا تراکنش شما تایید شود 😊",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => [
+                    'inline_keyboard' => [
+                        [
+                            ['text' => 'کپی شماره کارت', 'copy_text' => ['text' => $cardBankNumber]],
+                            ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
+                        ]
+                    ],
+                ]
+            ]);
+
+            $messageId = json_decode($sendPhoto->getContents(),1)['result']['message_id'];
+            setUserTmp($update->cb_data_chatid,'addBalance_message_id',$messageId);
+            setUserTmp($update->cb_data_chatid,'addBalance_created_at',time());
+        } else {
+            setUserStep($update->cb_data_chatid,'none');
+        }
+    } 
 } catch (Exception $e) {
     error_log("Exception caught: " . $e->getMessage());
     error_log("Exception trace: " . $e->getTraceAsString());
