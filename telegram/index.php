@@ -2905,7 +2905,7 @@ $invoiceReasonText
             }
             $sendPhoto = Telegram::api('sendPhoto',[
                 'chat_id' => $update->cb_data_chatid,
-                'photo' => "https://maindns.space/file/" . $cardBankImage,
+                'photo' => $cardBankImage,
                 'caption' => "💰 لطفا مبلغ : ` $amount_format ` تومان معادل ( ".$YC_COIN." ) یوزکوین
 💳 به شماره کارت : 
 ` $card_number_format `
