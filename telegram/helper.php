@@ -31,7 +31,10 @@ if(!function_exists("generateString")) {
 if(!function_exists("getUser")) {
     function getUser($userId): array
     {
-        return Database::select("YN_users", ["*"], "user_id = ?", [$userId])[0];
+        $userData = Database::select("YN_users", ["*"], "user_id = ?", [$userId])[0];
+        $totalWallet = $userData['irr_wallet'] + $userData['digital_wallet'] + $userData['gift_wallet'];
+        $userData['total_wallet'] = $totalWallet;
+        return $userData;
     }
 }
 
@@ -109,7 +112,6 @@ if(!function_exists("splitCardNumber")) {
         $card_number = trim($card_number);
         return rtrim(preg_replace('/(.{4})/','$1-',$card_number),"-");
     }
-    echo splitCardNumber ('1234567812341234');
 }
 
 if(!function_exists('setUserStep')) {
@@ -371,7 +373,7 @@ if (!function_exists('getUserBankCardsActive')) {
 if (!function_exists('getUserBankCardsPending')) {
     function getUserBankCardsPending($id)
     {
-        return Database::select("YN_bank_cards", ["*"], "user_id =? AND (status = '0' OR status = '1')", [$id]);
+        return Database::select("YN_bank_cards", ["*"], "user_id =? AND (status = '0' OR status = '4')", [$id]);
     }
 }
 

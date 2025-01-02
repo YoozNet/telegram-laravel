@@ -80,10 +80,10 @@ try {
                 $referrer = Database::select("YN_users", ["*"], "referral_id = ?", [$referral_code]);
                 if ($referrer) {
                     $referrer_chat_id = $referrer[0]['user_id'];
-                    $referrer_balance = $referrer[0]['irr_wallet'];
+                    $referrer_balance = $referrer[0]['digital_wallet'];
 
                     $new_balance = $referrer_balance + 0.5;
-                    Database::update('YN_users', ['irr_wallet'], [$new_balance], 'user_id = ?', [$referrer_chat_id]);
+                    Database::update('YN_users', ['digital_wallet'], [$new_balance], 'user_id = ?', [$referrer_chat_id]);
                     
                     Database::update('YN_users',['referred_by'],[$referral_code],'user_id = ?',[$chat_id]);
                     
@@ -187,7 +187,7 @@ try {
         $userData = getUser($chat_id);
 
         $cardBanks = getCardsBank($userData['id']);
-        $wallet = $userData['irr_wallet'] ?? 0.00;
+        $wallet = $userData['total_wallet'] ?? 0.00;
         $group_id = $userData['group_id'];
         $config = GetConfig();
         $YC_Price = $config['yc_price'];
@@ -325,7 +325,7 @@ try {
             $price = getServicePrice($chat_id,$service_type);
             $price_yc = $price['yc'] * $service_size;
 
-            if($userData['irr_wallet'] >= $price_yc) {
+            if($userData['total_wallet'] >= $price_yc) {
 
                 setUserTmp($chat_id,'waitpay_for_service',0);
                 $t = "آخرین سفارش شما به دلیل عدم موجودی نهایی نشده است. ⚠️ \t";
@@ -591,7 +591,7 @@ $link
         $userData = getUser($update->cb_data_chatid);
 
         $cardBanks = getCardsBank($userData['id']);
-        $wallet = $userData['irr_wallet'] ?? 0.00;
+        $wallet = $userData['total_wallet'] ?? 0.00;
         $group_id = $userData['group_id'];
         $config = GetConfig();
         $YC_Price = $config['yc_price'];
@@ -665,20 +665,20 @@ $link
                 ['text' => 'مبلغ', 'callback_data'=>'invoice_amount'],
                 ['text' => 'شناسه', 'callback_data'=>'invoice_title'],
             ];
-        }
-        foreach($invoiceList as $invoices) {
-            $invoiceId = $invoices['id'] ?? 'error';
-            $invoiceAmount = $invoices['amount'] ?? 'error';
-            $invoiceStatus = $invoices['status'] ?? 'error';
-            $formattedInvoiceAmount = formatWallet($invoiceAmount);
-            $invoiceStatusLabel = App\Enum\InvoiceStatus::from($invoiceStatus)->text();
-
-            $inline_keyboard[] = [
-                ['text' => '🔎', 'callback_data' => 'invoice_data_'.$invoiceId],
-                ['text' => $invoiceStatusLabel, 'callback_data' => 'invoice_data_'.$invoiceId],
-                ['text' => number_format($formattedInvoiceAmount, 0, '', ',') . " ت", 'callback_data' => 'invoice_data_'.$invoiceId],
-                ['text' => $invoiceId, 'callback_data' => 'invoice_data_'.$invoiceId],
-            ];
+            foreach($invoiceList as $invoices) {
+                $invoiceId = $invoices['id'] ?? 'error';
+                $invoiceAmount = $invoices['amount'] ?? 'error';
+                $invoiceStatus = $invoices['status'] ?? 'error';
+                $formattedInvoiceAmount = formatWallet($invoiceAmount);
+                $invoiceStatusLabel = App\Enum\InvoiceStatus::from($invoiceStatus)->text();
+    
+                $inline_keyboard[] = [
+                    ['text' => '🔎', 'callback_data' => 'invoice_data_'.$invoiceId],
+                    ['text' => $invoiceStatusLabel, 'callback_data' => 'invoice_data_'.$invoiceId],
+                    ['text' => number_format($formattedInvoiceAmount, 0, '', ',') . " ت", 'callback_data' => 'invoice_data_'.$invoiceId],
+                    ['text' => $invoiceId, 'callback_data' => 'invoice_data_'.$invoiceId],
+                ];
+            }
         }
         $inline_keyboard[] = [
             ['text' => 'بازگشت ◀️', 'callback_data'=>'wallet'],
@@ -706,17 +706,17 @@ $link
                 ['text' => 'نام بانک', 'callback_data'=>'bankcard_amount'],
                 ['text' => 'شناسه', 'callback_data'=>'bankcard_title'],
             ];
-        }
-        foreach($BankCardList as $bankkcard) {
-            $bankkcardId = $bankkcard['id'];
-            $bankcardname = getBankName($bankkcard['bank'] ?? "UNKNOWN");
-            $bankcardStatus = App\Enum\BankCardStatus::from($bankkcard['status'])->text();
-            $inline_keyboard[] = [
-                ['text' => '🔎', 'callback_data' => 'bankcard_data_'.$bankkcardId],
-                ['text' => $bankcardStatus, 'callback_data' => 'bankcard_data_'.$bankkcardId],
-                ['text' => $bankcardname, 'callback_data' => 'bankcard_data_'.$bankkcardId],
-                ['text' => $bankkcardId, 'callback_data' => 'bankcard_data_'.$bankkcardId],
-            ];
+            foreach($BankCardList as $bankkcard) {
+                $bankkcardId = $bankkcard['id'];
+                $bankcardname = getBankName($bankkcard['bank'] ?? "UNKNOWN");
+                $bankcardStatus = App\Enum\BankCardStatus::from($bankkcard['status'])->text();
+                $inline_keyboard[] = [
+                    ['text' => '🔎', 'callback_data' => 'bankcard_data_'.$bankkcardId],
+                    ['text' => $bankcardStatus, 'callback_data' => 'bankcard_data_'.$bankkcardId],
+                    ['text' => $bankcardname, 'callback_data' => 'bankcard_data_'.$bankkcardId],
+                    ['text' => $bankkcardId, 'callback_data' => 'bankcard_data_'.$bankkcardId],
+                ];
+            }
         }
         $inline_keyboard[] = [
             ['text' => '➕ افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
@@ -736,10 +736,10 @@ $link
         $userData = getUser($update->cb_data_chatid);
         $group_id = App\Enum\UserGroupEnum::from($userData['group_id'])->bankCardLimit();
         $getUserBankCardsPending = count(getUserBankCardsPending($userData['id']));
-        if($getUserBankCardsPending >= 0) {
+        if($getUserBankCardsPending > 0) {
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $update->cb_data_id,
-                'text' => "یک کارت درحالت بررسی وجود دارد",
+                'text' => "❌ کارت درحال بررسی وجود دارد ، تا تایید شدن آن منتظر بنمایید.",
                 'show_alert' => true,
             ]);
             return;
@@ -924,33 +924,37 @@ $link
         $TicketList = getUserTickets($userData['id']);
         setUserTmp($update->cb_data_chatid,'show_ticket',0);
         $inline_keybaord = [];
-        $inline_keyboard[] = [
-            ['text' => 'جزییات', 'callback_data'=>'ticket_details'],
-            ['text' => 'وضعیت', 'callback_data'=>'ticket_status'],
-            ['text' => 'دپارتمان', 'callback_data'=>'ticket_department'],
-            ['text' => 'موضوع', 'callback_data'=>'ticket_title'],
-            ['text' => 'شناسه', 'callback_data'=>'ticket_id'],
-        ];
-        foreach($TicketList as $ticket) {
-            $ticketId = $ticket['id'];
-            $status = App\Enum\TicketStatus::from($ticket['status'])->text();
+        if (!empty($TicketList)) {
             $inline_keyboard[] = [
-                ['text' => '🔎', 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
-                ['text' => $status, 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
-                ['text' => GetDepartments($ticket['department']), 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
-                ['text' => $ticket['title'], 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
-                ['text' => $ticketId, 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                ['text' => 'جزییات', 'callback_data'=>'ticket_details'],
+                ['text' => 'وضعیت', 'callback_data'=>'ticket_status'],
+                ['text' => 'دپارتمان', 'callback_data'=>'ticket_department'],
+                ['text' => 'موضوع', 'callback_data'=>'ticket_title'],
+                ['text' => 'شناسه', 'callback_data'=>'ticket_id'],
             ];
+            foreach($TicketList as $ticket) {
+                $ticketId = $ticket['id'];
+                $status = App\Enum\TicketStatus::from($ticket['status'])->text();
+                $inline_keyboard[] = [
+                    ['text' => '🔎', 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                    ['text' => $status, 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                    ['text' => GetDepartments($ticket['department']), 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                    ['text' => $ticket['title'], 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                    ['text' => $ticketId, 'callback_data' => 'ticket_data_'.$ticketId.'_0'],
+                ];
+            }
         }
         $inline_keyboard[] = [
             ['text' => 'سوال جدید بپرس!', 'callback_data'=>'new_ticket'],
             ['text' => 'بازگشت ◀️', 'callback_data'=>'support'],
         ];
-
+        $message = empty($TicketList) 
+        ? "شما هنوز هیچ تیکتی ثبت نکرده‌اید. برای ثبت یک سوال جدید از دکمه زیر استفاده کنید." 
+        : "در این بخش شما لیست تیکت‌های خود را مشاهده می‌کنید و می‌توانید آنها را مدیریت کنید.";
         Telegram::api('editMessageText',[
             'chat_id' => $update->cb_data_chatid,
             "message_id" => $update->cb_data_message_id,
-            'text' => "در این بخش شما لیست تیکت های خود را مشاهده می‌کنید و می‌توانید آنها را مدیریت کنید.",
+            'text' => $message,
             'reply_markup' => [
                 'inline_keyboard' => $inline_keyboard,
             ]
@@ -967,8 +971,8 @@ $link
         $price_irt = $price['irt'] * $service_size;
         $price_yc = $price['yc'] * $service_size;
 
-        if($userData['irr_wallet'] < $price_yc) {
-            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
+        if($userData['total_wallet'] < $price_yc) {
+            $diff = displayNumber($price_yc - $userData['total_wallet'],true);
 
             $config = GetConfig();
             $diff_toman = $config['yc_price'] * $diff;
@@ -980,28 +984,25 @@ $link
 
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
-
             if($userData['group_id'] == 0 || count($cardBanks) == 0) {
                 Telegram::api('editMessageText',[
                     "message_id" => $update->cb_data_message_id,
                     'chat_id' => $update->cb_data_chatid,
                     'parse_mode' => 'Markdown',
-                    'text' => "
-لازم است کارت بانکی خود را جهت خرید اضافه کنید
+                    'text' => "🔔 شما کارت بانکی فعالی ندارید! برای انجام تراکنش و جلوگیری از فیشینگ، لازم است کارت بانکی که می‌خواهید پرداخت کنید را تایید کنید. 
 
-                    ",
+برای اضافه کردن کارت، بر روی دکمه ( افزودن کارت )  کلیک کنید! 💳✨",
                         'reply_markup' => [
                         'inline_keyboard' => [
                             [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                                 ['text' => 'افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                             ]
                         ],
                     ]
                 ]);
                 return;
             }
-
             foreach ($cardBanks as $cardData) {
                 $inline_keyboard[] = [
                     ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
@@ -1026,27 +1027,29 @@ $link
             ]);
             return;
         } 
-
-        $service_id = Database::create('YN_services',
-            ['user_id','buy_method','main_traffic','status','created_at', 'updated_at'],
-                [
-                    $userData['id'],
-                    3,
-                    $service_size,
-                    App\Enum\ServiceStatus::PENDING->value,
-                    date("Y-m-d H:i:s"), 
-                    date("Y-m-d H:i:s")
-                ]
-        );
+        $size = $service_size;
         if ($service_type == "unlimited") {
             $unlimitedPlans = GetAllServices()[$service_type]['plans'];
             foreach ($unlimitedPlans as $planId => $plan) {
                 if ($plan['data_total'] == $service_size) {
+                    $size = $plan['traffic'];
                     $service_size = $planId;
                     break;
                 }
             }
         }
+        $service_id = Database::create('YN_services',
+            ['user_id','buy_method','main_traffic','status','created_at', 'updated_at'],
+                [
+                    $userData['id'],
+                    3,
+                    $size,
+                    App\Enum\ServiceStatus::PENDING->value,
+                    date("Y-m-d H:i:s"), 
+                    date("Y-m-d H:i:s")
+                ]
+        );
+        
         Telegram::api('deleteMessage',[
             'message_id' => $update->cb_data_message_id,
             'chat_id' => $update->cb_data_chatid
@@ -1071,7 +1074,7 @@ $link
         } else {
             Telegram::api('sendMessage',[
                 'chat_id' => $update->cb_data_chatid,
-                'text' => "سرویس شما به دلیل ( ".json_decode($webservice['message'])." ) ساخته نشد.",
+                'text' => "سرویس شما به دلیل ( ".$webservice['message']." ) ساخته نشد.",
                 'parse_mode' => 'Markdown',
                 'reply_markup' => [
                     'inline_keyboard' => [
@@ -1096,8 +1099,8 @@ $link
         $price_yc = $price['yc'] * $extra_service_size;
 
 
-        if($userData['irr_wallet'] < $price_yc) {
-            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
+        if($userData['total_wallet'] < $price_yc) {
+            $diff = displayNumber($price_yc - $userData['total_wallet'],true);
 
             $config = GetConfig();
             $diff_toman = $config['yc_price'] * $diff;
@@ -1108,28 +1111,25 @@ $link
 
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
-
             if($userData['group_id'] == 0 || count($cardBanks) == 0) {
                 Telegram::api('editMessageText',[
                     "message_id" => $update->cb_data_message_id,
                     'chat_id' => $update->cb_data_chatid,
                     'parse_mode' => 'Markdown',
-                    'text' => "
-لازم است کارت بانکی خود را جهت خرید اضافه کنید
+                    'text' => "🔔 شما کارت بانکی فعالی ندارید! برای انجام تراکنش و جلوگیری از فیشینگ، لازم است کارت بانکی که می‌خواهید پرداخت کنید را تایید کنید. 
 
-                    ",
+برای اضافه کردن کارت، بر روی دکمه ( افزودن کارت )  کلیک کنید! 💳✨",
                         'reply_markup' => [
                         'inline_keyboard' => [
                             [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                                 ['text' => 'افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                             ]
                         ],
                     ]
                 ]);
                 return;
             }
-
             foreach ($cardBanks as $cardData) {
                 $inline_keyboard[] = [
                     ['text' => splitCardNumber($cardData['card_number'])." (".getBankName($cardData['bank']).")", 'callback_data'=>'addBalance_select_'. $cardData['id']],
@@ -1204,8 +1204,8 @@ $link
         $price_yc = $price['yc'] * $main_traffic;
 
 
-        if($userData['irr_wallet'] < $price_yc) {
-            $diff = displayNumber($price_yc - $userData['irr_wallet'],true);
+        if($userData['total_wallet'] < $price_yc) {
+            $diff = displayNumber($price_yc - $userData['total_wallet'],true);
 
             $config = GetConfig();
             $diff_toman = $config['yc_price'] * $diff;
@@ -1216,28 +1216,25 @@ $link
 
             $userID = getUser($update->cb_data_chatid)['id'];
             $cardBanks = getCardsBank($userID);
-
             if($userData['group_id'] == 0 || count($cardBanks) == 0) {
                 Telegram::api('editMessageText',[
                     "message_id" => $update->cb_data_message_id,
                     'chat_id' => $update->cb_data_chatid,
                     'parse_mode' => 'Markdown',
-                    'text' => "
-لازم است کارت بانکی خود را جهت خرید اضافه کنید
+                    'text' => "🔔 شما کارت بانکی فعالی ندارید! برای انجام تراکنش و جلوگیری از فیشینگ، لازم است کارت بانکی که می‌خواهید پرداخت کنید را تایید کنید. 
 
-                    ",
+برای اضافه کردن کارت، بر روی دکمه ( افزودن کارت )  کلیک کنید! 💳✨",
                         'reply_markup' => [
                         'inline_keyboard' => [
                             [
-                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                                 ['text' => 'افزودن کارت بانکی', 'callback_data'=>'add_bank_card'],
+                                ['text' => 'بازگشت ◀️', 'callback_data'=>'back'],
                             ]
                         ],
                     ]
                 ]);
                 return;
             }
-            
             foreach ($cardBanks as $cardData) {
                 
                 $inline_keyboard[] = [
@@ -1736,8 +1733,6 @@ $invoiceReasonText
                 setUserStep($update->cb_data_chatid,'custom_value');
 
                 $limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
-
-                setUserTmp($update->cb_data_chatid,'service_limit',$limit);
                 Telegram::api('editMessageText',[
                     "message_id" => $update->cb_data_message_id,
                     'chat_id' => $update->cb_data_chatid,
@@ -1883,7 +1878,7 @@ $invoiceReasonText
         $days_left = round(($expired_at_time - time()) / 86400);
         $status_text = App\Enum\ServiceStatus::from($serviceData['status'])->text();
 
-        $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page');
+        $backPage = getUserTmp($update->cb_data_chatid,'servicelist_page') ?? 0;
 
         $total_traffic = $main_traffic;
         $traffic_info = "";
@@ -2403,7 +2398,7 @@ $invoiceReasonText
                 'inline_keyboard' => $inline_keyboard,
             ]
         ]);
-    } elseif ($text != '' && $step == 'addBalance_3') {
+    } elseif ($step == 'addBalance_3') {
         if(isset($update->photo_file_id)) {
             $tmp = getAllUserTmp($chat_id);
             $adminCardNumber = $tmp['addBalance_cardBankNumber'];
@@ -2517,7 +2512,7 @@ $invoiceReasonText
             ]
         ]);
         
-    } elseif ($text != '' && $step == "addBankCard_2") {
+    } elseif ($step == "addBankCard_2") {
         if(isset($update->photo_file_id)) {
             $tmp = getAllUserTmp($chat_id);
             $cardnumber = $tmp['add_cardBank_number'];
@@ -2731,8 +2726,10 @@ $invoiceReasonText
             ]);
         }
     } elseif ($text != '' && $step == 'custom_value') {
+        $userData = getUser($chat_id);
+        $service_limit = App\Enum\UserGroupEnum::from($userData['group_id'])->trafficLimit();
+
         $tmp = getAllUserTmp($chat_id);
-        $service_limit = $tmp['service_limit'];
         $service_type = $tmp['service_type'];
         if (!is_numeric($text) || $text < 5 || $text > $service_limit) {
             Telegram::api('sendMessage', [
@@ -2749,7 +2746,7 @@ $invoiceReasonText
             ]);
             return;
         }
-        $userData = getUser($chat_id);
+        
         if($userData['group_id'] == 0 && $size > 10) {
             Telegram::api('sendMessage',[
                 'chat_id' => $chat_id,
